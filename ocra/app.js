@@ -1,221 +1,50 @@
 (()=>{"use strict";
-const form=document.getElementById("ocraForm");
-const screens=[...document.querySelectorAll(".screen")];
-const counter=document.getElementById("screenCounter");
-const prev=document.getElementById("prevBtn");
-const next=document.getElementById("nextBtn");
-const status=document.getElementById("status");
-const fileInput=document.getElementById("fileInput");
+const form=document.getElementById("ocraForm"),screens=[...document.querySelectorAll(".screen")],counter=document.getElementById("screenCounter"),prev=document.getElementById("prevBtn"),next=document.getElementById("nextBtn"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
 let current=0,dirty=false;
-const STORAGE_KEY="ergonomic-analyzer-ocra-draft-v2";
-const fields=[...form.querySelectorAll("input,select,textarea")];
-
-function number(name){
-  const v=parseFloat(form.elements[name]?.value);
-  return Number.isFinite(v)?v:0;
-}
-function fmt(v,d=2){
-  return Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-}
-function data(){
-  const out={version:2,savedAt:new Date().toISOString(),values:{}};
-  fields.forEach(f=>{out.values[f.name]=f.type==="checkbox"?f.checked:f.value});
-  return out;
-}
-function apply(obj){
-  if(!obj||!obj.values)throw new Error("invalid");
-  fields.forEach(f=>{
-    if(!(f.name in obj.values))return;
-    if(f.type==="checkbox")f.checked=!!obj.values[f.name];
-    else f.value=obj.values[f.name]??"";
-  });
-  dirty=false;
-  calculate();
-  status.textContent="Estudio cargado correctamente.";
-}
-
-const durationTable=[
-  [60,120,0.50],[121,180,0.65],[181,240,0.75],[241,300,0.85],
-  [301,360,0.925],[361,420,0.95],[421,480,1.00]
-];
-
-function durationMultiplier(n){
-  if(n>480)return 1.50;
-  for(const [min,max,m] of durationTable)if(n>=min&&n<=max)return m;
-  return null;
-}
-
-const recoveryTable={
-  480:[7,6,5,4,3,2,1,0],
-  460:[7,6,5,4,3,2,1],
-  440:[6.5,5.5,4.5,3.5,2.5,1.5,0.5],
-  420:[6,5,4,3,2.5,1.5,0],
-  390:[5.5,4.5,3.5,2.5,1.5,0.5],
-  360:[5,4,3,2,1,0],
-  330:[4.5,3.5,2.5,1.5,0.5,0],
-  300:[4,3,2,1,0],
-  270:[3.5,2.5,1.5,0.5],
-  240:[3,2,1,0],
-  210:[2.5,1.5,0.5],
-  180:[2,1,0],
-  120:[1,0],
-  0:[0]
-};
-
-const recoveryMultiplierTable=[
-  [0,1.00],[1,1.05],[2,1.12],[3,1.20],[4,1.33],
-  [5,1.48],[6,1.70],[7,2.00],[8,2.50]
-];
-
-function recoveryMultiplier(hours){
-  if(!Number.isFinite(hours))return 1;
-  const clamped=Math.max(0,Math.min(8,hours));
-  const exact=recoveryMultiplierTable.find(([h])=>h===clamped);
-  if(exact)return exact[1];
-  const lower=recoveryMultiplierTable.filter(([h])=>h<clamped).pop();
-  const upper=recoveryMultiplierTable.find(([h])=>h>clamped);
-  if(!lower)return upper?upper[1]:1;
-  if(!upper)return lower[1];
-  const [h1,m1]=lower,[h2,m2]=upper;
-  return m1+(m2-m1)*(clamped-h1)/(h2-h1);
-}
-
-function automaticRecoveryHours(turnoEfectivo,numPausas,comida){
-  const rounded=Math.round(turnoEfectivo);
-  const row=recoveryTable[rounded];
-  if(!row)return null;
-  const effectiveInterruptions=Math.max(0,Math.floor(numPausas)+(comida>=30?1:0));
-  const index=Math.min(effectiveInterruptions,row.length-1);
-  return row[index];
-}
-
+const STORAGE_KEY="ergonomic-analyzer-ocra-draft-v3",fields=[...form.querySelectorAll("input,select,textarea")];
+const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
+const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
+const values=()=>{const o={version:3,savedAt:new Date().toISOString(),values:{}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
+function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});dirty=false;calculate();status.textContent="Estudio cargado correctamente."}
+function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
+const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
+const recTable={0:1,1:1.05,2:1.12,3:1.20,4:1.33,5:1.48,6:1.70,7:2,8:2.5};
+const recAuto={480:[7,6,5,4,3,2,1,0],460:[7,6,5,4,3,2,1],440:[6.5,5.5,4.5,3.5,2.5,1.5,.5],420:[6,5,4,3,2.5,1.5,0],390:[5.5,4.5,3.5,2.5,1.5,.5,0],360:[5,4,3,2,1,0],330:[4.5,3.5,2.5,1.5,.5,0],300:[4,3,2,1,0],270:[3.5,2.5,1.5,.5,0],240:[3,2,1,0],210:[2.5,1.5,.5,0],180:[2,1,0],120:[1,0],0:[0]};
+const freqYes=[[0,0],[2.5,0],[7.5,0],[12.5,0],[17.5,0],[20,0],[22.5,.5],[27.5,1],[30,1],[32.5,2],[35,2],[37.5,3],[40,3],[42.5,4],[45,4],[47.5,5],[50,5],[52.5,6],[55,6],[57.5,7],[60,7],[62.5,8],[65,8],[67.5,9],[70,9],[72.5,9]];
+const freqNo=[[0,0],[2.5,0],[7.5,0],[12.5,0],[17.5,0],[20,0],[22.5,.5],[27.5,1],[30,2],[32.5,2],[35,2],[37.5,4],[40,4],[42.5,5],[45,5],[47.5,6],[50,6],[52.5,7],[55,7],[57.5,8],[60,8],[62.5,9],[65,9],[67.5,10],[70,10],[72.5,10]];
+const force34=[[0,0],[.05,.5],[.10,.5],[.18,1],[.26,1.5],[.33,2],[.37,2.5],[.42,3],[.46,3.5],[.50,4],[.54,4.5],[.58,5],[.63,5.5],[.67,6],[.75,6.5],[.83,7],[.92,7.5],[1,8]];
+const force57=[[0,0],[.16,2],[.33,4],[.66,6],[1,8],[1.5,9],[2,10],[2.5,11],[3,12],[3.5,13],[4,14],[4.5,15],[5,16],[5.63,17],[6.25,18],[6.88,19],[7.5,20],[8.13,21],[8.75,22],[9.38,23],[10,24]];
+const force810=[[0,0],[.16,3],[.33,6],[.66,9],[1,12],[1.33,13],[1.67,14],[2,15],[2.33,16],[2.67,17],[3,18],[3.33,19],[3.67,20],[4,21],[4.33,22],[4.67,23],[5,24],[5.63,25],[6.25,26],[6.88,27],[7.5,28],[8.13,29],[8.75,30],[9.38,31],[10,32]];
+function recoveryHours(eff,count,meal){const row=recAuto[Math.round(eff)];if(!row)return null;const valid=Math.max(0,Math.floor(count)+(meal>=30?1:0));return row[Math.min(valid,row.length-1)]}
+function recoveryMultiplier(h){if(!Number.isFinite(h))return null;const x=Math.max(0,Math.min(8,h));const k=Object.keys(recTable).map(Number).find(v=>v===x);if(k!==undefined)return recTable[k];const lo=Math.floor(x),hi=Math.ceil(x);if(recTable[lo]!==undefined&&recTable[hi]!==undefined)return recTable[lo]+(recTable[hi]-recTable[lo])*(x-lo)/(hi-lo);return x>=8?2.5:1}
+function freq(actionsPerMin,interruptions){return lookup(interruptions?freqYes:freqNo,actionsPerMin)}
+function forceScore(seconds34,seconds57,seconds810,cycle){if(cycle<=0)return 0;return lookup(force34,seconds34/cycle)+lookup(force57,seconds57/cycle)+lookup(force810,seconds810/cycle)}
+function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked||form.elements[prefix+"StereoStatic"]?.checked)?1.5:0}
+function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "VERDE · Riesgo aceptable";if(x<=11)return "AMARILLO · Riesgo muy leve";if(x<=14)return "ROJO SUAVE · Riesgo medio leve";if(x<=22.5)return "ROJO · Riesgo medio";return "VIOLETA · Riesgo elevado"}
 function calculate(){
-  const official=number("turnoOficial");
-  const manualEffective=number("turnoEfectivoManual");
-  const effective=manualEffective>0?manualEffective:official;
-  const nonRep=number("noRepetitivo");
-  const pauses=number("tiempoPausas");
-  const meal=number("pausaComer");
-  const numPausas=number("numPausas");
-
-  const neto=Math.max(0,effective-pauses-meal-nonRep);
-  document.getElementById("turnoEfectivo").textContent=fmt(effective,1);
-  document.getElementById("tiempoNeto").textContent=fmt(neto,1);
-  document.getElementById("tiempoExposicion").textContent=fmt(neto,1);
-
-  const mode=form.elements.modoRecuperacion?.value||"automatico";
-  let hours;
-  if(mode==="manual"){
-    hours=Math.max(0,Math.min(8,number("horasSinRecManual")));
-  }else{
-    hours=automaticRecoveryHours(effective,numPausas,meal);
-  }
-
-  const hoursOutput=document.getElementById("horasSinRecuperacion");
-  const recOutput=document.getElementById("multRecuperacion");
-  if(hours===null){
-    hoursOutput.textContent="—";
-    recOutput.textContent="—";
-  }else{
-    hoursOutput.textContent=fmt(hours,2);
-    recOutput.textContent=fmt(recoveryMultiplier(hours),2);
-  }
-
-  const md=durationMultiplier(neto);
-  document.getElementById("multDuracion").textContent=md===null?"—":fmt(md,3);
-
-  const cycles=number("ciclosEfectivos");
-  const cycleObserved=number("cicloObservado");
-  const tnc=cycles>0?60*neto/cycles:0;
-  document.getElementById("cicloNeto").textContent=tnc>0?fmt(tnc,1):"—";
-
-  let diff=null;
-  if(tnc>0&&cycleObserved>0)diff=Math.abs(tnc-cycleObserved)/tnc*100;
-  document.getElementById("diferenciaCiclo").textContent=diff===null?"—":fmt(diff,2);
-  document.getElementById("minNoJustificados").textContent=diff===null?"—":fmt(Math.abs(tnc-cycleObserved)*cycles/60,1);
-
-  const alert=document.getElementById("alertaCiclo");
-  if(diff===null)alert.textContent="—";
-  else if(diff>5)alert.textContent="Revisar: > 5 %";
-  else alert.textContent="Concordante: ≤ 5 %";
-
-  const base=0;
-  const mr=hours===null?1:recoveryMultiplier(hours);
-  const final=md===null?0:base*mr*md;
-  document.getElementById("sumaFactores").textContent=fmt(base);
-  document.getElementById("resultadoConRecuperacion").textContent=fmt(base*mr);
-  document.getElementById("resultadoFinal").textContent=fmt(final);
+ const official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
+ document.getElementById("turnoEfectivo").textContent=fmt(eff,1);document.getElementById("tntrPausas").textContent=fmt(pauses,1);document.getElementById("tntrComida").textContent=fmt(meal,1);document.getElementById("tntrNoRep").textContent=fmt(nonRep,1);document.getElementById("tiempoNeto").textContent=fmt(tntr,1);document.getElementById("duracionTNTR").textContent=fmt(tntr,1);
+ const autoH=recoveryHours(eff,n("numPausas"),meal),manualRaw=form.elements.horasSinRecManual?.value.trim(),manual=manualRaw===""?null:parseFloat(manualRaw),useH=Number.isFinite(manual)?Math.max(0,Math.min(8,manual)):autoH,rm=recoveryMultiplier(useH);
+ document.getElementById("recAutomatico").textContent=autoH===null?"—":fmt(autoH,1);document.getElementById("recMultAutomatico").textContent=autoH===null?"—":fmt(recoveryMultiplier(autoH),3);document.getElementById("horasSinRecuperacion").textContent=useH===null?"—":fmt(useH,1);document.getElementById("recOrigen").textContent=useH===null?"—":(Number.isFinite(manual)?"Manual":"Automático");document.getElementById("multRecuperacion").textContent=rm===null?"—":fmt(rm,3);
+ const md=lookup(duration,tntr);document.getElementById("multDuracion").textContent=fmt(md,3);
+ const cycles=n("ciclosEfectivos"),obs=n("cicloObservado"),cycle=cycles>0?60*tntr/cycles:0,diff=cycle>0&&obs>0?Math.abs(cycle-obs)/cycle*100:null;
+ document.getElementById("cicloNeto").textContent=cycle?fmt(cycle,2):"—";document.getElementById("diferenciaCiclo").textContent=diff===null?"—":fmt(diff,2);document.getElementById("minNoJustificados").textContent=diff===null?"—":fmt(Math.abs(cycle-obs)*cycles/60,2);document.getElementById("alertaCiclo").textContent=diff===null?"—":diff>5?"Revisar: > 5 %":"Concordante: ≤ 5 %";
+ const actionCycle=obs||cycle,dxA=n("dxAcciones"),ixA=n("ixAcciones"),dxMin=actionCycle>0?dxA*60/actionCycle:0,ixMin=actionCycle>0?ixA*60/actionCycle:0,dxF=freq(dxMin,form.elements.dxInterrupciones.value==="si"),ixF=freq(ixMin,form.elements.ixInterrupciones.value==="si"),dxForce=forceScore(n("dxFuerza34"),n("dxFuerza57"),n("dxFuerza810"),actionCycle),ixForce=forceScore(n("ixFuerza34"),n("ixFuerza57"),n("ixFuerza810"),actionCycle),dxS=stereo("dx"),ixS=stereo("ix"),a=parseFloat(form.elements.complementarioA.value)||0,b=parseFloat(form.elements.complementarioB.value)||0,comp=a+b;
+ document.getElementById("dxAccionesMin").textContent=fmt(dxMin,2);document.getElementById("ixAccionesMin").textContent=fmt(ixMin,2);document.getElementById("dxFrecuencia").textContent=fmt(dxF,2);document.getElementById("ixFrecuencia").textContent=fmt(ixF,2);document.getElementById("dxFuerzaScore").textContent=fmt(dxForce,2);document.getElementById("ixFuerzaScore").textContent=fmt(ixForce,2);document.getElementById("dxStereoScore").textContent=fmt(dxS,2);document.getElementById("ixStereoScore").textContent=fmt(ixS,2);document.getElementById("compA").textContent=fmt(a,2);document.getElementById("compB").textContent=fmt(b,2);document.getElementById("compTotal").textContent=fmt(comp,2);
+ const dxBase=dxF+dxForce+dxS+comp,ixBase=ixF+ixForce+ixS+comp,dxFinal=dxBase*(rm??1)*md,ixFinal=ixBase*(rm??1)*md;
+ const set=(id,v,d=2)=>document.getElementById(id).textContent=Number.isFinite(v)?fmt(v,d):"—";
+ set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalPostureDx",dxS);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
+ set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalPostureIx",ixS);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
 }
-
-function show(i){
-  current=Math.max(0,Math.min(screens.length-1,i));
-  screens.forEach((s,n)=>s.classList.toggle("active",n===current));
-  counter.textContent="Pantalla "+(current+1)+" de "+screens.length;
-  prev.disabled=current===0;
-  next.disabled=current===screens.length-1;
-  window.scrollTo({top:0,behavior:"smooth"});
-  calculate();
-}
-
-function markDirty(){
-  dirty=true;
-  calculate();
-  status.textContent="";
-}
-
-fields.forEach(f=>f.addEventListener("input",markDirty));
-fields.forEach(f=>f.addEventListener("change",markDirty));
-prev.addEventListener("click",()=>show(current-1));
-next.addEventListener("click",()=>show(current+1));
-
-document.getElementById("homeBtn").addEventListener("click",()=>{
-  if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../";
-});
-
-document.getElementById("saveBtn").addEventListener("click",()=>{
-  const d=data();
-  const blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="estudio-ocra.json";
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(d));
-  dirty=false;
-  status.textContent="Estudio guardado correctamente.";
-});
-
+function show(i){current=Math.max(0,Math.min(screens.length-1,i));screens.forEach((s,k)=>s.classList.toggle("active",k===current));counter.textContent="Pantalla "+(current+1)+" de "+screens.length;prev.disabled=current===0;next.disabled=current===screens.length-1;window.scrollTo({top:0,behavior:"smooth"});calculate()}
+function markDirty(){dirty=true;status.textContent="";calculate()}
+fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});prev.addEventListener("click",()=>show(current-1));next.addEventListener("click",()=>show(current+1));
+document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
+document.getElementById("saveBtn").addEventListener("click",()=>{const d=values(),blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente."});
 document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
-
-fileInput.addEventListener("change",async()=>{
-  const file=fileInput.files[0];
-  if(!file)return;
-  try{apply(JSON.parse(await file.text()));}
-  catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}
-  fileInput.value="";
-});
-
-document.getElementById("newBtn").addEventListener("click",()=>{
-  if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;
-  form.reset();
-  dirty=false;
-  status.textContent="Nuevo estudio iniciado.";
-  show(0);
-});
-
-window.addEventListener("beforeunload",e=>{
-  if(dirty){
-    e.preventDefault();
-    e.returnValue=true;
-  }
-});
-
-const draft=localStorage.getItem(STORAGE_KEY);
-if(draft){
-  try{
-    apply(JSON.parse(draft));
-    status.textContent="Hay un borrador guardado localmente en este navegador.";
-  }catch(e){}
-}
+fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
+document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";show(0)});
+window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
+try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
 show(0);
 })();
