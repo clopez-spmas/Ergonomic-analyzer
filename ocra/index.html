@@ -1,1 +1,183 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OCRA · Ergonomic Analyzer</title><link rel="stylesheet" href="../css/styles.css"></head><body><main class="app-shell"><header class="app-header"><div class="brand">ERGONOMIC ANALYZER · OCRA</div><h1>Módulo OCRA</h1><p class="subtitle">Módulo independiente del análisis de posturas forzadas.</p></header><section class="conditions"><h2>Módulo preparado</h2><p>El análisis OCRA se desarrollará aquí sin modificar el repositorio OCRA existente.</p><button type="button" class="primary-button" onclick="location.href='../'">Volver al inicio</button></section></main></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OCRA · Ergonomic Analyzer</title>
+<link rel="stylesheet" href="../css/styles.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="ocra-shell">
+<header class="ocra-header">
+  <div class="brand">ERGONOMIC ANALYZER · OCRA</div>
+  <h1>Checklist OCRA</h1>
+  <p>Estudio de movimientos repetitivos y exposición de la extremidad superior.</p>
+</header>
+
+<nav class="screen-nav" aria-label="Navegación del estudio">
+  <button type="button" id="homeBtn" class="nav-secondary">Inicio</button>
+  <div class="screen-counter" id="screenCounter">Pantalla 1 de 7</div>
+  <button type="button" id="prevBtn" class="nav-secondary">Anterior</button>
+  <button type="button" id="nextBtn" class="nav-primary">Siguiente</button>
+</nav>
+
+<section class="study-toolbar">
+  <button type="button" id="saveBtn" class="toolbar-btn">Guardar estudio</button>
+  <button type="button" id="loadBtn" class="toolbar-btn">Cargar estudio</button>
+  <button type="button" id="newBtn" class="toolbar-btn">Nuevo estudio</button>
+  <label class="close-option">
+    <input type="checkbox" id="askClose">
+    Preguntar antes de cerrar si hay cambios sin guardar
+  </label>
+  <input type="file" id="fileInput" accept=".json,application/json" hidden>
+</section>
+
+<div id="status" class="status" role="status" aria-live="polite"></div>
+
+<form id="ocraForm" novalidate>
+<section class="screen active" data-screen="0">
+  <div class="screen-title"><span>1</span><div><h2>Identificación del estudio</h2><p>Datos básicos para identificar el estudio OCRA.</p></div></div>
+  <div class="form-grid">
+    <label>Empresa / centro<input name="empresa" type="text"></label>
+    <label>Puesto de trabajo<input name="puesto" type="text"></label>
+    <label>Trabajador / referencia<input name="trabajador" type="text"></label>
+    <label>Fecha del estudio<input name="fecha" type="date"></label>
+    <label>Evaluador<input name="evaluador" type="text"></label>
+    <label>Observaciones<textarea name="observaciones" rows="4"></textarea></label>
+  </div>
+</section>
+
+<section class="screen" data-screen="1">
+  <div class="screen-title"><span>2</span><div><h2>Tiempo de trabajo y recuperación</h2><p>A. Resumen del tiempo neto de trabajo repetitivo en una jornada media representativa.</p></div></div>
+  <div class="form-grid">
+    <label>Duración del turno oficial (min)<input name="turnoOficial" type="number" min="0" step="1"></label>
+    <label>Tiempo de trabajo no repetitivo (min)<input name="noRepetitivo" type="number" min="0" step="1"></label>
+    <label>N.º de pausas efectivas ≥ 8 min<input name="numPausas" type="number" min="0" step="1"></label>
+    <label>Tiempo efectivo total de pausas, sin comida (min)<input name="tiempoPausas" type="number" min="0" step="1"></label>
+    <label>Pausa para comer incluida y pagada (min)<input name="pausaComer" type="number" min="0" step="1"></label>
+    <label>N.º de interrupciones ≥ 30 min<input name="interrupciones30" type="number" min="0" step="1"></label>
+    <label>Descripción del turno y pausas<textarea name="descripcionTurno" rows="5"></textarea></label>
+  </div>
+  <div class="calculation-box">
+    <strong>Valores calculados</strong>
+    <div class="result-grid">
+      <div><span>Duración del turno efectivo</span><output id="turnoEfectivo">—</output> min</div>
+      <div><span>Tiempo neto de trabajo repetitivo</span><output id="tiempoNeto">—</output> min</div>
+      <div><span>Multiplicador de recuperación</span><output id="multRecuperacion">1,00</output></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="2">
+  <div class="screen-title"><span>3</span><div><h2>Descripción del trabajo repetitivo</h2><p>Definición del ciclo y del tiempo de observación representativo.</p></div></div>
+  <div class="form-grid">
+    <label>¿Hay ciclos reales?
+      <select name="hayCiclos"><option value="">Seleccionar</option><option value="si">Sí</option><option value="no">No</option></select>
+    </label>
+    <label>N.º de unidades / trabajadores / turnos<input name="unidadesTrabajadoresTurnos" type="number" min="0" step="1"></label>
+    <label>Tiempo de ciclo observado (segundos)<input name="cicloObservado" type="number" min="0" step="0.1"></label>
+    <label>Tiempo de observación representativo (segundos)<input name="observacionRepresentativa" type="number" min="0" step="0.1"></label>
+    <label>¿Se repiten siempre las mismas acciones?
+      <select name="accionesRepetidas"><option value="">Seleccionar</option><option value="si">Sí</option><option value="no">No</option></select>
+    </label>
+    <label>¿Hay recuperación dentro del ciclo?
+      <select name="recuperacionCiclo"><option value="">Seleccionar</option><option value="si">Sí</option><option value="no">No</option></select>
+    </label>
+    <label>Descripción del trabajo repetitivo<textarea name="descripcionRepetitivo" rows="6"></textarea></label>
+  </div>
+  <div class="calculation-box">
+    <strong>Cálculos de ciclo</strong>
+    <div class="result-grid">
+      <div><span>Tiempo de ciclo neto calculado</span><output id="cicloNeto">—</output> s</div>
+      <div><span>% diferencia ciclo observado / establecido</span><output id="diferenciaCiclo">—</output> %</div>
+      <div><span>Minutos no justificados</span><output id="minNoJustificados">—</output></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="3">
+  <div class="screen-title"><span>4</span><div><h2>Frecuencia</h2><p>C. Frecuencia de acciones dinámicas y estáticas para cada extremidad.</p></div></div>
+  <div class="side-grid">
+    <fieldset><legend>Derecha (DX)</legend>
+      <label>Acciones técnicas observadas<input name="dxAcciones" type="number" min="0" step="0.01"></label>
+      <label>¿Acciones muy rápidas &gt; 70 acc/min?<select name="dxMas70"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>¿Son posibles breves interrupciones?<select name="dxInterrupciones"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>Presa estática ≥ 5 s y ocupa 2/3<select name="dxEstatica23"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>Presa estática ≥ 5 s y ocupa 3/3<select name="dxEstatica33"><option value="no">No</option><option value="si">Sí</option></select></label>
+    </fieldset>
+    <fieldset><legend>Izquierda (IX)</legend>
+      <label>Acciones técnicas observadas<input name="ixAcciones" type="number" min="0" step="0.01"></label>
+      <label>¿Acciones muy rápidas &gt; 70 acc/min?<select name="ixMas70"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>¿Son posibles breves interrupciones?<select name="ixInterrupciones"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>Presa estática ≥ 5 s y ocupa 2/3<select name="ixEstatica23"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <label>Presa estática ≥ 5 s y ocupa 3/3<select name="ixEstatica33"><option value="no">No</option><option value="si">Sí</option></select></label>
+    </fieldset>
+  </div>
+</section>
+
+<section class="screen" data-screen="4">
+  <div class="screen-title"><span>5</span><div><h2>Posturas forzadas</h2><p>Registro separado para derecha e izquierda.</p></div></div>
+  <div class="side-grid">
+    <fieldset><legend>Extremidad derecha (DX)</legend>
+      <label>Mano: segundos<input name="dxManoSeg" type="number" min="0" step="0.1"></label>
+      <label>Hombro: segundos<input name="dxHombroSeg" type="number" min="0" step="0.1"></label>
+      <label>Muñeca: segundos<input name="dxMunecaSeg" type="number" min="0" step="0.1"></label>
+      <label>Codo: segundos<input name="dxCodoSeg" type="number" min="0" step="0.1"></label>
+      <label>Estereotipo: opción
+        <select name="dxEstereotipo"><option value="">Seleccionar</option><option value="0">Sup. 15 s</option><option value="1.5">Entre 9 y 15 s</option><option value="3">≤ 8 s</option></select>
+      </label>
+    </fieldset>
+    <fieldset><legend>Extremidad izquierda (IX)</legend>
+      <label>Mano: segundos<input name="ixManoSeg" type="number" min="0" step="0.1"></label>
+      <label>Hombro: segundos<input name="ixHombroSeg" type="number" min="0" step="0.1"></label>
+      <label>Muñeca: segundos<input name="ixMunecaSeg" type="number" min="0" step="0.1"></label>
+      <label>Codo: segundos<input name="ixCodoSeg" type="number" min="0" step="0.1"></label>
+      <label>Estereotipo: opción
+        <select name="ixEstereotipo"><option value="">Seleccionar</option><option value="0">Sup. 15 s</option><option value="1.5">Entre 9 y 15 s</option><option value="3">≤ 8 s</option></select>
+      </label>
+    </fieldset>
+  </div>
+</section>
+
+<section class="screen" data-screen="5">
+  <div class="screen-title"><span>6</span><div><h2>Fuerza y factores complementarios</h2><p>Registro de fuerza y condiciones complementarias del puesto.</p></div></div>
+  <div class="side-grid">
+    <fieldset><legend>Fuerza derecha (DX)</legend>
+      <label>Fuerza moderada: % tiempo<input name="dxFuerzaModerada" type="number" min="0" max="100" step="0.1"></label>
+      <label>Fuerza intensa (Borg 5-7): % tiempo<input name="dxFuerzaIntensa" type="number" min="0" max="100" step="0.1"></label>
+      <label>Fuerza muy intensa (Borg 8-10): % tiempo<input name="dxFuerzaMuyIntensa" type="number" min="0" max="100" step="0.1"></label>
+    </fieldset>
+    <fieldset><legend>Fuerza izquierda (IX)</legend>
+      <label>Fuerza moderada: % tiempo<input name="ixFuerzaModerada" type="number" min="0" max="100" step="0.1"></label>
+      <label>Fuerza intensa (Borg 5-7): % tiempo<input name="ixFuerzaIntensa" type="number" min="0" max="100" step="0.1"></label>
+      <label>Fuerza muy intensa (Borg 8-10): % tiempo<input name="ixFuerzaMuyIntensa" type="number" min="0" max="100" step="0.1"></label>
+    </fieldset>
+  </div>
+  <fieldset class="wide-fieldset"><legend>Factores complementarios</legend>
+    <label><input type="checkbox" name="martillo"> Uso de martillo o mazos para golpear</label>
+    <label><input type="checkbox" name="golpesManos"> Uso de las manos para dar golpes (≥ 10 veces/hora)</label>
+    <label><input type="checkbox" name="vibracion"> Herramientas vibradoras</label>
+    <label><input type="checkbox" name="otrosComplementarios"> Otros factores complementarios indicados en el comentario</label>
+    <label>Ritmo de trabajo<select name="ritmoMaquina"><option value="">Seleccionar</option><option value="ajustable">Impuesto, con posibilidad de ajustar</option><option value="lento">Impuesto, velocidad muy lenta</option><option value="sinAjuste">Impuesto, sin posibilidad de ajustar</option></select></label>
+    <label>Comentario<textarea name="comentarioComplementarios" rows="4"></textarea></label>
+  </fieldset>
+</section>
+
+<section class="screen" data-screen="6">
+  <div class="screen-title"><span>7</span><div><h2>Resultado OCRA</h2><p>D. Puntuación final Checklist OCRA ponderada por la duración.</p></div></div>
+  <div class="result-grid final-results">
+    <div><span>Índice parcial DX</span><output id="resultadoParcialDx">0,00</output></div>
+    <div><span>Índice parcial IX</span><output id="resultadoParcialIx">0,00</output></div>
+    <div><span>Índice ponderado DX</span><output id="resultadoPonderadoDx">0,00</output></div>
+    <div><span>Índice ponderado IX</span><output id="resultadoPonderadoIx">0,00</output></div>
+    <div><span>Índice intrínseco DX</span><output id="resultadoIntrinsecoDx">0,00</output></div>
+    <div><span>Índice intrínseco IX</span><output id="resultadoIntrinsecoIx">0,00</output></div>
+  </div>
+  <div class="notice">Las fórmulas definitivas se incorporarán únicamente después de validar cada regla de cálculo de la tabla base proporcionada.</div>
+</section>
+</form>
+
+<script src="app.js"></script>
+</body>
+</html>
