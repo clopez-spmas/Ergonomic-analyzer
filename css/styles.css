@@ -33,3 +33,4 @@ input:focus,select:focus,textarea:focus{outline:2px solid #0078d4;border-color:#
 .access-footer{max-width:800px;margin:30px auto 0;padding-top:20px;border-top:1px solid #dbe4ee;color:#63758a;font-size:.84rem;line-height:1.5}
 .access-footer strong{color:#43566a}
 @media(max-width:720px){body{padding:15px}.access-screen{margin-top:10px;border-radius:12px}.access-hero{padding:34px 22px 32px}.access-content{padding:30px 20px 28px}.access-features{grid-template-columns:1fr}}
+.instructions-panel{max-width:820px;margin:24px auto 0;padding:20px 22px;text-align:left;background:#f8fafc;border:1px solid #dbe4ee;border-radius:12px}.instructions-panel h3{margin:0 0 12px;color:#245982}.instructions-panel p{margin:8px 0;color:#526477;line-height:1.55}.instructions-panel button{margin-top:10px}@media(max-width:720px){.instructions-panel{padding:18px}}
