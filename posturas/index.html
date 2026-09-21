@@ -12,7 +12,7 @@
 <header class="posturas-header">
   <div class="brand">ERGONOMIC ANALYZER · POSTURAS FORZADAS</div>
   <h1>Posturas forzadas</h1>
-  <p>Análisis angular mediante vídeo y seguimiento de puntos anatómicos realizado en Kinovea.</p>
+  <p>Análisis de posturas mediante vídeo y seguimiento de puntos anatómicos realizado en Kinovea.</p>
 </header>
 
 <div class="study-toolbar">
@@ -21,7 +21,7 @@
   <button type="button" class="toolbar-btn" id="saveStudyButton">Guardar estudio</button>
   <button type="button" class="toolbar-btn" id="loadStudyButton">Cargar estudio</button>
   <input type="file" id="studyFileInput" accept=".json,application/json" hidden>
-  <span id="status" class="status" aria-live="polite">Seleccione el vídeo y el JSON de Kinovea.</span>
+  <span id="status" class="status" aria-live="polite">Complete la identificación del estudio.</span>
 </div>
 
 <section class="screen active" data-screen="0">
@@ -34,43 +34,33 @@
   <div class="screen-title">
     <span>1</span>
     <div>
-      <h2>Archivos y articulaciones</h2>
-      <p>El seguimiento de los puntos se realiza en Kinovea. Aquí se carga el vídeo para visualizarlo y el JSON exportado para efectuar los cálculos.</p>
+      <h2>Identificación del estudio</h2>
+      <p>Introduzca los datos que permitirán identificar el análisis.</p>
     </div>
   </div>
 
   <div class="form-grid">
-    <label>
-      Vídeo de referencia
-      <input type="file" id="videoFile" accept="video/*">
-      <small>Opcional para el cálculo; permite visualizar el vídeo dentro del estudio.</small>
+    <label>Empresa
+      <input type="text" id="company" autocomplete="organization">
     </label>
-
-    <label>
-      JSON de Kinovea
-      <input type="file" id="jsonFile" accept=".json,application/json">
-      <small>Formato Kinovea 2024.1.1 compatible con el sistema utilizado en OCRA Video Analyzer.</small>
+    <label>Departamento / servicio
+      <input type="text" id="department">
     </label>
-  </div>
-
-  <div class="selection-box">
-    <h3>Articulaciones a analizar</h3>
-    <div class="check-grid">
-      <label class="check-card"><input type="checkbox" data-measure="shoulder_left" checked><span><strong>Hombro izquierdo</strong><small>Ángulo brazo–tronco</small></span></label>
-      <label class="check-card"><input type="checkbox" data-measure="shoulder_right" checked><span><strong>Hombro derecho</strong><small>Ángulo brazo–tronco</small></span></label>
-      <label class="check-card"><input type="checkbox" data-measure="elbow_left" checked><span><strong>Codo izquierdo</strong><small>Ángulo brazo–antebrazo</small></span></label>
-      <label class="check-card"><input type="checkbox" data-measure="elbow_right" checked><span><strong>Codo derecho</strong><small>Ángulo brazo–antebrazo</small></span></label>
-      <label class="check-card"><input type="checkbox" data-measure="wrist_left" checked><span><strong>Muñeca izquierda</strong><small>Ángulo antebrazo–mano</small></span></label>
-      <label class="check-card"><input type="checkbox" data-measure="wrist_right" checked><span><strong>Muñeca derecha</strong><small>Ángulo antebrazo–mano</small></span></label>
-    </div>
-  </div>
-
-  <div class="video-panel">
-    <div class="panel-heading">
-      <h3>Vídeo</h3>
-      <span id="videoInfo">Ningún vídeo seleccionado.</span>
-    </div>
-    <video id="videoPreview" controls preload="metadata" playsinline hidden></video>
+    <label>Fecha
+      <input type="date" id="studyDate">
+    </label>
+    <label>Línea / área
+      <input type="text" id="area">
+    </label>
+    <label>Puesto
+      <input type="text" id="workstation">
+    </label>
+    <label>Tarea
+      <input type="text" id="task">
+    </label>
+    <label class="full-width">Descripción breve
+      <textarea id="description" rows="4"></textarea>
+    </label>
   </div>
 </section>
 
@@ -84,20 +74,51 @@
   <div class="screen-title">
     <span>2</span>
     <div>
-      <h2>Asignación de marcadores Kinovea</h2>
-      <p>Indique qué marcador del JSON corresponde a cada punto anatómico. La asignación es independiente del vídeo y se conserva en el estudio.</p>
+      <h2>Vídeo y seguimiento Kinovea</h2>
+      <p>Cargue el vídeo y el JSON generado por Kinovea. Después podrá asignar cada marcador al punto anatómico correspondiente.</p>
     </div>
   </div>
 
-  <div id="jsonSummary" class="summary-grid">
-    <div><span>Archivo</span><output id="summaryFile">—</output></div>
+  <div class="form-grid">
+    <label>Vídeo de Kinovea
+      <input type="file" id="videoFile" accept="video/*">
+      <small>Se utiliza para visualizar la grabación durante el estudio.</small>
+    </label>
+    <label>JSON de Kinovea
+      <input type="file" id="jsonFile" accept=".json,application/json">
+      <small>Se utilizarán los datos temporales y las coordenadas de los marcadores.</small>
+    </label>
+  </div>
+
+  <div class="video-panel">
+    <div class="panel-heading">
+      <h3>Vídeo</h3>
+      <span id="videoInfo">Ningún vídeo seleccionado.</span>
+    </div>
+    <video id="videoPreview" controls preload="metadata" playsinline hidden></video>
+  </div>
+
+  <div class="summary-grid">
+    <div><span>Productor</span><output id="summaryProducer">—</output></div>
+    <div><span>Archivo JSON</span><output id="summaryFile">—</output></div>
     <div><span>Marcadores</span><output id="summaryMarkers">—</output></div>
     <div><span>Frames</span><output id="summaryFrames">—</output></div>
     <div><span>Duración</span><output id="summaryDuration">—</output></div>
+    <div><span>Frecuencia de captura</span><output id="summaryFps">—</output></div>
   </div>
 
-  <div id="mappingContainer" class="mapping-container">
-    <div class="placeholder">Cargue primero un JSON de Kinovea en la pantalla anterior.</div>
+  <div class="mapping-container">
+    <div class="mapping-heading">
+      <h3>Asignación de marcadores</h3>
+      <p>La asignación es independiente del JSON cargado. No es necesario asignar todos los puntos; solo los que se vayan a utilizar posteriormente.</p>
+    </div>
+    <div id="mappingContainer">
+      <div class="placeholder">Cargue primero el JSON de Kinovea.</div>
+    </div>
+  </div>
+
+  <div class="notice">
+    <strong>Importante:</strong> en esta fase solo se prepara el vídeo y el tracking. Los puntos y datos concretos que se utilizarán para hombro, codo y muñeca se definirán después.
   </div>
 </section>
 
@@ -105,31 +126,23 @@
   <div class="screen-nav">
     <button type="button" class="nav-secondary" data-prev>Anterior</button>
     <div class="screen-counter">Pantalla 3 de 3</div>
-    <button type="button" class="nav-primary" id="analyzeButton">Calcular ángulos</button>
+    <button type="button" class="nav-primary" id="prepareButton">Preparar análisis</button>
   </div>
 
   <div class="screen-title">
     <span>3</span>
     <div>
-      <h2>Resultados angulares</h2>
-      <p>Se calcula el ángulo en cada frame válido. Los frames en los que falte algún punto necesario no se contabilizan para esa medición.</p>
+      <h2>Preparación del análisis</h2>
+      <p>El estudio queda preparado para incorporar las mediciones específicas de cada postura.</p>
     </div>
   </div>
 
-  <div id="resultSummary" class="result-grid result-grid-6"></div>
-
-  <div class="results-section">
-    <h3>Serie angular</h3>
-    <div class="table-wrap">
-      <table class="results-table">
-        <thead><tr><th>Tiempo (s)</th><th>Frame</th><th>Articulación</th><th>Ángulo (°)</th></tr></thead>
-        <tbody id="resultsBody"></tbody>
-      </table>
-    </div>
+  <div id="preparedStudy" class="prepared-study">
+    <div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>
   </div>
 
   <div class="notice">
-    <strong>Base de cálculo:</strong> se utiliza la misma lógica geométrica del OCRA Video Analyzer: ángulo en el punto articular a partir de tres puntos anatómicos en el plano 2D de la imagen.
+    No se realiza todavía ninguna puntuación ni interpretación ergonómica. En el siguiente paso se definirán los datos que deben obtenerse del JSON para cada postura.
   </div>
 </section>
 
