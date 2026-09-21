@@ -1,6 +1,6 @@
 "use strict";
 (function(){
-const state={screen:0,kinovea:null,jsonFileName:"",videoUrl:null,mapping:{},identification:{},dirty:false};
+const state={screen:0,kinovea:null,jsonFileName:"",videoUrl:null,mapping:{},identification:{},shoulderAnalysis:{side:"right",direction:"right",start:0,end:0},dirty:false};
 
 const ANATOMICAL_POINTS=[
 ["Cabeza y cuello",[["head","Cabeza"],["head_front","Punto anterior de cabeza"],["head_back","Punto posterior de cabeza"],["right_ear","Oreja derecha"],["left_ear","Oreja izquierda"],["neck","Cuello"],["neck_base","Base del cuello / C7"]]],
@@ -65,7 +65,7 @@ jsonInput.addEventListener("change",async()=>{
  const file=jsonInput.files&&jsonInput.files[0];if(!file)return;
  try{
   const json=JSON.parse(await file.text());
-  state.kinovea=parseKinoveaJSON(json);state.jsonFileName=file.name;state.mapping={};state.dirty=true;
+  state.kinovea=parseKinoveaJSON(json);state.jsonFileName=file.name;state.mapping={};state.shoulderAnalysis={side:"right",direction:"right",start:0,end:0};state.dirty=true;
   renderSummary();renderMapping();status("JSON de Kinovea cargado. Revise la asignación de marcadores.");
  }catch(e){state.kinovea=null;renderSummary();renderMapping();status("Error al leer el JSON: "+e.message)}
 });
@@ -177,7 +177,7 @@ function bindShoulderAnalysis(){
  };
  side.addEventListener("change",updateMarkers);
  document.getElementById("calculateShoulder").addEventListener("click",()=>{
-   const result=calculateShoulder(side.value,direction.value,Number(start.value),Number(end.value));
+   state.shoulderAnalysis={side:side.value,direction:direction.value,start:Number(start.value),end:Number(end.value)}; const result=calculateShoulder(side.value,direction.value,Number(start.value),Number(end.value));
    document.getElementById("shoulderResult").innerHTML=result.html;
    status(result.status);
  });
@@ -236,7 +236,7 @@ function signedShoulderAngle(hip,shoulder,elbow,direction){
 
 function resetStudy(){
  if(state.videoUrl)URL.revokeObjectURL(state.videoUrl);
- state.screen=0;state.kinovea=null;state.jsonFileName="";state.videoUrl=null;state.mapping={};state.identification={};state.dirty=false;
+ state.screen=0;state.kinovea=null;state.jsonFileName="";state.videoUrl=null;state.mapping={};state.identification={};state.shoulderAnalysis={side:"right",direction:"right",start:0,end:0};state.dirty=false;
  ["company","department","studyDate","area","workstation","task","description"].forEach(id=>document.getElementById(id).value="");
  videoInput.value="";jsonInput.value="";videoPreview.removeAttribute("src");videoPreview.hidden=true;
  document.getElementById("videoInfo").textContent="Ningún vídeo seleccionado.";
@@ -245,7 +245,7 @@ function resetStudy(){
 
 function saveStudy(){
  saveIdentification();
- const study={format:"Ergonomic Analyzer Posturas",version:2,created:new Date().toISOString(),identification:{...state.identification},jsonFileName:state.jsonFileName,mapping:{...state.mapping}};
+ const study={format:"Ergonomic Analyzer Posturas",version:2,created:new Date().toISOString(),identification:{...state.identification},jsonFileName:state.jsonFileName,mapping:{...state.mapping},shoulderAnalysis:{...state.shoulderAnalysis}};
  const blob=new Blob([JSON.stringify(study,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="estudio_posturas.json";a.click();URL.revokeObjectURL(url);state.dirty=false;status("Estudio guardado.");
 }
@@ -258,7 +258,7 @@ async function loadStudy(event){
   state.identification=study.identification&&typeof study.identification==="object"?study.identification:{};
   ["company","department","studyDate","area","workstation","task","description"].forEach(id=>document.getElementById(id).value=state.identification[id]||"");
   state.mapping=study.mapping&&typeof study.mapping==="object"?study.mapping:{};
-  state.jsonFileName=study.jsonFileName||"";state.dirty=false;
+  state.jsonFileName=study.jsonFileName||"";state.shoulderAnalysis=study.shoulderAnalysis&&typeof study.shoulderAnalysis==="object"?{...state.shoulderAnalysis,...study.shoulderAnalysis}:state.shoulderAnalysis;state.dirty=false;
   renderSummary();renderMapping();renderPrepared();setScreen(0);status("Estudio cargado. Seleccione de nuevo el JSON de Kinovea para trabajar con sus datos.");
  }catch(e){status("No se pudo cargar el estudio: "+e.message)}
  event.target.value="";
