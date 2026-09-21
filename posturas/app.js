@@ -45,7 +45,7 @@ document.querySelectorAll("[data-next]").forEach(b=>b.addEventListener("click",(
    setScreen(2);return
  }
 }));
-document.getElementById("prepareButton").addEventListener("click",()=>{renderPrepared();status("Preparación completada. A la espera de definir los datos específicos de cada postura.");});
+document.getElementById("prepareButton").addEventListener("click",()=>{renderPrepared();status("Pantalla de análisis actualizada.");});
 document.getElementById("homeButton").addEventListener("click",()=>location.href="../");
 document.getElementById("newStudyButton").addEventListener("click",resetStudy);
 document.getElementById("saveStudyButton").addEventListener("click",saveStudy);
@@ -169,6 +169,7 @@ function renderPrepared(){
 function bindShoulderAnalysis(){
  const side=document.getElementById("shoulderSide"),direction=document.getElementById("viewDirection"),start=document.getElementById("cycleStart"),end=document.getElementById("cycleEnd");
  if(!side||!direction||!start||!end)return;
+ side.value=state.shoulderAnalysis.side||"right"; direction.value=state.shoulderAnalysis.direction||"right"; start.value=Number.isFinite(state.shoulderAnalysis.start)?state.shoulderAnalysis.start:0; end.value=Number.isFinite(state.shoulderAnalysis.end)&&state.shoulderAnalysis.end>0?state.shoulderAnalysis.end:Number(document.getElementById("summaryDuration").textContent.replace(",","."))||0;
  const updateMarkers=()=>{
    const prefix=side.value;
    document.getElementById("shoulderHipMarker").textContent=state.mapping[prefix+"_hip"]||"—";
