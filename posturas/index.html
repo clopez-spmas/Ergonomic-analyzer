@@ -1,1 +1,139 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Posturas forzadas · Ergonomic Analyzer</title><link rel="stylesheet" href="../css/styles.css"></head><body><main class="app-shell"><header class="app-header"><div class="brand">ERGONOMIC ANALYZER · POSTURAS FORZADAS</div><h1>Módulo de posturas forzadas</h1><p class="subtitle">Módulo independiente del análisis OCRA.</p></header><section class="conditions"><h2>Módulo preparado</h2><p>El análisis de posturas forzadas se desarrollará aquí de forma independiente.</p><button type="button" class="primary-button" onclick="location.href='../'">Volver al inicio</button></section></main></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Posturas forzadas · Ergonomic Analyzer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="posturas-shell">
+
+<header class="posturas-header">
+  <div class="brand">ERGONOMIC ANALYZER · POSTURAS FORZADAS</div>
+  <h1>Posturas forzadas</h1>
+  <p>Análisis angular mediante vídeo y seguimiento de puntos anatómicos realizado en Kinovea.</p>
+</header>
+
+<div class="study-toolbar">
+  <button type="button" class="toolbar-btn" id="homeButton">← Inicio</button>
+  <button type="button" class="toolbar-btn" id="newStudyButton">Nuevo estudio</button>
+  <button type="button" class="toolbar-btn" id="saveStudyButton">Guardar estudio</button>
+  <button type="button" class="toolbar-btn" id="loadStudyButton">Cargar estudio</button>
+  <input type="file" id="studyFileInput" accept=".json,application/json" hidden>
+  <span id="status" class="status" aria-live="polite">Seleccione el vídeo y el JSON de Kinovea.</span>
+</div>
+
+<section class="screen active" data-screen="0">
+  <div class="screen-nav">
+    <button type="button" class="nav-secondary" data-prev disabled>Anterior</button>
+    <div class="screen-counter">Pantalla 1 de 3</div>
+    <button type="button" class="nav-primary" data-next>Siguiente</button>
+  </div>
+
+  <div class="screen-title">
+    <span>1</span>
+    <div>
+      <h2>Archivos y articulaciones</h2>
+      <p>El seguimiento de los puntos se realiza en Kinovea. Aquí se carga el vídeo para visualizarlo y el JSON exportado para efectuar los cálculos.</p>
+    </div>
+  </div>
+
+  <div class="form-grid">
+    <label>
+      Vídeo de referencia
+      <input type="file" id="videoFile" accept="video/*">
+      <small>Opcional para el cálculo; permite visualizar el vídeo dentro del estudio.</small>
+    </label>
+
+    <label>
+      JSON de Kinovea
+      <input type="file" id="jsonFile" accept=".json,application/json">
+      <small>Formato Kinovea 2024.1.1 compatible con el sistema utilizado en OCRA Video Analyzer.</small>
+    </label>
+  </div>
+
+  <div class="selection-box">
+    <h3>Articulaciones a analizar</h3>
+    <div class="check-grid">
+      <label class="check-card"><input type="checkbox" data-measure="shoulder_left" checked><span><strong>Hombro izquierdo</strong><small>Ángulo brazo–tronco</small></span></label>
+      <label class="check-card"><input type="checkbox" data-measure="shoulder_right" checked><span><strong>Hombro derecho</strong><small>Ángulo brazo–tronco</small></span></label>
+      <label class="check-card"><input type="checkbox" data-measure="elbow_left" checked><span><strong>Codo izquierdo</strong><small>Ángulo brazo–antebrazo</small></span></label>
+      <label class="check-card"><input type="checkbox" data-measure="elbow_right" checked><span><strong>Codo derecho</strong><small>Ángulo brazo–antebrazo</small></span></label>
+      <label class="check-card"><input type="checkbox" data-measure="wrist_left" checked><span><strong>Muñeca izquierda</strong><small>Ángulo antebrazo–mano</small></span></label>
+      <label class="check-card"><input type="checkbox" data-measure="wrist_right" checked><span><strong>Muñeca derecha</strong><small>Ángulo antebrazo–mano</small></span></label>
+    </div>
+  </div>
+
+  <div class="video-panel">
+    <div class="panel-heading">
+      <h3>Vídeo</h3>
+      <span id="videoInfo">Ningún vídeo seleccionado.</span>
+    </div>
+    <video id="videoPreview" controls preload="metadata" playsinline hidden></video>
+  </div>
+</section>
+
+<section class="screen" data-screen="1">
+  <div class="screen-nav">
+    <button type="button" class="nav-secondary" data-prev>Anterior</button>
+    <div class="screen-counter">Pantalla 2 de 3</div>
+    <button type="button" class="nav-primary" data-next>Siguiente</button>
+  </div>
+
+  <div class="screen-title">
+    <span>2</span>
+    <div>
+      <h2>Asignación de marcadores Kinovea</h2>
+      <p>Indique qué marcador del JSON corresponde a cada punto anatómico. La asignación es independiente del vídeo y se conserva en el estudio.</p>
+    </div>
+  </div>
+
+  <div id="jsonSummary" class="summary-grid">
+    <div><span>Archivo</span><output id="summaryFile">—</output></div>
+    <div><span>Marcadores</span><output id="summaryMarkers">—</output></div>
+    <div><span>Frames</span><output id="summaryFrames">—</output></div>
+    <div><span>Duración</span><output id="summaryDuration">—</output></div>
+  </div>
+
+  <div id="mappingContainer" class="mapping-container">
+    <div class="placeholder">Cargue primero un JSON de Kinovea en la pantalla anterior.</div>
+  </div>
+</section>
+
+<section class="screen" data-screen="2">
+  <div class="screen-nav">
+    <button type="button" class="nav-secondary" data-prev>Anterior</button>
+    <div class="screen-counter">Pantalla 3 de 3</div>
+    <button type="button" class="nav-primary" id="analyzeButton">Calcular ángulos</button>
+  </div>
+
+  <div class="screen-title">
+    <span>3</span>
+    <div>
+      <h2>Resultados angulares</h2>
+      <p>Se calcula el ángulo en cada frame válido. Los frames en los que falte algún punto necesario no se contabilizan para esa medición.</p>
+    </div>
+  </div>
+
+  <div id="resultSummary" class="result-grid result-grid-6"></div>
+
+  <div class="results-section">
+    <h3>Serie angular</h3>
+    <div class="table-wrap">
+      <table class="results-table">
+        <thead><tr><th>Tiempo (s)</th><th>Frame</th><th>Articulación</th><th>Ángulo (°)</th></tr></thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="notice">
+    <strong>Base de cálculo:</strong> se utiliza la misma lógica geométrica del OCRA Video Analyzer: ángulo en el punto articular a partir de tres puntos anatómicos en el plano 2D de la imagen.
+  </div>
+</section>
+
+</main>
+<script src="app.js"></script>
+</body>
+</html>
