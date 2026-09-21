@@ -1,0 +1,1 @@
+(()=>{"use strict";const routes={ocra:"ocra/",posturas:"posturas/"};document.querySelectorAll("[data-method]").forEach(button=>button.addEventListener("click",()=>{const route=routes[button.dataset.method];if(route)window.location.href=route}))})();
