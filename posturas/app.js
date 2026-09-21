@@ -149,7 +149,89 @@ function renderPrepared(){
  '<div class="prepared-card"><strong>Estudio</strong><span>'+esc(state.identification.task||"Sin tarea indicada")+'</span></div>'+
  '<div class="prepared-card"><strong>JSON</strong><span>'+esc(state.jsonFileName)+'</span></div>'+
  '<div class="prepared-card"><strong>Marcadores asignados</strong><span>'+Object.values(state.mapping).filter(Boolean).length+'</span></div>'+
- '</div>':'<div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>';
+ '</div>'+
+ '<div class="analysis-panel">'+
+ '<h3>Análisis de hombro · vídeo de perfil</h3>'+
+ '<p class="analysis-help">Se utilizan únicamente tres marcadores de Kinovea del mismo lado: cadera, hombro y codo. El ángulo 0° corresponde al brazo colgando alineado con el tronco; la flexión se expresa en positivo y la extensión en negativo.</p>'+
+ '<div class="analysis-grid">'+
+ '<label>Lado analizado<select id="shoulderSide"><option value="right">Derecho</option><option value="left">Izquierdo</option></select></label>'+
+ '<label>La persona mira hacia<select id="viewDirection"><option value="right">la derecha de la pantalla</option><option value="left">la izquierda de la pantalla</option></select></label>'+
+ '<label>Inicio del ciclo (s)<input id="cycleStart" type="number" min="0" step="0.001" value="0"></label>'+
+ '<label>Fin del ciclo (s)<input id="cycleEnd" type="number" min="0" step="0.001" value="'+fmt(k.duration,3)+'"></label>'+
+ '</div>'+
+ '<div class="marker-check"><strong>Marcadores necesarios</strong><span>Cadera: <b id="shoulderHipMarker">—</b> · Hombro: <b id="shoulderMarker">—</b> · Codo: <b id="shoulderElbowMarker">—</b></span></div>'+
+ '<div class="analysis-actions"><button type="button" class="nav-primary" id="calculateShoulder">Calcular hombro</button></div>'+
+ '<div id="shoulderResult" class="shoulder-result"><div class="placeholder">Seleccione los tres marcadores y pulse «Calcular hombro».</div></div>'+
+ '</div>':
+ '<div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>';
+ bindShoulderAnalysis();
+}
+function bindShoulderAnalysis(){
+ const side=document.getElementById("shoulderSide"),direction=document.getElementById("viewDirection"),start=document.getElementById("cycleStart"),end=document.getElementById("cycleEnd");
+ if(!side||!direction||!start||!end)return;
+ const updateMarkers=()=>{
+   const prefix=side.value;
+   document.getElementById("shoulderHipMarker").textContent=state.mapping[prefix+"_hip"]||"—";
+   document.getElementById("shoulderMarker").textContent=state.mapping[prefix+"_shoulder"]||"—";
+   document.getElementById("shoulderElbowMarker").textContent=state.mapping[prefix+"_elbow"]||"—";
+ };
+ side.addEventListener("change",updateMarkers);
+ document.getElementById("calculateShoulder").addEventListener("click",()=>{
+   const result=calculateShoulder(side.value,direction.value,Number(start.value),Number(end.value));
+   document.getElementById("shoulderResult").innerHTML=result.html;
+   status(result.status);
+ });
+ updateMarkers();
+}
+function calculateShoulder(side,direction,start,end){
+ const k=state.kinovea;
+ const hipMarker=state.mapping[side+"_hip"],shoulderMarker=state.mapping[side+"_shoulder"],elbowMarker=state.mapping[side+"_elbow"];
+ if(!k)return{status:"Cargue el JSON de Kinovea.",html:'<div class="placeholder">Cargue primero el JSON de Kinovea.</div>'};
+ if(!hipMarker||!shoulderMarker||!elbowMarker)return{status:"Asigne cadera, hombro y codo del mismo lado.",html:'<div class="placeholder">Para calcular el hombro debe asignar cadera, hombro y codo del mismo lado.</div>'};
+ if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return{status:"El intervalo del ciclo no es válido.",html:'<div class="placeholder">El fin del ciclo debe ser mayor que el inicio.</div>'};
+ const frames=k.frames.filter(f=>f.time>=start&&f.time<=end);
+ if(frames.length<2)return{status:"No hay suficientes frames dentro del ciclo seleccionado.",html:'<div class="placeholder">No hay suficientes datos de Kinovea dentro del ciclo seleccionado.</div>'};
+ let flex=0,ext=0,valid=0;
+ const samples=[];
+ for(let i=0;i<frames.length-1;i++){
+   const a=frames[i],b=frames[i+1];
+   const pa=getPoint(a,hipMarker),pb=getPoint(a,shoulderMarker),pc=getPoint(a,elbowMarker);
+   const qa=getPoint(b,hipMarker),qb=getPoint(b,shoulderMarker),qc=getPoint(b,elbowMarker);
+   const dt=Math.max(0,Math.min(b.time,end)-Math.max(a.time,start));
+   if(dt<=0)continue;
+   const angleA=signedShoulderAngle(pa,pb,pc,direction);
+   const angleB=signedShoulderAngle(qa,qb,qc,direction);
+   if(!Number.isFinite(angleA)||!Number.isFinite(angleB))continue;
+   valid+=dt;
+   const avg=(angleA+angleB)/2;
+   if(avg>=80)flex+=dt;
+   if(avg<-20)ext+=dt;
+   samples.push(avg);
+ }
+ const cycleDuration=end-start;
+ if(valid<=0)return{status:"No se han encontrado datos válidos para los tres marcadores en el ciclo.",html:'<div class="placeholder">No hay datos válidos de cadera, hombro y codo durante el ciclo seleccionado.</div>'};
+ const pct=x=>x/cycleDuration*100;
+ const mean=samples.reduce((s,x)=>s+x,0)/samples.length;
+ const html='<div class="result-table-wrap"><table class="result-table"><thead><tr><th>Movimiento</th><th>Criterio</th><th>Tiempo</th><th>% del ciclo</th></tr></thead><tbody>'+
+ '<tr><td>Flexión de hombro</td><td>≥ 80°</td><td>'+fmt(flex,3)+' s</td><td>'+fmt(pct(flex),2)+' %</td></tr>'+
+ '<tr><td>Extensión de hombro</td><td>&lt; −20°</td><td>'+fmt(ext,3)+' s</td><td>'+fmt(pct(ext),2)+' %</td></tr>'+
+ '</tbody></table></div>'+
+ '<div class="analysis-summary"><span>Duración del ciclo: <strong>'+fmt(cycleDuration,3)+' s</strong></span><span>Frames válidos: <strong>'+samples.length+'</strong></span><span>Ángulo medio: <strong>'+fmt(mean,2)+'°</strong></span></div>'+
+ '<div class="notice"><strong>Definición aplicada:</strong> 0° = brazo colgando respecto al eje del tronco; positivo = flexión; negativo = extensión. Solo se han utilizado los tres marcadores seleccionados.</div>';
+ return{status:"Análisis de hombro calculado correctamente.",html};
+}
+function getPoint(frame,marker){return frame?.landmarks?.[marker]||null}
+function signedShoulderAngle(hip,shoulder,elbow,direction){
+ if(!hip||!shoulder||!elbow)return NaN;
+ const dxT=hip.x-shoulder.x,dyT=hip.y-shoulder.y;
+ const dxA=elbow.x-shoulder.x,dyA=elbow.y-shoulder.y;
+ const nt=Math.hypot(dxT,dyT),na=Math.hypot(dxA,dyA);
+ if(nt===0||na===0)return NaN;
+ const dot=(dxT*dxA+dyT*dyA)/(nt*na);
+ const unsigned=Math.acos(Math.max(-1,Math.min(1,dot)))*180/Math.PI;
+ const cross=dxT*dyA-dyT*dxA;
+ const sign=direction==="right"?(cross<0?1:-1):(cross>0?1:-1);
+ return unsigned*sign;
 }
 
 function resetStudy(){
