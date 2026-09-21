@@ -157,7 +157,7 @@ function renderPrepared(){
  '<label>Lado analizado<select id="shoulderSide"><option value="right">Derecho</option><option value="left">Izquierdo</option></select></label>'+
  '<label>La persona mira hacia<select id="viewDirection"><option value="right">la derecha de la pantalla</option><option value="left">la izquierda de la pantalla</option></select></label>'+
  '<label>Inicio del ciclo (s)<input id="cycleStart" type="number" min="0" step="0.001" value="0"></label>'+
- '<label>Fin del ciclo (s)<input id="cycleEnd" type="number" min="0" step="0.001" value="'+fmt(k.duration,3)+'"></label>'+
+ '<label>Fin del ciclo (s)<input id="cycleEnd" type="number" min="0" step="0.001" value="'+Number(k.duration).toFixed(3)+'"></label>'+
  '</div>'+
  '<div class="marker-check"><strong>Marcadores necesarios</strong><span>Cadera: <b id="shoulderHipMarker">—</b> · Hombro: <b id="shoulderMarker">—</b> · Codo: <b id="shoulderElbowMarker">—</b></span></div>'+
  '<div class="analysis-actions"><button type="button" class="nav-primary" id="calculateShoulder">Calcular hombro</button></div>'+
