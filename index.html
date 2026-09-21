@@ -1,1 +1,51 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ergonomic Analyzer</title><link rel="stylesheet" href="css/styles.css"></head><body><main class="app-shell"><header class="app-header"><div class="brand">ERGONOMIC ANALYZER</div><p class="eyebrow">Análisis ergonómico</p><h1>Seleccione el tipo de estudio</h1><p class="subtitle">Elija el método que desea utilizar para realizar su estudio.</p></header><section class="method-grid"><article class="method-card"><div class="method-icon">O</div><h2>OCRA</h2><p>Análisis de movimientos repetitivos y exposición de la extremidad superior.</p><button type="button" class="primary-button" data-method="ocra">Estudiar OCRA</button></article><article class="method-card"><div class="method-icon">P</div><h2>Posturas forzadas</h2><p>Análisis postural mediante los criterios y método definidos para este estudio.</p><button type="button" class="primary-button" data-method="posturas">Estudiar posturas forzadas</button></article></section><section class="conditions"><h2>Condiciones de uso</h2><ul><li>Aplicación web ejecutada directamente en el navegador.</li><li>Cada usuario puede realizar su propio estudio de forma independiente.</li><li>Preparada para entornos corporativos como SharePoint.</li><li>Los datos de cada estudio son independientes entre usuarios.</li><li>No requiere instalar programas.</li></ul></section><footer>Ergonomic Analyzer · OCRA · Posturas forzadas</footer></main><script src="js/app.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ergonomic Analyzer</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<main class="container">
+<header class="header"><h1>Ergonomic Analyzer</h1><p>Herramienta de evaluación ergonómica.</p></header>
+<section class="access-screen card">
+  <div class="access-hero">
+    <span class="access-badge">Evaluación ergonómica</span>
+    <h1>Ergonomic Analyzer</h1>
+    <p>Seleccione el método de evaluación que desea utilizar para realizar su estudio ergonómico.</p>
+  </div>
+  <div class="access-content">
+    <h2>Seleccione el tipo de estudio</h2>
+    <p class="access-intro">Elija el módulo que desea utilizar para comenzar la evaluación.</p>
+    <div class="access-features">
+      <article class="access-feature">
+        <span class="access-feature-icon" aria-hidden="true">↻</span>
+        <strong>OCRA</strong>
+        <span>Análisis de movimientos repetitivos y exposición de la extremidad superior.</span>
+      </article>
+      <article class="access-feature">
+        <span class="access-feature-icon" aria-hidden="true">▦</span>
+        <strong>Posturas forzadas</strong>
+        <span>Análisis de las posturas y factores posturales del puesto de trabajo.</span>
+      </article>
+      <article class="access-feature">
+        <span class="access-feature-icon" aria-hidden="true">✓</span>
+        <strong>Estudio independiente</strong>
+        <span>Cada usuario puede realizar y guardar su propio estudio de forma independiente.</span>
+      </article>
+    </div>
+    <div class="method-actions">
+      <button type="button" class="method-button" data-method="ocra">Estudiar OCRA&nbsp; →</button>
+      <button type="button" class="method-button secondary" data-method="posturas">Estudiar posturas forzadas&nbsp; →</button>
+    </div>
+    <div class="access-footer">
+      <strong>Condiciones de uso</strong><br>
+      Aplicación web ejecutada directamente en el navegador. No requiere instalar programas y está preparada para entornos corporativos como SharePoint.
+    </div>
+  </div>
+</section>
+</main>
+<script src="js/app.js"></script>
+</body>
+</html>
