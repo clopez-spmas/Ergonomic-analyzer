@@ -26,10 +26,6 @@
   <button type="button" id="saveBtn" class="toolbar-btn">Guardar estudio</button>
   <button type="button" id="loadBtn" class="toolbar-btn">Cargar estudio</button>
   <button type="button" id="newBtn" class="toolbar-btn">Nuevo estudio</button>
-  <label class="close-option">
-    <input type="checkbox" id="askClose">
-    Preguntar antes de cerrar si hay cambios sin guardar
-  </label>
   <input type="file" id="fileInput" accept=".json,application/json" hidden>
 </section>
 
@@ -52,19 +48,26 @@
   <div class="screen-title"><span>2</span><div><h2>Tiempo de trabajo y recuperación</h2><p>A. Resumen del tiempo neto de trabajo repetitivo en una jornada media representativa.</p></div></div>
   <div class="form-grid">
     <label>Duración del turno oficial (min)<input name="turnoOficial" type="number" min="0" step="1"></label>
+    <label>Duración efectiva del turno en el puesto (min)<input name="turnoEfectivoManual" type="number" min="0" step="1"></label>
     <label>Tiempo de trabajo no repetitivo (min)<input name="noRepetitivo" type="number" min="0" step="1"></label>
-    <label>N.º de pausas efectivas ≥ 8 min<input name="numPausas" type="number" min="0" step="1"></label>
-    <label>Tiempo efectivo total de pausas, sin comida (min)<input name="tiempoPausas" type="number" min="0" step="1"></label>
-    <label>Pausa para comer incluida y pagada (min)<input name="pausaComer" type="number" min="0" step="1"></label>
-    <label>N.º de interrupciones ≥ 30 min<input name="interrupciones30" type="number" min="0" step="1"></label>
-    <label>Descripción del turno y pausas<textarea name="descripcionTurno" rows="5"></textarea></label>
+    <label>Tiempo efectivo de pausas, sin comida (min)<input name="tiempoPausas" type="number" min="0" step="1"></label>
+    <label>Pausa para comer efectiva incluida en el turno (min)<input name="pausaComer" type="number" min="0" step="1"></label>
+    <label>N.º de pausas efectivas ≥ 8–10 min<input name="numPausas" type="number" min="0" step="1"></label>
+    <label>Horas sin recuperación adecuada (manual, opcional)<input name="horasSinRecManual" type="number" min="0" max="8" step="0.5"></label>
+    <label>Modo de cálculo de recuperación
+      <select name="modoRecuperacion"><option value="automatico">Automático (tabla 6)</option><option value="manual">Manual</option></select>
+    </label>
+    <label>Descripción del turno, pausas y distribución de la recuperación<textarea name="descripcionTurno" rows="5"></textarea></label>
   </div>
   <div class="calculation-box">
     <strong>Valores calculados</strong>
     <div class="result-grid">
-      <div><span>Duración del turno efectivo</span><output id="turnoEfectivo">—</output> min</div>
-      <div><span>Tiempo neto de trabajo repetitivo</span><output id="tiempoNeto">—</output> min</div>
+      <div><span>Duración efectiva del turno</span><output id="turnoEfectivo">—</output> min</div>
+      <div><span>Tiempo neto de trabajo repetitivo (TNTR)</span><output id="tiempoNeto">—</output> min</div>
+      <div><span>Horas sin recuperación adecuada</span><output id="horasSinRecuperacion">—</output></div>
       <div><span>Multiplicador de recuperación</span><output id="multRecuperacion">1,00</output></div>
+      <div><span>Multiplicador de duración</span><output id="multDuracion">—</output></div>
+      <div><span>Tiempo de exposición para el resultado</span><output id="tiempoExposicion">—</output> min</div>
     </div>
   </div>
 </section>
@@ -75,7 +78,8 @@
     <label>¿Hay ciclos reales?
       <select name="hayCiclos"><option value="">Seleccionar</option><option value="si">Sí</option><option value="no">No</option></select>
     </label>
-    <label>N.º de unidades / trabajadores / turnos<input name="unidadesTrabajadoresTurnos" type="number" min="0" step="1"></label>
+    <label>N.º de ciclos/piezas programados<input name="ciclosProgramados" type="number" min="0" step="1"></label>
+    <label>N.º de ciclos/piezas efectivos en el turno<input name="ciclosEfectivos" type="number" min="0" step="1"></label>
     <label>Tiempo de ciclo observado (segundos)<input name="cicloObservado" type="number" min="0" step="0.1"></label>
     <label>Tiempo de observación representativo (segundos)<input name="observacionRepresentativa" type="number" min="0" step="0.1"></label>
     <label>¿Se repiten siempre las mismas acciones?
@@ -89,9 +93,10 @@
   <div class="calculation-box">
     <strong>Cálculos de ciclo</strong>
     <div class="result-grid">
-      <div><span>Tiempo de ciclo neto calculado</span><output id="cicloNeto">—</output> s</div>
+      <div><span>Tiempo total de ciclo neto (TNC)</span><output id="cicloNeto">—</output> s</div>
       <div><span>% diferencia ciclo observado / establecido</span><output id="diferenciaCiclo">—</output> %</div>
-      <div><span>Minutos no justificados</span><output id="minNoJustificados">—</output></div>
+      <div><span>Minutos no justificados</span><output id="minNoJustificados">—</output> min</div>
+      <div><span>Comprobación de concordancia</span><output id="alertaCiclo">—</output></div>
     </div>
   </div>
 </section>
@@ -174,7 +179,15 @@
     <div><span>Índice intrínseco DX</span><output id="resultadoIntrinsecoDx">0,00</output></div>
     <div><span>Índice intrínseco IX</span><output id="resultadoIntrinsecoIx">0,00</output></div>
   </div>
-  <div class="notice">Las fórmulas definitivas se incorporarán únicamente después de validar cada regla de cálculo de la tabla base proporcionada.</div>
+  <div class="calculation-box">
+    <strong>Aplicación de los multiplicadores revisados</strong>
+    <div class="result-grid">
+      <div><span>Suma de factores (FR + FF + FFz + FP + FC)</span><output id="sumaFactores">0,00</output></div>
+      <div><span>Resultado ponderado por recuperación</span><output id="resultadoConRecuperacion">0,00</output></div>
+      <div><span>Resultado final con duración</span><output id="resultadoFinal">0,00</output></div>
+    </div>
+  </div>
+  <div class="notice">El cálculo organizativo aplica el OCRA Checklist Revisado: TNTR, TNC, concordancia del ciclo, multiplicador de recuperación y multiplicador de duración. Los factores de frecuencia, fuerza, postura y complementarios se mantienen independientes hasta completar su puntuación específica.</div>
 </section>
 </form>
 
