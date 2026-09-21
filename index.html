@@ -8,44 +8,85 @@
 </head>
 <body>
 <main class="container">
-<header class="header"><h1>Ergonomic Analyzer</h1><p>Herramienta de evaluación ergonómica.</p></header>
+<header class="header"><h1>Ergonomic Analyzer</h1><p>Evaluación ergonómica de puestos de trabajo.</p></header>
+
 <section class="access-screen card">
   <div class="access-hero">
     <span class="access-badge">Evaluación ergonómica</span>
     <h1>Ergonomic Analyzer</h1>
-    <p>Seleccione el método de evaluación que desea utilizar para realizar su estudio ergonómico.</p>
+    <p>Herramienta para la evaluación ergonómica mediante los métodos OCRA y Posturas Forzadas.</p>
   </div>
+
   <div class="access-content">
-    <h2>Seleccione el tipo de estudio</h2>
-    <p class="access-intro">Elija el módulo que desea utilizar para comenzar la evaluación.</p>
+    <h2>Bienvenido</h2>
+    <p class="access-intro">Antes de comenzar la evaluación, puede consultar las instrucciones de uso o acceder directamente al programa.</p>
+
     <div class="access-features">
       <article class="access-feature">
         <span class="access-feature-icon" aria-hidden="true">↻</span>
-        <strong>OCRA</strong>
+        <strong>Evaluación OCRA</strong>
         <span>Análisis de movimientos repetitivos y exposición de la extremidad superior.</span>
       </article>
       <article class="access-feature">
         <span class="access-feature-icon" aria-hidden="true">▦</span>
-        <strong>Posturas forzadas</strong>
-        <span>Análisis de las posturas y factores posturales del puesto de trabajo.</span>
+        <strong>Posturas Forzadas</strong>
+        <span>Evaluación de las posturas y de los factores posturales del puesto de trabajo.</span>
       </article>
       <article class="access-feature">
         <span class="access-feature-icon" aria-hidden="true">✓</span>
-        <strong>Estudio independiente</strong>
-        <span>Cada usuario puede realizar y guardar su propio estudio de forma independiente.</span>
+        <strong>Estudios independientes</strong>
+        <span>Cada usuario puede realizar su propio estudio de forma independiente.</span>
       </article>
     </div>
-    <div class="method-actions">
-      <button type="button" class="method-button" data-method="ocra">Estudiar OCRA&nbsp; →</button>
-      <button type="button" class="method-button secondary" data-method="posturas">Estudiar posturas forzadas&nbsp; →</button>
+
+    <div class="access-actions">
+      <button id="enterProgram" type="button" class="method-button">Acceder al programa&nbsp; →</button>
+      <button id="instructionsButton" type="button" class="method-button secondary">📖&nbsp; Instrucciones de uso</button>
     </div>
+
+    <div id="instructionsPanel" class="instructions-panel" hidden>
+      <h3>Instrucciones de uso</h3>
+      <p>Seleccione <strong>Acceder al programa</strong> para elegir el método de evaluación.</p>
+      <p>El programa permite realizar estudios OCRA y de Posturas Forzadas directamente desde el navegador, sin instalar ningún programa.</p>
+      <p>Los estudios de cada usuario son independientes y pueden utilizarse en entornos corporativos como SharePoint.</p>
+      <button id="closeInstructions" type="button" class="secondary">Cerrar instrucciones</button>
+    </div>
+
     <div class="access-footer">
-      <strong>Condiciones de uso</strong><br>
-      Aplicación web ejecutada directamente en el navegador. No requiere instalar programas y está preparada para entornos corporativos como SharePoint.
+      <strong>Antes de comenzar</strong><br>
+      Tenga preparados los datos necesarios para la evaluación. El programa se ejecuta directamente en el navegador y no requiere instalación.
     </div>
   </div>
 </section>
 </main>
+
 <script src="js/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  const enter=document.getElementById("enterProgram");
+  const instructions=document.getElementById("instructionsButton");
+  const panel=document.getElementById("instructionsPanel");
+  const close=document.getElementById("closeInstructions");
+
+  if(instructions&&panel){
+    instructions.addEventListener("click",function(){
+      panel.hidden=!panel.hidden;
+      if(!panel.hidden) panel.scrollIntoView({behavior:"smooth",block:"center"});
+    });
+  }
+  if(close&&panel){
+    close.addEventListener("click",function(){panel.hidden=true;});
+  }
+  if(enter){
+    enter.addEventListener("click",function(){
+      const target=document.querySelector(".method-actions");
+      if(target){
+        target.scrollIntoView({behavior:"smooth",block:"center"});
+        target.querySelector("button")?.focus();
+      }
+    });
+  }
+});
+</script>
 </body>
 </html>
