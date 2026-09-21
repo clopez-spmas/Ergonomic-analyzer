@@ -8,7 +8,7 @@ const values=()=>{const o={version:3,savedAt:new Date().toISOString(),values:{}}
 function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});dirty=false;calculate();status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
-const recTable={0:1,1:1.05,2:1.12,3:1.20,4:1.33,5:1.48,6:1.70,7:2,8:2.5};
+const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5};
 const recAuto={480:[7,6,5,4,3,2,1,0],460:[7,6,5,4,3,2,1],440:[6.5,5.5,4.5,3.5,2.5,1.5,.5],420:[6,5,4,3,2.5,1.5,0],390:[5.5,4.5,3.5,2.5,1.5,.5,0],360:[5,4,3,2,1,0],330:[4.5,3.5,2.5,1.5,.5,0],300:[4,3,2,1,0],270:[3.5,2.5,1.5,.5,0],240:[3,2,1,0],210:[2.5,1.5,.5,0],180:[2,1,0],120:[1,0],0:[0]};
 const freqYes=[[0,0],[2.5,0],[7.5,0],[12.5,0],[17.5,0],[20,0],[22.5,.5],[27.5,1],[30,1],[32.5,2],[35,2],[37.5,3],[40,3],[42.5,4],[45,4],[47.5,5],[50,5],[52.5,6],[55,6],[57.5,7],[60,7],[62.5,8],[65,8],[67.5,9],[70,9],[72.5,9]];
 const freqNo=[[0,0],[2.5,0],[7.5,0],[12.5,0],[17.5,0],[20,0],[22.5,.5],[27.5,1],[30,2],[32.5,2],[35,2],[37.5,4],[40,4],[42.5,5],[45,5],[47.5,6],[50,6],[52.5,7],[55,7],[57.5,8],[60,8],[62.5,9],[65,9],[67.5,10],[70,10],[72.5,10]];
@@ -16,7 +16,7 @@ const force34=[[0,0],[.05,.5],[.10,.5],[.18,1],[.26,1.5],[.33,2],[.37,2.5],[.42,
 const force57=[[0,0],[.16,2],[.33,4],[.66,6],[1,8],[1.5,9],[2,10],[2.5,11],[3,12],[3.5,13],[4,14],[4.5,15],[5,16],[5.63,17],[6.25,18],[6.88,19],[7.5,20],[8.13,21],[8.75,22],[9.38,23],[10,24]];
 const force810=[[0,0],[.16,3],[.33,6],[.66,9],[1,12],[1.33,13],[1.67,14],[2,15],[2.33,16],[2.67,17],[3,18],[3.33,19],[3.67,20],[4,21],[4.33,22],[4.67,23],[5,24],[5.63,25],[6.25,26],[6.88,27],[7.5,28],[8.13,29],[8.75,30],[9.38,31],[10,32]];
 function recoveryHours(eff,count,meal){const row=recAuto[Math.round(eff)];if(!row)return null;const valid=Math.max(0,Math.floor(count)+(meal>=30?1:0));return row[Math.min(valid,row.length-1)]}
-function recoveryMultiplier(h){if(!Number.isFinite(h))return null;const x=Math.max(0,Math.min(8,h));const k=Object.keys(recTable).map(Number).find(v=>v===x);if(k!==undefined)return recTable[k];const lo=Math.floor(x),hi=Math.ceil(x);if(recTable[lo]!==undefined&&recTable[hi]!==undefined)return recTable[lo]+(recTable[hi]-recTable[lo])*(x-lo)/(hi-lo);return x>=8?2.5:1}
+function recoveryMultiplier(h){if(!Number.isFinite(h))return null;const x=Math.max(0,Math.min(8,h));const keys=Object.keys(recTable).map(Number);let best=keys[0];for(const k of keys){if(Math.abs(k-x)<Math.abs(best-x))best=k}return recTable[best]}
 function freq(actionsPerMin,interruptions){return lookup(interruptions?freqYes:freqNo,actionsPerMin)}
 function forceScore(seconds34,seconds57,seconds810,cycle){if(cycle<=0)return 0;return lookup(force34,seconds34/cycle)+lookup(force57,seconds57/cycle)+lookup(force810,seconds810/cycle)}
 function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked||form.elements[prefix+"StereoStatic"]?.checked)?1.5:0}
