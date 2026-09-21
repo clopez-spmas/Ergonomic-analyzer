@@ -44,6 +44,15 @@
       <button id="instructionsButton" type="button" class="method-button secondary">📖&nbsp; Instrucciones de uso</button>
     </div>
 
+    <div id="methodSelection" class="method-selection" hidden>
+      <h3>Seleccione el tipo de estudio</h3>
+      <p class="access-intro">Elija el método de evaluación que desea realizar.</p>
+      <div class="method-actions">
+        <button type="button" class="method-button" data-method="ocra">Estudiar OCRA&nbsp; →</button>
+        <button type="button" class="method-button secondary" data-method="posturas">Estudiar Posturas Forzadas&nbsp; →</button>
+      </div>
+    </div>
+
     <div id="instructionsPanel" class="instructions-panel" hidden>
       <h3>Instrucciones de uso</h3>
       <p>Seleccione <strong>Acceder al programa</strong> para elegir el método de evaluación.</p>
@@ -64,10 +73,19 @@
 <script>
 document.addEventListener("DOMContentLoaded",function(){
   const enter=document.getElementById("enterProgram");
+  const methodSelection=document.getElementById("methodSelection");
   const instructions=document.getElementById("instructionsButton");
   const panel=document.getElementById("instructionsPanel");
   const close=document.getElementById("closeInstructions");
 
+  if(enter&&methodSelection){
+    enter.addEventListener("click",function(){
+      methodSelection.hidden=!methodSelection.hidden;
+      if(!methodSelection.hidden){
+        methodSelection.scrollIntoView({behavior:"smooth",block:"center"});
+      }
+    });
+  }
   if(instructions&&panel){
     instructions.addEventListener("click",function(){
       panel.hidden=!panel.hidden;
@@ -76,15 +94,6 @@ document.addEventListener("DOMContentLoaded",function(){
   }
   if(close&&panel){
     close.addEventListener("click",function(){panel.hidden=true;});
-  }
-  if(enter){
-    enter.addEventListener("click",function(){
-      const target=document.querySelector(".method-actions");
-      if(target){
-        target.scrollIntoView({behavior:"smooth",block:"center"});
-        target.querySelector("button")?.focus();
-      }
-    });
   }
 });
 </script>
