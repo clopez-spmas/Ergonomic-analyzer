@@ -217,9 +217,9 @@ function ensureManualPosture(){
      const previous=p[kind][side];
      if(!previous || !previous.source){
        const hasKinovea=kSideHasKinovea(kind,side);
-       p[kind][side]={source:hasKinovea?"kinovea":"manual",flex:0,ext:0,...(previous||{})};
+       p[kind][side]={source:hasKinovea?"kinovea":"manual",kinoveaFileId:hasKinovea?kKinoveaFileId(kind,side):null,flex:0,ext:0,...(previous||{})};
      }else{
-       p[kind][side]={source:previous.source==="kinovea"?"kinovea":"manual",flex:0,ext:0,...previous};
+       p[kind][side]={source:previous.source==="kinovea"?"kinovea",kinoveaFileId:previous.source==="kinovea"?(previous.kinoveaFileId||kKinoveaFileId(kind,side)):null,flex:0,ext:0,...previous};
      }
      p[kind][side].flex=kNum(p[kind][side].flex,0);
      p[kind][side].ext=kNum(p[kind][side].ext,0);
@@ -228,7 +228,8 @@ function ensureManualPosture(){
  kinoveaState.postureManual=p;
  return p;
 }
-function kSideHasKinovea(kind,side){return !kMissingMarkers(kind,side).length && !!kinoveaState.data}
+function kKinoveaFileId(kind,side){const required=kRequired(kind,side);return (kinoveaState.dataSets||[]).find(ds=>required.every(key=>!!ds.mapping?.[key]))?.id||null}
+function kSideHasKinovea(kind,side){return !!kKinoveaFileId(kind,side) && !!kinoveaState.data}
 function kSourceLabel(source){return source==="kinovea"?"KINOVEA":"MANUAL"}
 function kManualDuration(){
  const p=ensureManualPosture(),r=kRange();
@@ -320,7 +321,7 @@ function kPanel(kind,title,defaultThreshold){
    '<div class="side-grid">'+kManualControls(kind,"right",threshold)+kManualControls(kind,"left",threshold)+'</div>'+
    '<div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind,threshold)+'</div>';
  box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{
-   const side=sel.dataset.postureSide;ensureManualPosture()[kind][side].source=sel.value;dirty=true;kRenderAnalyses();
+   const side=sel.dataset.postureSide;const p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();
  });
  box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{
    const p=ensureManualPosture()[kind][input.dataset.manualSide];
