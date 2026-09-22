@@ -92,6 +92,15 @@ function kRangeLabel(){
  return "Todo el vídeo · "+fmt(r.duration,2)+" s · "+kinoveaState.range.cycles+" ciclos visibles · media "+fmt(r.duration/kinoveaState.range.cycles,2)+" s/ciclo";
 }
 function kSetStatus(msg){status.textContent=msg}
+function renderKinoveaSelectedTable(){
+ const t=document.getElementById("kinoveaDataTable");if(!t)return;
+ const sets=kinoveaState.dataSets||[];
+ const rows=sets.map((ds,di)=>{
+  const selected=KPOINTS.map(([key,label])=>({label,marker:ds.mapping?.[key]})).filter(x=>x.marker).map(x=>x.label+": "+x.marker);
+  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+fmt(ds.data?.duration||0,2)+' s</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
+ }).join("");
+ t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Duración</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
 function renderKinovea(){
  const s=document.getElementById("kinoveaSummary"),t=document.getElementById("kinoveaDataTable"),m=document.getElementById("kinoveaMapping");
  if(!kinoveaState.data){s.innerHTML='<div class="placeholder">Cargue el JSON de Kinovea.</div>';t.innerHTML='<div class="placeholder">Todavía no hay datos importados.</div>';m.innerHTML='<strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div>';return}
@@ -99,7 +108,7 @@ function renderKinovea(){
  const jsonRows=(kinoveaState.dataSets||[]).map((ds,di)=>{const selected=KPOINTS.map(([key,label])=>({label,marker:ds.mapping?.[key]})).filter(x=>x.marker).map(x=>x.label+": "+x.marker);return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+fmt(ds.data?.duration||0,2)+' s</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+"</td></tr>"}).join("");
  s.innerHTML='<strong>Datos importados de Kinovea</strong><div class="notice">Listado de los archivos JSON cargados y de los marcadores anatómicos seleccionados para cada archivo.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Duración</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+jsonRows+'</tbody></table></div>';
  m.innerHTML=(kinoveaState.dataSets||[]).map((ds,di)=>{const opts=ds.data.markers.map(x=>'<option value="'+escK(x)+'">'+escK(x)+'</option>').join("");return '<div class="calculation-box"><strong>JSON '+(di+1)+': '+escK(ds.fileName)+'</strong><p>Asigne los marcadores de este archivo a los puntos anatómicos. Puede cargar otro JSON del mismo vídeo con otros marcadores.</p><div class="form-grid">'+KPOINTS.map(([key,label])=>'<label>'+label+'<select data-kset="'+di+'" data-kmap="'+key+'"><option value="">No asignado</option>'+opts+'</select></label>').join("")+'</div></div>'}).join("")||'<div class="placeholder">Cargue el JSON de Kinovea.</div>';
- m.querySelectorAll("[data-kmap]").forEach(sel=>{const di=Number(sel.dataset.kset);sel.value=kinoveaState.dataSets[di]?.mapping?.[sel.dataset.kmap]||"";sel.onchange=()=>{const v=sel.value,ds=kinoveaState.dataSets[di];const duplicate=v&&Object.entries(ds.mapping||{}).some(([k,x])=>k!==sel.dataset.kmap&&x===v);if(duplicate){sel.value="";kSetStatus("Ese marcador de Kinovea ya está asignado a otro punto anatómico en este JSON.");return}ds.mapping[sel.dataset.kmap]=v;dirty=true;renderKinovea();}});
+ m.querySelectorAll("[data-kmap]").forEach(sel=>{const di=Number(sel.dataset.kset);sel.value=kinoveaState.dataSets[di]?.mapping?.[sel.dataset.kmap]||"";sel.onchange=()=>{const v=sel.value,ds=kinoveaState.dataSets[di];const duplicate=v&&Object.entries(ds.mapping||{}).some(([k,x])=>k!==sel.dataset.kmap&&x===v);if(duplicate){sel.value="";kSetStatus("Ese marcador de Kinovea ya está asignado a otro punto anatómico en este JSON.");return}ds.mapping[sel.dataset.kmap]=v;dirty=true;renderKinoveaSelectedTable();}});
  t.innerHTML="";
  kRenderAnalyses();
 }
