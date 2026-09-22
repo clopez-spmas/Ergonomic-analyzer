@@ -36,12 +36,9 @@ function initNavigation(){
  renderNavigation();
  return controller;
 }
-
-
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};function initCore(){
-fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
+const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
 function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);dirty=false;safeCalculate();status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
@@ -276,15 +273,6 @@ function calculate(){
 }
 function safeCalculate(){try{calculate();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
 function markDirty(){dirty=true;status.textContent="";safeCalculate()}
-fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
-document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
-document.getElementById("saveBtn").addEventListener("click",()=>{const d=values(),blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente."});
-document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
-fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
-document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);});
-window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
-try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
-
 function addKinoveaFileInput(){
  const container=document.getElementById("kinoveaFileInputs");if(!container)return;
  const count=container.querySelectorAll("input[data-kinovea-file]").length;
@@ -304,6 +292,17 @@ function addKinoveaFileInput(){
 const addKinoveaJsonBtn=document.getElementById("addKinoveaJsonBtn");
 if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileInput);
 
+
+function initCore(){
+fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
+document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
+document.getElementById("saveBtn").addEventListener("click",()=>{const d=values(),blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente."});
+document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
+fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
+document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);});
+window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
+try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
+
 }
 
 function initKinovea(){
@@ -311,9 +310,6 @@ addKinoveaFileInput();
 bindKinovea();
 renderKinovea();
 }
-
-
-
 
 function initApp(){
   // La navegación se inicializa primero y no depende del cálculo ni de Kinovea.
@@ -323,4 +319,5 @@ function initApp(){
 }
 
 initApp();
+
 })();
