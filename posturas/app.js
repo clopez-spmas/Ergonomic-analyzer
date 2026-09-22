@@ -1,6 +1,6 @@
 "use strict";
 (function(){
-const state={screen:0,kinovea:null,jsonFileName:"",videoUrl:null,mapping:{},identification:{},shoulderAnalysis:{side:"right",direction:"right",start:0,end:0},dirty:false};
+const state={screen:0,kinovea:null,jsonFileName:"",videoUrl:null,mapping:{},identification:{},shoulderAnalysis:{side:"right",direction:"right",start:0,end:0},elbowAnalysis:{view:"profile-right",side:"right",direction:"right",start:0,end:0},dirty:false};
 
 const ANATOMICAL_POINTS=[
 ["Cabeza y cuello",[["head","Cabeza"],["head_front","Punto anterior de cabeza"],["head_back","Punto posterior de cabeza"],["right_ear","Oreja derecha"],["left_ear","Oreja izquierda"],["neck","Cuello"],["neck_base","Base del cuello / C7"]]],
@@ -34,6 +34,7 @@ function setScreen(index){
  });
  if(state.screen===1)renderMapping();
  if(state.screen===2)renderPrepared();
+ if(state.screen===3)renderElbow();
  window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -45,7 +46,9 @@ document.querySelectorAll("[data-next]").forEach(b=>b.addEventListener("click",(
    setScreen(2);return
  }
 }));
-document.getElementById("prepareButton").addEventListener("click",()=>{renderPrepared();status("Pantalla de análisis actualizada.");});
+document.getElementById("prepareButton").addEventListener("click",()=>{renderPrepared();status("Pantalla de análisis de hombro actualizada.");});
+const elbowPrepareButton=document.getElementById("elbowPrepareButton");
+if(elbowPrepareButton)elbowPrepareButton.addEventListener("click",()=>{renderElbow();status("Pantalla de análisis de codo actualizada.");});
 document.getElementById("homeButton").addEventListener("click",()=>location.href="../");
 document.getElementById("newStudyButton").addEventListener("click",resetStudy);
 document.getElementById("saveStudyButton").addEventListener("click",saveStudy);
@@ -273,6 +276,100 @@ function buildFrontalResult(right,left,cycleDuration){
  return html;
 }
 
+function renderElbow(){
+ const k=state.kinovea;
+ const box=document.getElementById("elbowStudy");
+ if(!box)return;
+ if(!k){box.innerHTML='<div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>';return;}
+ box.innerHTML='<div class="analysis-panel"><h3>Configuración del análisis de codo</h3>'+
+ '<p class="analysis-help">0° = postura natural de referencia. En perfil se mide flexión/extensión con hombro, codo y muñeca. En frontal se mide pronación/supinación con codo, muñeca e índice.</p>'+
+ '<div class="analysis-grid">'+
+ '<label>Vista del vídeo<select id="elbowView"><option value="profile-right">Perfil derecho</option><option value="profile-left">Perfil izquierdo</option><option value="frontal">Frontal</option></select></label>'+
+ '<label id="elbowDirectionField">La persona mira hacia<select id="elbowDirection"><option value="right">la derecha de la pantalla</option><option value="left">la izquierda de la pantalla</option></select></label>'+
+ '<label>Inicio del ciclo (s)<input id="elbowStart" type="number" min="0" step="0.001" value="0"></label>'+
+ '<label>Fin del ciclo (s)<input id="elbowEnd" type="number" min="0" step="0.001" value="'+Number(k.duration).toFixed(3)+'"></label>'+
+ '</div><div id="elbowMarkers" class="marker-check"></div>'+
+ '<div class="analysis-actions"><button type="button" class="nav-primary" id="calculateElbow">Calcular codo</button></div>'+
+ '<div id="elbowResult" class="shoulder-result"><div class="placeholder">Seleccione la vista y pulse «Calcular codo».</div></div></div>';
+ bindElbowAnalysis();
+}
+function bindElbowAnalysis(){
+ const view=document.getElementById("elbowView"),direction=document.getElementById("elbowDirection"),field=document.getElementById("elbowDirectionField"),start=document.getElementById("elbowStart"),end=document.getElementById("elbowEnd");
+ if(!view)return;
+ view.value=state.elbowAnalysis.view||"profile-right";direction.value=state.elbowAnalysis.direction||"right";
+ start.value=Number.isFinite(state.elbowAnalysis.start)?state.elbowAnalysis.start:0;
+ end.value=Number.isFinite(state.elbowAnalysis.end)&&state.elbowAnalysis.end>0?state.elbowAnalysis.end:Number(state.kinovea.duration)||0;
+ const update=()=>{
+  field.style.display=view.value==="frontal"?"none":"flex";
+  if(view.value==="frontal"){
+   document.getElementById("elbowMarkers").innerHTML='<strong>Marcadores necesarios · pronación/supinación</strong><span>Derecho: codo + muñeca + índice = <b>'+esc(state.mapping.right_elbow||"—")+'</b> · <b>'+esc(state.mapping.right_wrist||"—")+'</b> · <b>'+esc(state.mapping.right_index||"—")+'</b><br>Izquierdo: codo + muñeca + índice = <b>'+esc(state.mapping.left_elbow||"—")+'</b> · <b>'+esc(state.mapping.left_wrist||"—")+'</b> · <b>'+esc(state.mapping.left_index||"—")+'</b></span>';
+  }else{
+   const s=view.value==="profile-right"?"right":"left";
+   document.getElementById("elbowMarkers").innerHTML='<strong>Marcadores necesarios · flexión/extensión '+(s==="right"?"derecha":"izquierda")+'</strong><span>Hombro + codo + muñeca = <b>'+esc(state.mapping[s+"_shoulder"]||"—")+'</b> · <b>'+esc(state.mapping[s+"_elbow"]||"—")+'</b> · <b>'+esc(state.mapping[s+"_wrist"]||"—")+'</b></span>';
+  }
+ };
+ view.addEventListener("change",update);
+ document.getElementById("calculateElbow").addEventListener("click",()=>{
+  state.elbowAnalysis={view:view.value,side:view.value==="profile-left"?"left":"right",direction:direction.value,start:Number(start.value),end:Number(end.value)};
+  const r=calculateElbow(view.value,direction.value,Number(start.value),Number(end.value));
+  document.getElementById("elbowResult").innerHTML=r.html;status(r.status);
+ });
+ update();
+}
+function calculateElbow(view,direction,start,end){
+ if(!state.kinovea)return{status:"Cargue el JSON de Kinovea.",html:'<div class="placeholder">Cargue primero el JSON de Kinovea.</div>'};
+ if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return{status:"El intervalo del ciclo no es válido.",html:'<div class="placeholder">El fin del ciclo debe ser mayor que el inicio.</div>'};
+ if(view==="frontal")return calculatePronationSupination(start,end);
+ const side=view==="profile-right"?"right":"left";
+ return calculateElbowFlexExt(side,direction,start,end);
+}
+function calculateElbowFlexExt(side,direction,start,end){
+ const hm=state.mapping[side+"_shoulder"],em=state.mapping[side+"_elbow"],wm=state.mapping[side+"_wrist"];
+ if(!hm||!em||!wm)return{status:"Asigne hombro, codo y muñeca del lado seleccionado.",html:'<div class="placeholder">Para este perfil debe asignar hombro, codo y muñeca del lado seleccionado.</div>'};
+ const frames=state.kinovea.frames.filter(f=>f.time>=start&&f.time<=end); if(frames.length<2)return{status:"No hay suficientes frames dentro del ciclo.",html:'<div class="placeholder">No hay suficientes datos de Kinovea dentro del ciclo seleccionado.</div>'};
+ let base=null,flex=0,ext=0,valid=0;const samples=[];
+ for(let i=0;i<frames.length-1;i++){
+  const a=frames[i],b=frames[i+1],pa=getPoint(a,hm),pb=getPoint(a,em),pc=getPoint(a,wm),qa=getPoint(b,hm),qb=getPoint(b,em),qc=getPoint(b,wm);
+  const dt=Math.max(0,Math.min(b.time,end)-Math.max(a.time,start)); if(dt<=0)continue;
+  const aa=elbowJointAngle(pa,pb,pc,direction),ab=elbowJointAngle(qa,qb,qc,direction); if(!Number.isFinite(aa)||!Number.isFinite(ab))continue;
+  if(base===null)base=aa;
+  const rel=(aa+ab)/2-base;
+  valid+=dt; if(rel>60)flex+=dt; if(rel<-60)ext+=dt; samples.push(rel);
+ }
+ if(valid<=0||base===null)return{status:"No se han encontrado datos válidos para los tres marcadores.",html:'<div class="placeholder">No hay datos válidos durante el ciclo.</div>'};
+ const cycle=end-start,p=x=>x/cycle*100,mean=samples.reduce((s,x)=>s+x,0)/samples.length;
+ return{status:"Análisis de flexión/extensión de codo calculado correctamente.",html:'<div class="result-table-wrap"><table class="result-table"><thead><tr><th>Movimiento</th><th>Criterio</th><th>Tiempo</th><th>% del ciclo</th></tr></thead><tbody><tr><td>Flexión de codo '+(side==="right"?"derecho":"izquierdo")+'</td><td>&gt; 60°</td><td>'+fmt(flex,3)+' s</td><td>'+fmt(p(flex),2)+' %</td></tr><tr><td>Extensión de codo '+(side==="right"?"derecho":"izquierdo")+'</td><td>&gt; 60°</td><td>'+fmt(ext,3)+' s</td><td>'+fmt(p(ext),2)+' %</td></tr></tbody></table></div><div class="analysis-summary"><span>0° natural: <strong>'+fmt(base,2)+'° geométricos</strong></span><span>Frames válidos: <strong>'+samples.length+'</strong></span><span>Desviación media: <strong>'+fmt(mean,2)+'°</strong></span></div><div class="notice"><strong>Referencia:</strong> 0° se fija en el primer ángulo válido del ciclo, considerado postura natural de referencia; positivo = flexión y negativo = extensión.</div>'};
+}
+function calculatePronationSupination(start,end){
+ const sides=["right","left"].filter(s=>state.mapping[s+"_elbow"]&&state.mapping[s+"_wrist"]&&state.mapping[s+"_index"]);
+ if(!sides.length)return{status:"Asigne codo, muñeca e índice de al menos un lado.",html:'<div class="placeholder">Para el vídeo frontal debe asignar codo, muñeca e índice de al menos un lado.</div>'};
+ const results=sides.map(s=>calculatePronationSide(s,start,end)).filter(Boolean); if(!results.length)return{status:"No hay datos válidos para pronación/supinación.",html:'<div class="placeholder">No hay datos válidos durante el ciclo.</div>'};
+ const rows=results.map(r=>'<tr><td>Pronación '+(r.side==="right"?"derecha":"izquierda")+'</td><td>&gt; 60°</td><td>'+fmt(r.pron,3)+' s</td><td>'+fmt(r.pron/(end-start)*100,2)+' %</td></tr><tr><td>Supinación '+(r.side==="right"?"derecha":"izquierda")+'</td><td>&gt; 60°</td><td>'+fmt(r.sup,3)+' s</td><td>'+fmt(r.sup/(end-start)*100,2)+' %</td></tr>').join("");
+ return{status:"Análisis de pronación/supinación calculado correctamente.",html:'<div class="result-table-wrap"><table class="result-table"><thead><tr><th>Movimiento</th><th>Criterio</th><th>Tiempo</th><th>% del ciclo</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="analysis-summary"><span>Referencia: <strong>0° natural</strong></span><span>Lados válidos: <strong>'+results.length+'</strong></span></div><div class="notice"><strong>Referencia:</strong> la postura natural del primer frame válido del ciclo se toma como 0°. La rotación relativa positiva se clasifica como pronación y la negativa como supinación según la orientación frontal de la mano.</div>'};
+}
+function calculatePronationSide(side,start,end){
+ const em=state.mapping[side+"_elbow"],wm=state.mapping[side+"_wrist"],im=state.mapping[side+"_index"],frames=state.kinovea.frames.filter(f=>f.time>=start&&f.time<=end);
+ let base=null,pron=0,sup=0,valid=0; if(frames.length<2)return null;
+ for(let i=0;i<frames.length-1;i++){
+  const a=frames[i],b=frames[i+1],dt=Math.max(0,Math.min(b.time,end)-Math.max(a.time,start));if(dt<=0)continue;
+  const aa=handRotationAngle(getPoint(a,em),getPoint(a,wm),getPoint(a,im)),ab=handRotationAngle(getPoint(b,em),getPoint(b,wm),getPoint(b,im));if(!Number.isFinite(aa)||!Number.isFinite(ab))continue;
+  if(base===null)base=aa;const rel=(aa+ab)/2-base;valid+=dt;if(rel>60)pron+=dt;if(rel<-60)sup+=dt;
+ }
+ return base===null||valid<=0?null:{side,pron,sup,base,valid};
+}
+function elbowJointAngle(shoulder,elbow,wrist,direction){
+ if(!shoulder||!elbow||!wrist)return NaN;
+ const ax=shoulder.x-elbow.x,ay=shoulder.y-elbow.y,bx=wrist.x-elbow.x,by=wrist.y-elbow.y;
+ const na=Math.hypot(ax,ay),nb=Math.hypot(bx,by);if(!na||!nb)return NaN;
+ const raw=Math.acos(Math.max(-1,Math.min(1,(ax*bx+ay*by)/(na*nb))))*180/Math.PI;
+ return raw;
+}
+function handRotationAngle(elbow,wrist,index){
+ if(!elbow||!wrist||!index)return NaN;
+ const fx=wrist.x-elbow.x,fy=wrist.y-elbow.y,hx=index.x-wrist.x,hy=index.y-wrist.y;
+ const nf=Math.hypot(fx,fy),nh=Math.hypot(hx,hy);if(!nf||!nh)return NaN;
+ return Math.atan2(fx*hy-fy*hx,fx*hx+fy*hy)*180/Math.PI;
+}
 function getPoint(frame,marker){return frame?.landmarks?.[marker]||null}
 function signedShoulderAngle(hip,shoulder,elbow,direction){
  if(!hip||!shoulder||!elbow)return NaN;
@@ -285,7 +382,7 @@ function signedShoulderAngle(hip,shoulder,elbow,direction){
 
 function resetStudy(){
  if(state.videoUrl)URL.revokeObjectURL(state.videoUrl);
- state.screen=0;state.kinovea=null;state.jsonFileName="";state.videoUrl=null;state.mapping={};state.identification={};state.shoulderAnalysis={side:"right",direction:"right",start:0,end:0};state.dirty=false;
+ state.screen=0;state.kinovea=null;state.jsonFileName="";state.videoUrl=null;state.mapping={};state.identification={};state.shoulderAnalysis={side:"right",direction:"right",start:0,end:0};state.elbowAnalysis={view:"profile-right",side:"right",direction:"right",start:0,end:0};state.dirty=false;
  ["company","department","studyDate","area","workstation","task","description"].forEach(id=>document.getElementById(id).value="");
  videoInput.value="";jsonInput.value="";videoPreview.removeAttribute("src");videoPreview.hidden=true;
  document.getElementById("videoInfo").textContent="Ningún vídeo seleccionado.";
@@ -294,7 +391,7 @@ function resetStudy(){
 
 function saveStudy(){
  saveIdentification();
- const study={format:"Ergonomic Analyzer Posturas",version:2,created:new Date().toISOString(),identification:{...state.identification},jsonFileName:state.jsonFileName,mapping:{...state.mapping},shoulderAnalysis:{...state.shoulderAnalysis}};
+ const study={format:"Ergonomic Analyzer Posturas",version:2,created:new Date().toISOString(),identification:{...state.identification},jsonFileName:state.jsonFileName,mapping:{...state.mapping},shoulderAnalysis:{...state.shoulderAnalysis},elbowAnalysis:{...state.elbowAnalysis}};
  const blob=new Blob([JSON.stringify(study,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="estudio_posturas.json";a.click();URL.revokeObjectURL(url);state.dirty=false;status("Estudio guardado.");
 }
@@ -307,7 +404,7 @@ async function loadStudy(event){
   state.identification=study.identification&&typeof study.identification==="object"?study.identification:{};
   ["company","department","studyDate","area","workstation","task","description"].forEach(id=>document.getElementById(id).value=state.identification[id]||"");
   state.mapping=study.mapping&&typeof study.mapping==="object"?study.mapping:{};
-  state.jsonFileName=study.jsonFileName||"";state.shoulderAnalysis=study.shoulderAnalysis&&typeof study.shoulderAnalysis==="object"?{...state.shoulderAnalysis,...study.shoulderAnalysis}:state.shoulderAnalysis;state.dirty=false;
+  state.jsonFileName=study.jsonFileName||"";state.elbowAnalysis=study.elbowAnalysis&&typeof study.elbowAnalysis==="object"?{...state.elbowAnalysis,...study.elbowAnalysis}:state.elbowAnalysis;state.shoulderAnalysis=study.shoulderAnalysis&&typeof study.shoulderAnalysis==="object"?{...state.shoulderAnalysis,...study.shoulderAnalysis}:state.shoulderAnalysis;state.dirty=false;
   renderSummary();renderMapping();renderPrepared();setScreen(0);status("Estudio cargado. Seleccione de nuevo el JSON de Kinovea para trabajar con sus datos.");
  }catch(e){status("No se pudo cargar el estudio: "+e.message)}
  event.target.value="";
