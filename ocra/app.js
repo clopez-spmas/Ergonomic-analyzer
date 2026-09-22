@@ -2,9 +2,46 @@
 const form=document.getElementById("ocraForm"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
 let dirty=false;
 const STORAGE_KEY="ergonomic-analyzer-ocra-draft",fields=[...form.querySelectorAll("input,select,textarea")];
+
+function initNavigation(){
+ const screens=[...document.querySelectorAll(".screen")];
+ const counter=document.getElementById("screenCounter");
+ const prev=document.getElementById("prevBtn");
+ const next=document.getElementById("nextBtn");
+ let current=0;
+
+ function renderNavigation(){
+   current=Math.max(0,Math.min(screens.length-1,current));
+   screens.forEach((screen,index)=>screen.classList.toggle("active",index===current));
+   counter.textContent="Pantalla "+(current+1)+" de "+screens.length;
+   prev.disabled=current===0;
+   next.disabled=current===screens.length-1;
+   window.scrollTo({top:0,behavior:"smooth"});
+ }
+
+ function show(index){
+   current=Number.isFinite(index)?index:0;
+   renderNavigation();
+ }
+
+ function navigate(delta){
+   show(current+delta);
+ }
+
+ prev.addEventListener("click",()=>navigate(-1));
+ next.addEventListener("click",()=>navigate(1));
+
+ const controller={show,navigate,get current(){return current}};
+ window.OCRA_Navigation=controller;
+ renderNavigation();
+ return controller;
+}
+
+
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
+const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};function initCore(){
+fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
 function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);dirty=false;safeCalculate();status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
@@ -266,41 +303,25 @@ function addKinoveaFileInput(){
 }
 const addKinoveaJsonBtn=document.getElementById("addKinoveaJsonBtn");
 if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileInput);
+
+}
+
+function initKinovea(){
 addKinoveaFileInput();
 bindKinovea();
 renderKinovea();
-
-function initNavigation(){
- const screens=[...document.querySelectorAll(".screen")];
- const counter=document.getElementById("screenCounter");
- const prev=document.getElementById("prevBtn");
- const next=document.getElementById("nextBtn");
- let current=0;
-
- function renderNavigation(){
-   current=Math.max(0,Math.min(screens.length-1,current));
-   screens.forEach((screen,index)=>screen.classList.toggle("active",index===current));
-   counter.textContent="Pantalla "+(current+1)+" de "+screens.length;
-   prev.disabled=current===0;
-   next.disabled=current===screens.length-1;
-   window.scrollTo({top:0,behavior:"smooth"});
- }
-
- function show(index){
-   current=Number.isFinite(index)?index:0;
-   renderNavigation();
- }
-
- function navigate(delta){
-   show(current+delta);
- }
-
- prev.addEventListener("click",()=>navigate(-1));
- next.addEventListener("click",()=>navigate(1));
-
- window.OCRA_Navigation={show,navigate,get current(){return current}};
- renderNavigation();
 }
 
-initNavigation();
+
+
+
 })();
+
+function initApp(){
+  // La navegación se inicializa primero y no depende del cálculo ni de Kinovea.
+  initNavigation();
+  try{initCore()}catch(error){console.error("OCRA initCore:",error);status.textContent="El estudio está disponible, pero se ha producido un error al inicializar algunos controles."}
+  try{initKinovea()}catch(error){console.error("OCRA initKinovea:",error);kSetStatus("Los controles de Kinovea no se han podido inicializar correctamente.")}
+}
+
+initApp();
