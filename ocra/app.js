@@ -146,11 +146,12 @@ function recoveryRenderResult(result){
 function recoverySyncOrganisation(){
  const r=recoveryState.lastResult;
  if(!r?.valid)return;
- const pauses=(r.pauses||[]).filter(p=>p.habitual&&p.duration>=recoveryState.minPause&&p.type!=="meal");
+ const pauses=(r.pauses||[]).filter(p=>p.habitual&&p.duration>=recoveryState.minPause&&(p.type!=="meal"||!r.meal||p.id!==r.meal.id));
+ const shortMeals=(r.pauses||[]).filter(p=>p.habitual&&p.type==="meal"&&p.duration>=recoveryState.minPause&&!r.meal);
  const meal=r.meal;
  const set=(name,value)=>{const el=form.elements[name];if(el)el.value=String(value);};
- set("numPausas",pauses.length);
- set("tiempoPausas",Math.round(pauses.reduce((s,p)=>s+p.duration,0)));
+ set("numPausas",pauses.length+shortMeals.length);
+ set("tiempoPausas",Math.round(pauses.reduce((s,p)=>s+p.duration,0)+shortMeals.reduce((s,p)=>s+p.duration,0)));
  set("pausaComer",meal?Math.round(meal.duration):0);
 }
 function recoveryCalculateAndRender(){
