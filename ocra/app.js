@@ -110,7 +110,9 @@ function renderKRange(){
  document.getElementById("kinoveaEnd").value=kinoveaState.range.end??(kinoveaState.data?.duration||0);
  document.getElementById("kinoveaCycles").value=kinoveaState.range.cycles||1;
  const interval=kinoveaState.range.mode==="interval",cycles=kinoveaState.range.mode==="cycles";
- document.getElementById("kinoveaStartField").hidden=!interval;document.getElementById("kinoveaEndField").hidden=!interval;document.getElementById("kinoveaCyclesField").hidden=!cycles;
+ const startField=document.getElementById("kinoveaStartField"),endField=document.getElementById("kinoveaEndField"),cyclesField=document.getElementById("kinoveaCyclesField");
+ [startField,endField].forEach(el=>{if(!el)return;el.hidden=!interval;el.style.display=interval?"":"none"});
+ if(cyclesField){cyclesField.hidden=!cycles;cyclesField.style.display=cycles?"":"none"};
  document.getElementById("kinoveaRangeSummary").textContent=kRangeLabel();
 }
 function bindKinovea(){
