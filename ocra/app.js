@@ -590,6 +590,47 @@ bindKinovea();
 renderKinovea();
 }
 
+function ocraRiskInfo(value){
+ const v=Number(value);
+ if(!Number.isFinite(v))return {range:"—",level:"—",className:"",label:"—"};
+ if(v<=7.5)return {range:"≤ 7,5",level:"Verde",className:"green",label:"Aceptable"};
+ if(v<=11)return {range:"7,6 – 11",level:"Amarillo",className:"yellow",label:"Borderline / riesgo muy leve"};
+ if(v<=14)return {range:"11,1 – 14",level:"Rojo suave",className:"light-red",label:"Riesgo leve"};
+ if(v<=22.5)return {range:"14,1 – 22,5",level:"Rojo",className:"red",label:"Riesgo medio"};
+ return {range:"> 22,5",level:"Morado",className:"purple",label:"Riesgo alto"};
+}
+function ocraSetWord(id,value){const el=document.getElementById(id);if(el)el.textContent=value||"—"}
+function ocraSetRiskCell(id,value){
+ const el=document.getElementById(id);if(!el)return;
+ const info=ocraRiskInfo(value);
+ el.textContent=Number.isFinite(Number(value))?fmt(Number(value),2):"—";
+ el.className=info.className?("risk-result-cell "+info.className):"risk-result-cell";
+}
+function renderWordTables(){
+ const ids={wordRecDx:"finalRecDx",wordRecIx:"finalRecIx",wordFreqDx:"finalFreqDxSub",wordFreqIx:"finalFreqIxSub",wordForceDx:"finalForceDx",wordForceIx:"finalForceIx",wordPostureDx:"finalPostureDx",wordPostureIx:"finalPostureIx",wordCompDx:"finalCompDx",wordCompIx:"finalCompIx",wordBaseDx:"finalBaseDx",wordBaseIx:"finalBaseIx",wordRecFactorDx:"finalRecDx",wordRecFactorIx:"finalRecIx",wordDurDx:"finalDurDx",wordDurIx:"finalDurIx",wordIndexDx:"resultadoFinalDx",wordIndexIx:"resultadoFinalIx"};
+ Object.entries(ids).forEach(([target,source])=>{const s=document.getElementById(source);ocraSetWord(target,s?.textContent||"—")});
+ const dx=Number(String(document.getElementById("resultadoFinalDx")?.textContent||"").replace(",",".")),ix=Number(String(document.getElementById("resultadoFinalIx")?.textContent||"").replace(",","."));
+ const di=ocraRiskInfo(dx),ii=ocraRiskInfo(ix);
+ ocraSetWord("wordRiskDx",di.label);ocraSetWord("wordRiskIx",ii.label);
+ ocraSetWord("riskRangeDx",di.range);ocraSetWord("riskLevelDx",di.level);
+ ocraSetRiskCell("riskCellDx",dx);ocraSetRiskCell("riskCellIx",ix);
+}
+function copyOCRAWordTables(){
+ renderWordTables();
+ const area=document.getElementById("wordTablesArea");if(!area)return;
+ const html=area.innerHTML,text=area.innerText;
+ if(navigator.clipboard?.write&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})}]).then(()=>status.textContent="Tablas copiadas. Puedes pegarlas directamente en Word.").catch(()=>ocraLegacyCopy(area));else ocraLegacyCopy(area);
+}
+function ocraLegacyCopy(area){
+ const range=document.createRange();range.selectNodeContents(area);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+ try{document.execCommand("copy");status.textContent="Tablas copiadas. Puedes pegarlas directamente en Word."}catch(e){status.textContent="Selecciona las tablas y copia con Ctrl+C."}
+ sel.removeAllRanges();
+}
+function initWordTables(){
+ document.getElementById("copyOCRAResultsBtn")?.addEventListener("click",copyOCRAWordTables);
+ document.getElementById("printOCRAResultsBtn")?.addEventListener("click",()=>{renderWordTables();window.print()});
+ renderWordTables();
+}
 function initApp(){
   // La navegación se inicializa primero y no depende del cálculo ni de Kinovea.
   initNavigation();
