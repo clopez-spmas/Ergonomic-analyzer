@@ -250,7 +250,7 @@ function renderKinoveaFileList(){
    renderKRange();
    renderKinoveaFileList();
    kSetStatus("JSON eliminado. El estudio continúa con los archivos restantes.");
- });
+ }));
 }
 function loadKinoveaJson(file){
  return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);kinoveaState.dataSets=kinoveaState.dataSets||[];const exists=kinoveaState.dataSets.some(x=>x.fileName===file.name&&x.data?.duration===data.duration&&x.data?.frames?.length===data.frames.length);if(exists)return;const ds={fileName:file.name,data,mapping:{}};kinoveaState.dataSets.push(ds);kinoveaState.data=kinoveaState.data||data;kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();renderKinoveaFileList();kSetStatus("JSON de Kinovea cargado correctamente. Se han cargado "+kinoveaState.dataSets.length+" archivo(s). Puede seleccionar varios a la vez.");});
