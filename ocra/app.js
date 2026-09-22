@@ -619,7 +619,7 @@ function copyOCRAWordTables(){
  renderWordTables();
  const area=document.getElementById("wordTablesArea");if(!area)return;
  const html=area.innerHTML,text=area.innerText;
- if(navigator.clipboard?.write&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})}]).then(()=>status.textContent="Tablas copiadas. Puedes pegarlas directamente en Word.").catch(()=>ocraLegacyCopy(area));else ocraLegacyCopy(area);
+ if(navigator.clipboard?.write&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})})]).then(()=>status.textContent="Tablas copiadas. Puedes pegarlas directamente en Word.").catch(()=>ocraLegacyCopy(area));else ocraLegacyCopy(area);
 }
 function ocraLegacyCopy(area){
  const range=document.createRange();range.selectNodeContents(area);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
