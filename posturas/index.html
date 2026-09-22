@@ -8,7 +8,6 @@
 </head>
 <body>
 <main class="posturas-shell">
-
 <header class="posturas-header">
   <div class="brand">ERGONOMIC ANALYZER · POSTURAS FORZADAS</div>
   <h1>Posturas forzadas</h1>
@@ -25,246 +24,68 @@
 </div>
 
 <section class="screen active" data-screen="0">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev disabled>Anterior</button>
-    <div class="screen-counter">Pantalla 1 de 4</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-
-  <div class="screen-title">
-    <span>1</span>
-    <div>
-      <h2>Identificación del estudio</h2>
-      <p>Introduzca los datos que permitirán identificar el análisis.</p>
-    </div>
-  </div>
-
+  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev disabled>Anterior</button><div class="screen-counter">Pantalla 1 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
+  <div class="screen-title"><span>1</span><div><h2>Identificación del estudio</h2><p>Introduzca los datos que permitirán identificar el análisis.</p></div></div>
   <div class="form-grid">
-    <label>Empresa
-      <input type="text" id="company" autocomplete="organization">
-    </label>
-    <label>Departamento / servicio
-      <input type="text" id="department">
-    </label>
-    <label>Fecha
-      <input type="date" id="studyDate">
-    </label>
-    <label>Línea / área
-      <input type="text" id="area">
-    </label>
-    <label>Puesto
-      <input type="text" id="workstation">
-    </label>
-    <label>Tarea
-      <input type="text" id="task">
-    </label>
-    <label class="full-width">Descripción breve
-      <textarea id="description" rows="4"></textarea>
-    </label>
+    <label>Empresa<input type="text" id="company" autocomplete="organization"></label>
+    <label>Departamento / servicio<input type="text" id="department"></label>
+    <label>Fecha<input type="date" id="studyDate"></label>
+    <label>Línea / área<input type="text" id="area"></label>
+    <label>Puesto<input type="text" id="workstation"></label>
+    <label>Tarea<input type="text" id="task"></label>
+    <label class="full-width">Descripción breve<textarea id="description" rows="4"></textarea></label>
   </div>
 </section>
 
 <section class="screen" data-screen="1">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-
-  <div class="screen-title">
-    <span>2</span>
-    <div>
-      <h2>Vídeo y seguimiento Kinovea</h2>
-      <p>Cargue el vídeo y el JSON generado por Kinovea. Después podrá asignar cada marcador al punto anatómico correspondiente.</p>
-    </div>
-  </div>
-
+  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 2 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
+  <div class="screen-title"><span>2</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Cargue el vídeo y el JSON de Kinovea, defina el ámbito temporal del análisis y asigne los marcadores.</p></div></div>
   <div class="form-grid">
-    <label>Vídeo de Kinovea
-      <input type="file" id="videoFile" accept="video/*">
-      <small>Se utiliza para visualizar la grabación durante el estudio.</small>
-    </label>
-    <label>JSON de Kinovea
-      <input type="file" id="jsonFile" accept=".json,application/json">
-      <small>Se utilizarán los datos temporales y las coordenadas de los marcadores.</small>
-    </label>
+    <label>Vídeo de Kinovea<input type="file" id="videoFile" accept="video/*"><small>Se utiliza para visualizar la grabación.</small></label>
+    <label>JSON de Kinovea<input type="file" id="jsonFile" accept=".json,application/json"><small>Se utilizarán tiempos y coordenadas de los marcadores.</small></label>
   </div>
-
-  <div class="video-panel">
-    <div class="panel-heading">
-      <h3>Vídeo</h3>
-      <span id="videoInfo">Ningún vídeo seleccionado.</span>
-    </div>
-    <video id="videoPreview" controls preload="metadata" playsinline hidden></video>
-  </div>
-
+  <div class="video-panel"><div class="panel-heading"><h3>Vídeo</h3><span id="videoInfo">Ningún vídeo seleccionado.</span></div><video id="videoPreview" controls preload="metadata" playsinline hidden></video></div>
   <div class="summary-grid">
-    <div><span>Productor</span><output id="summaryProducer">—</output></div>
-    <div><span>Archivo JSON</span><output id="summaryFile">—</output></div>
-    <div><span>Marcadores</span><output id="summaryMarkers">—</output></div>
-    <div><span>Frames</span><output id="summaryFrames">—</output></div>
-    <div><span>Duración</span><output id="summaryDuration">—</output></div>
-    <div><span>Frecuencia de captura</span><output id="summaryFps">—</output></div>
+    <div><span>Productor</span><output id="summaryProducer">—</output></div><div><span>Archivo JSON</span><output id="summaryFile">—</output></div><div><span>Marcadores</span><output id="summaryMarkers">—</output></div><div><span>Frames</span><output id="summaryFrames">—</output></div><div><span>Duración</span><output id="summaryDuration">—</output></div><div><span>Frecuencia de captura</span><output id="summaryFps">—</output></div>
   </div>
-
   <div class="analysis-panel">
-    <h3>Intervalo de análisis</h3>
-    <p class="analysis-help">Indique qué parte de la grabación debe utilizar el programa en todos los cálculos posteriores.</p>
+    <h3>Ámbito temporal del análisis</h3>
+    <p class="analysis-help">Esta selección se aplica a hombro, codo y muñeca.</p>
     <div class="analysis-grid">
-      <label>Datos a analizar
-        <select id="analysisRangeMode">
-          <option value="all">Todo el vídeo</option>
-          <option value="interval">Desde un tiempo hasta otro</option>
-          <option value="cycles">Número de ciclos visibles en el vídeo</option>
-        </select>
-      </label>
-      <label id="analysisStartField">Tiempo inicial (s)
-        <input type="number" id="analysisStart" min="0" step="0.001" value="0">
-      </label>
-      <label id="analysisEndField">Tiempo final (s)
-        <input type="number" id="analysisEnd" min="0" step="0.001" value="0">
-      </label>
-      <label id="analysisCyclesField" hidden>Número de ciclos
-        <input type="number" id="analysisCycles" min="1" step="1" value="1">
-      </label>
+      <label>Datos a analizar<select id="analysisRangeMode"><option value="all">Todo el vídeo</option><option value="interval">Desde un tiempo hasta otro</option><option value="cycles">Número de ciclos visibles en el vídeo</option></select></label>
+      <label id="analysisStartField">Tiempo inicial (s)<input type="number" id="analysisStart" min="0" step="0.001" value="0"></label>
+      <label id="analysisEndField">Tiempo final (s)<input type="number" id="analysisEnd" min="0" step="0.001" value="0"></label>
+      <label id="analysisCyclesField" hidden>Número de ciclos<input type="number" id="analysisCycles" min="1" step="1" value="1"></label>
     </div>
     <div id="analysisRangeInfo" class="notice">Todo el vídeo se utilizará en los cálculos.</div>
   </div>
-
-  <div class="mapping-container">
-    <div class="mapping-heading">
-      <h3>Asignación de marcadores</h3>
-      <p>La asignación es independiente del JSON cargado. No es necesario asignar todos los puntos; solo los que se vayan a utilizar posteriormente.</p>
-    </div>
-    <div id="mappingContainer">
-      <div class="placeholder">Cargue primero el JSON de Kinovea.</div>
-    </div>
-  </div>
-
-  <div class="notice">
-    <strong>Importante:</strong> en esta fase solo se prepara el vídeo y el tracking. Los puntos y datos concretos para hombro y codo se seleccionarán en las pantallas de análisis. Para codo se reutilizan los marcadores ya asignados.
-  </div>
+  <div class="mapping-container"><div class="mapping-heading"><h3>Asignación de marcadores</h3><p>Asigne cada marcador Kinovea al punto anatómico que vaya a utilizar. La asignación se guarda en el estudio.</p></div><div id="mappingContainer"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div></div>
 </section>
 
 <section class="screen" data-screen="2">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 4 de 6</div>
-    <button type="button" class="nav-primary" id="prepareButton">Calcular / actualizar análisis</button>
-  </div>
-
-  <div class="screen-title">
-    <span>4</span>
-    <div>
-      <h2>Análisis de hombro</h2>
-      <p>Seleccione el tipo de vista y el programa aplicará automáticamente el análisis correspondiente.</p>
-    </div>
-  </div>
-
-  <div id="preparedStudy" class="prepared-study">
-    <div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>
-  </div>
-
-  <div class="notice">
-    <strong>Criterios:</strong> en perfil se analiza flexión ≥80° y extensión &gt;20°; en frontal se analiza abducción ≥80°. El usuario solo asigna los marcadores anatómicos de Kinovea; el tipo de movimiento se determina automáticamente según la vista.
-  </div>
-</section>
-
-<section class="screen" data-screen="2">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 3 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-  <div class="screen-title"><span>3</span><div><h2>Datos importados de Kinovea</h2><p>Revise los datos extraídos del JSON antes de realizar los cálculos.</p></div></div>
+  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 3 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
+  <div class="screen-title"><span>3</span><div><h2>Datos importados de Kinovea</h2><p>Compruebe qué datos se han volcado desde el JSON antes de analizarlos.</p></div></div>
   <div id="kinoveaDataPanel" class="data-panel"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div>
 </section>
 
 <section class="screen" data-screen="3">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 4 de 6</div>
-    <button type="button" class="nav-primary" id="prepareButton">Calcular / actualizar análisis</button>
-  </div>
-
-  <div class="screen-title">
-    <span>4</span>
-    <div>
-      <h2>Análisis de hombro</h2>
-      <p>Seleccione el tipo de vista y el programa aplicará automáticamente el análisis correspondiente.</p>
-    </div>
-  </div>
-
-  <div id="preparedStudy" class="prepared-study">
-    <div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>
-  </div>
-
-  <div class="notice">
-    <strong>Criterios:</strong> en perfil se analiza flexión ≥80° y extensión &gt;20°; en frontal se analiza abducción ≥80°. El usuario solo asigna los marcadores anatómicos de Kinovea; el tipo de movimiento se determina automáticamente según la vista.
-  </div>
+  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 4 de 6</div><button type="button" class="nav-primary" id="prepareButton">Calcular / actualizar análisis</button></div>
+  <div class="screen-title"><span>4</span><div><h2>Análisis de hombro</h2><p>Perfil derecho/izquierdo para flexión-extensión y frontal para abducción.</p></div></div>
+  <div id="preparedStudy" class="prepared-study"><div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div></div>
+  <div class="notice"><strong>Criterios:</strong> flexión ≥80°, extensión &gt;20° y abducción ≥80°. 0° es la postura natural de referencia.</div>
 </section>
 
 <section class="screen" data-screen="4">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 5 de 6</div>
-    <button type="button" class="nav-primary" id="elbowPrepareButton">Calcular / actualizar análisis</button>
-  </div>
-  <div class="screen-title">
-    <span>5</span>
-    <div>
-      <h2>Análisis de codo</h2>
-      <p>Se analiza flexión/extensión en perfil y pronación/supinación en frontal, tomando 0° como la postura natural de referencia.</p>
-    </div>
-  </div>
-  <div id="elbowStudy" class="prepared-study">
-    <div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>
-  </div>
+  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 5 de 6</div><button type="button" class="nav-primary" id="elbowPrepareButton">Calcular / actualizar análisis</button></div>
+  <div class="screen-title"><span>5</span><div><h2>Análisis de codo</h2><p>Perfil para flexión/extensión y frontal para pronación/supinación. 0° es la postura natural de referencia.</p></div></div>
+  <div id="elbowStudy" class="prepared-study"><div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div></div>
 </section>
 
 <section class="screen" data-screen="5">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 6 de 6</div>
-    <button type="button" class="nav-primary" id="wristPrepareButton">Calcular / actualizar análisis</button>
-  </div>
-  <div class="screen-title"><span>6</span><div><h2>Análisis de muñeca</h2><p>Flexión/extensión en perfil y desviación radial/cubital en frontal usando codo, muñeca e índice. La postura natural del primer dato válido es 0°.</p></div></div>
+  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 6 de 6</div><button type="button" class="nav-primary" id="wristPrepareButton">Calcular / actualizar análisis</button></div>
+  <div class="screen-title"><span>6</span><div><h2>Análisis de muñeca</h2><p>Perfil para flexión/extensión y frontal para desviación radial/cubital, usando codo, muñeca e índice.</p></div></div>
   <div id="wristStudy" class="prepared-study"><div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div></div>
 </section>
-
-<section class="screen" data-screen="1">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-
-<section class="screen" data-screen="1">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-
-<section class="screen" data-screen="1">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-<section class="screen" data-screen="1">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-<section class="screen" data-screen="1">
-  <div class="screen-nav">
-    <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 6</div>
-    <button type="button" class="nav-primary" data-next>Siguiente</button>
-  </div>
-
 </main>
 <script src="app.js"></script>
 </body>
