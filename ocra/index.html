@@ -314,7 +314,43 @@
       <div><span>Clasificación</span><output id="clasificacionIx">—</output></div>
     </div></section>
   </div>
-  <div class="notice">Las posturas están preparadas pero todavía no aportan puntuación. Por ello, hasta desarrollar esas pantallas, el componente postura utilizado en este resultado es 0 + estereotipia.</div>
+  <div class="final-breakdown-grid">
+    <section class="calculation-box"><h3>Desglose DX</h3>
+      <div class="result-list">
+        <div><span>Frecuencia · acciones/min</span><output id="finalFreqActionsDx">—</output></div>
+        <div><span>Frecuencia · puntuación</span><output id="finalFreqDx">—</output></div>
+        <div><span>Fuerza · Borg 3–4</span><output id="finalForce34Dx">—</output></div>
+        <div><span>Fuerza · Borg 5–7</span><output id="finalForce57Dx">—</output></div>
+        <div><span>Fuerza · Borg 8–10</span><output id="finalForce810Dx">—</output></div>
+        <div><span>Fuerza · total</span><output id="finalForceDx">—</output></div>
+        <div><span>Postura · hombro</span><output>0,00</output></div>
+        <div><span>Postura · codo</span><output>0,00</output></div>
+        <div><span>Postura · muñeca</span><output>0,00</output></div>
+        <div><span>Postura · mano</span><output>0,00</output></div>
+        <div><span>Estereotipia</span><output id="finalStereoDx">—</output></div>
+        <div><span>Complementarios A</span><output id="finalCompADx">—</output></div>
+        <div><span>Complementario B</span><output id="finalCompB">—</output></div>
+      </div>
+    </section>
+    <section class="calculation-box"><h3>Desglose IX</h3>
+      <div class="result-list">
+        <div><span>Frecuencia · acciones/min</span><output id="finalFreqActionsIx">—</output></div>
+        <div><span>Frecuencia · puntuación</span><output id="finalFreqIx">—</output></div>
+        <div><span>Fuerza · Borg 3–4</span><output id="finalForce34Ix">—</output></div>
+        <div><span>Fuerza · Borg 5–7</span><output id="finalForce57Ix">—</output></div>
+        <div><span>Fuerza · Borg 8–10</span><output id="finalForce810Ix">—</output></div>
+        <div><span>Fuerza · total</span><output id="finalForceIx">—</output></div>
+        <div><span>Postura · hombro</span><output>0,00</output></div>
+        <div><span>Postura · codo</span><output>0,00</output></div>
+        <div><span>Postura · muñeca</span><output>0,00</output></div>
+        <div><span>Postura · mano</span><output>0,00</output></div>
+        <div><span>Estereotipia</span><output id="finalStereoIx">—</output></div>
+        <div><span>Complementarios A</span><output id="finalCompAIx">—</output></div>
+        <div><span>Complementario B</span><output id="finalCompB">—</output></div>
+      </div>
+    </section>
+  </div>
+  <div class="notice">Los componentes de postura (hombro, codo, muñeca y mano) se muestran por separado, pero actualmente no aportan puntuación al cálculo final. La estereotipia sí se incorpora al resultado. La fuerza se desglosa exactamente según las tres opciones Borg existentes.</div>
 </section>
 </form>
 <script src="app.js"></script>
