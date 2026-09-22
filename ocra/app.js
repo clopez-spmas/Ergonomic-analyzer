@@ -1,11 +1,11 @@
 (()=>{"use strict";
 const form=document.getElementById("ocraForm"),screens=[...document.querySelectorAll(".screen")],counter=document.getElementById("screenCounter"),prev=document.getElementById("prevBtn"),next=document.getElementById("nextBtn"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
 let current=0,dirty=false;
-const STORAGE_KEY="ergonomic-analyzer-ocra-draft-v3",fields=[...form.querySelectorAll("input,select,textarea")];
+const STORAGE_KEY="ergonomic-analyzer-ocra-draft",fields=[...form.querySelectorAll("input,select,textarea")];
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-const values=()=>{const o={version:3,savedAt:new Date().toISOString(),values:{}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
-function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});dirty=false;calculate();status.textContent="Estudio cargado correctamente."}
+const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:kinoveaState};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
+function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);dirty=false;calculate();status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
 const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5};
@@ -21,6 +21,153 @@ function freq(actionsPerMin,interruptions){return lookup(interruptions?freqYes:f
 function forceScore(seconds34,seconds57,seconds810,cycle){if(cycle<=0)return 0;return lookup(force34,seconds34/cycle)+lookup(force57,seconds57/cycle)+lookup(force810,seconds810/cycle)}
 function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked||form.elements[prefix+"StereoStatic"]?.checked)?1.5:0}
 function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "VERDE · Riesgo aceptable";if(x<=11)return "AMARILLO · Riesgo muy leve";if(x<=14)return "ROJO SUAVE · Riesgo medio leve";if(x<=22.5)return "ROJO · Riesgo medio";return "VIOLETA · Riesgo elevado"}
+
+let kinoveaState={jsonFileName:"",videoUrl:"",data:null,mapping:{},range:{mode:"all",start:0,end:0,cycles:1}};
+const KPOINTS=[
+ ["right_hip","Cadera derecha"],["left_hip","Cadera izquierda"],
+ ["right_shoulder","Hombro derecho"],["left_shoulder","Hombro izquierdo"],
+ ["right_elbow","Codo derecho"],["left_elbow","Codo izquierdo"],
+ ["right_wrist","Muñeca derecha"],["left_wrist","Muñeca izquierda"],
+ ["right_index","Índice derecho"],["left_index","Índice izquierdo"]
+];
+const kNum=(v,d=0)=>{const n=Number(v);return Number.isFinite(n)?n:d};
+function parseKinovea(raw){
+ const ts=raw?.data?.timeseries||raw?.timeseries||{};
+ const names=Object.keys(ts);
+ if(!names.length)throw Error("El JSON no contiene data.timeseries de Kinovea.");
+ const series=ts;
+ const first=series[names[0]]||{};
+ const time=Array.isArray(first.time)?first.time:[];
+ const frames=time.map((t,i)=>{
+   const landmarks={};
+   names.forEach(name=>{
+     const s=series[name]||{}, d=s.data?.["0"]?.[i], x=Array.isArray(d)?d[0]:s.x?.[i], y=Array.isArray(d)?d[1]:s.y?.[i];
+     if(Number.isFinite(Number(x))&&Number.isFinite(Number(y)))landmarks[name]={x:Number(x),y:Number(y)};
+   });
+   return {index:i,time:Number(t)||0,landmarks};
+ });
+ const duration=frames.length?Math.max(...frames.map(f=>f.time)):0;
+ return {
+   producer:raw?.metadata?.producer||raw?.metadata?.Producer||"Kinovea",
+   fps:kNum(raw?.metadata?.fps||raw?.metadata?.frameRate,0),
+   imageSize:raw?.metadata?.imageSize||null,
+   markers:names,frameCount:frames.length,duration,frames
+ };
+}
+function escK(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
+function kPoint(frame,key){const marker=kinoveaState.mapping[key];return marker?frame.landmarks[marker]:null}
+function kAngle(a,b,c){
+ if(!a||!b||!c)return NaN;
+ const u={x:a.x-b.x,y:a.y-b.y},v={x:c.x-b.x,y:c.y-b.y};
+ const nu=Math.hypot(u.x,u.y),nv=Math.hypot(v.x,v.y);if(!nu||!nv)return NaN;
+ return Math.acos(Math.max(-1,Math.min(1,(u.x*v.x+u.y*v.y)/(nu*nv))))*180/Math.PI;
+}
+function kSigned(a,b,c,direction){
+ if(!a||!b||!c)return NaN;
+ const u={x:a.x-b.x,y:a.y-b.y},v={x:c.x-b.x,y:c.y-b.y};
+ const nu=Math.hypot(u.x,u.y),nv=Math.hypot(v.x,v.y);if(!nu||!nv)return NaN;
+ const raw=Math.atan2(u.x*v.y-u.y*v.x,u.x*v.x+u.y*v.y)*180/Math.PI;
+ return raw*(direction==="right"?1:-1);
+}
+function kRotation(elbow,wrist,index){
+ if(!elbow||!wrist||!index)return NaN;
+ const a={x:wrist.x-elbow.x,y:wrist.y-elbow.y},b={x:index.x-wrist.x,y:index.y-wrist.y};
+ return Math.atan2(a.x*b.y-a.y*b.x,a.x*b.x+a.y*b.y)*180/Math.PI;
+}
+function kRange(){
+ if(!kinoveaState.data)return null;
+ const d=kinoveaState.data.duration, r=kinoveaState.range;
+ let start=0,end=d;
+ if(r.mode==="interval"){start=Math.max(0,Math.min(d,kNum(r.start,0)));end=Math.max(start,Math.min(d,kNum(r.end,d)));}
+ if(r.mode==="cycles"){const cycles=Math.max(1,Math.floor(kNum(r.cycles,1)));r.cycles=cycles;}
+ return {start,end,duration:Math.max(0,end-start)};
+}
+function kRangeLabel(){
+ const r=kRange();if(!r)return "Cargue el JSON de Kinovea.";
+ if(kinoveaState.range.mode==="all")return "Todo el vídeo · "+fmt(r.duration,2)+" s";
+ if(kinoveaState.range.mode==="interval")return "Desde "+fmt(r.start,2)+" s hasta "+fmt(r.end,2)+" s · "+fmt(r.duration,2)+" s";
+ return "Todo el vídeo · "+fmt(r.duration,2)+" s · "+kinoveaState.range.cycles+" ciclos visibles · media "+fmt(r.duration/kinoveaState.range.cycles,2)+" s/ciclo";
+}
+function kSetStatus(msg){status.textContent=msg}
+function renderKinovea(){
+ const s=document.getElementById("kinoveaSummary"),t=document.getElementById("kinoveaDataTable"),m=document.getElementById("kinoveaMapping");
+ if(!kinoveaState.data){s.innerHTML='<div class="placeholder">Cargue el JSON de Kinovea.</div>';t.innerHTML='<div class="placeholder">Todavía no hay datos importados.</div>';m.innerHTML='<strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div>';return}
+ const d=kinoveaState.data;
+ s.innerHTML='<strong>Datos importados</strong><div class="result-grid"><div><span>Productor</span><output>'+escK(d.producer)+'</output></div><div><span>Marcadores</span><output>'+d.markers.length+'</output></div><div><span>Frames</span><output>'+d.frameCount+'</output></div><div><span>Duración</span><output>'+fmt(d.duration,2)+' s</output></div><div><span>FPS</span><output>'+fmt(d.fps,3)+'</output></div></div>';
+ const opts=d.markers.map(x=>'<option value="'+escK(x)+'">'+escK(x)+'</option>').join("");
+ m.innerHTML='<strong>Asignación de marcadores</strong><p>Asigne cada marcador de Kinovea a un punto anatómico. Un marcador no puede asignarse a dos puntos.</p><div class="form-grid">'+KPOINTS.map(([key,label])=>'<label>'+label+'<select data-kmap="'+key+'"><option value="">No asignado</option>'+opts+'</select></label>').join("")+'</div>';
+ m.querySelectorAll("[data-kmap]").forEach(sel=>{sel.value=kinoveaState.mapping[sel.dataset.kmap]||"";sel.onchange=()=>{const v=sel.value;const duplicate=v&&Object.entries(kinoveaState.mapping).some(([k,x])=>k!==sel.dataset.kmap&&x===v);if(duplicate){sel.value="";kSetStatus("Ese marcador de Kinovea ya está asignado a otro punto anatómico.");return}kinoveaState.mapping[sel.dataset.kmap]=v;dirty=true;kRenderAnalyses();}});
+ const rows=d.frames.slice(0,12).map(f=>'<tr><td>'+f.index+'</td><td>'+fmt(f.time,3)+'</td><td>'+Object.keys(f.landmarks).length+'</td></tr>').join("");
+ t.innerHTML='<strong>Muestra de datos por frame</strong><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Frame</th><th>Tiempo (s)</th><th>Marcadores válidos</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+ kRenderAnalyses();
+}
+function renderKRange(){
+ const mode=document.getElementById("kinoveaRangeMode");if(!mode)return;
+ mode.value=kinoveaState.range.mode;
+ document.getElementById("kinoveaStart").value=kinoveaState.range.start??0;
+ document.getElementById("kinoveaEnd").value=kinoveaState.range.end??(kinoveaState.data?.duration||0);
+ document.getElementById("kinoveaCycles").value=kinoveaState.range.cycles||1;
+ const interval=kinoveaState.range.mode==="interval",cycles=kinoveaState.range.mode==="cycles";
+ document.getElementById("kinoveaStartField").hidden=!interval;document.getElementById("kinoveaEndField").hidden=!interval;document.getElementById("kinoveaCyclesField").hidden=!cycles;
+ document.getElementById("kinoveaRangeSummary").textContent=kRangeLabel();
+}
+function bindKinovea(){
+ const mode=document.getElementById("kinoveaRangeMode");if(!mode)return;
+ mode.onchange=()=>{kinoveaState.range.mode=mode.value;renderKRange();kRenderAnalyses();};
+ ["kinoveaStart","kinoveaEnd","kinoveaCycles"].forEach(id=>document.getElementById(id).oninput=()=>{
+   kinoveaState.range.start=kNum(document.getElementById("kinoveaStart").value,0);
+   kinoveaState.range.end=kNum(document.getElementById("kinoveaEnd").value,kinoveaState.data?.duration||0);
+   kinoveaState.range.cycles=Math.max(1,Math.floor(kNum(document.getElementById("kinoveaCycles").value,1)));
+   renderKRange();kRenderAnalyses();dirty=true;
+ });
+}
+function kAnalysisRows(kind,view,direction,threshold){
+ const r=kRange();if(!r)return '<div class="placeholder">Cargue el JSON de Kinovea.</div>';
+ const frames=kinoveaState.data.frames;let rows=[];
+ const sides=view==="frontal"?["right","left"]:[view==="profile-left"?"left":"right"];
+ sides.forEach(side=>{
+  let a1=0,a2=0,valid=0,base=null;
+  for(let i=0;i<frames.length-1;i++){
+   const a=frames[i],b=frames[i+1],dt=Math.max(0,Math.min(b.time,r.end)-Math.max(a.time,r.start));if(dt<=0)continue;
+   let va,vb;
+   if(kind==="shoulder") va=view==="frontal"?kAngle(kPoint(a,side+"_hip"),kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow")):kSigned(kPoint(a,side+"_hip"),kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),direction);
+   if(kind==="shoulder") vb=view==="frontal"?kAngle(kPoint(b,side+"_hip"),kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow")):kSigned(kPoint(b,side+"_hip"),kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),direction);
+   if(kind==="elbow") va=view==="frontal"?kRotation(kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"),kPoint(a,side+"_index")):kAngle(kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"));
+   if(kind==="elbow") vb=view==="frontal"?kRotation(kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"),kPoint(b,side+"_index")):kAngle(kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"));
+   if(kind==="wrist") va=view==="frontal"?kRotation(kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"),kPoint(a,side+"_index")):kSigned(kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"),kPoint(a,side+"_index"),direction);
+   if(kind==="wrist") vb=view==="frontal"?kRotation(kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"),kPoint(b,side+"_index")):kSigned(kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"),kPoint(b,side+"_index"),direction);
+   if(!Number.isFinite(va)||!Number.isFinite(vb))continue;
+   if(base===null)base=va;
+   const v=kind==="shoulder"&&view==="frontal"?((va+vb)/2):( (va+vb)/2-base );
+   valid+=dt;
+   if(kind==="shoulder"&&view==="frontal"){if(v>=80)a1+=dt}
+   else {if(v>threshold)a1+=dt;if(v<-threshold)a2+=dt}
+  }
+  if(valid){const label=side==="right"?"derecha":"izquierda",total=r.duration||1; if(kind==="shoulder"&&view==="frontal")rows.push('<tr><td>Abducción '+label+'</td><td>≥ 80°</td><td>'+fmt(a1,3)+' s</td><td>'+fmt(a1/total*100,2)+' %</td></tr>'); else if(kind==="elbow"&&view==="frontal")rows.push('<tr><td>Pronación '+label+'</td><td>&gt; 60°</td><td>'+fmt(a1,3)+' s</td><td>'+fmt(a1/total*100,2)+' %</td></tr><tr><td>Supinación '+label+'</td><td>&gt; 60°</td><td>'+fmt(a2,3)+' s</td><td>'+fmt(a2/total*100,2)+' %</td></tr>'); else if(kind==="wrist"&&view==="frontal")rows.push('<tr><td>Desviación radial '+label+'</td><td>&gt; '+threshold+'°</td><td>'+fmt(a1,3)+' s</td><td>'+fmt(a1/total*100,2)+' %</td></tr><tr><td>Desviación cubital '+label+'</td><td>&gt; '+threshold+'°</td><td>'+fmt(a2,3)+' s</td><td>'+fmt(a2/total*100,2)+' %</td></tr>'); else {const n1=kind==="shoulder"?"Flexión":kind==="elbow"?"Flexión":"Flexión de muñeca",n2=kind==="shoulder"?"Extensión":kind==="elbow"?"Extensión":"Extensión de muñeca",th=kind==="shoulder"?80:threshold;rows.push('<tr><td>'+n1+' '+label+'</td><td>'+ (kind==="shoulder"?"≥ 80°":"&gt; "+th+"°")+'</td><td>'+fmt(a1,3)+' s</td><td>'+fmt(a1/total*100,2)+' %</td></tr><tr><td>'+n2+' '+label+'</td><td>'+ (kind==="shoulder"?"&gt; 20°":"&gt; "+th+"°")+'</td><td>'+fmt(a2,3)+' s</td><td>'+fmt(a2/total*100,2)+' %</td></tr>');}}
+ });
+ return rows.length?'<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Movimiento</th><th>Criterio</th><th>Tiempo</th><th>% del tiempo analizado</th></tr></thead><tbody>'+rows.join("")+'</tbody></table></div><div class="notice">Tiempo analizado: '+fmt(r.duration,2)+' s'+(kinoveaState.range.mode==="cycles"?" · "+kinoveaState.range.cycles+" ciclos · media "+fmt(r.duration/kinoveaState.range.cycles,2)+" s/ciclo":"")+'</div>':'<div class="placeholder">No hay datos válidos con los marcadores asignados.</div>';
+}
+function kPanel(kind,title,defaultThreshold){
+ const id=kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel",box=document.getElementById(id);if(!box)return;
+ const current=kinoveaState[kind]||{view:"profile-right",direction:"right",threshold:defaultThreshold};
+ box.innerHTML='<strong>Configuración</strong><div class="form-grid"><label>Vista<select id="'+kind+'View"><option value="profile-right">Perfil derecho</option><option value="profile-left">Perfil izquierdo</option><option value="frontal">Frontal</option></select></label><label id="'+kind+'DirectionField">La persona mira hacia<select id="'+kind+'Direction"><option value="right">la derecha</option><option value="left">la izquierda</option></select></label>'+(kind==="wrist"?'<label>Umbral angular (°)<input id="wristThreshold" type="number" min="1" max="180" value="'+(current.threshold||defaultThreshold)+'"></label>':'')+'</div><div id="'+kind+'MarkerInfo" class="notice"></div><button type="button" class="nav-primary" id="calculate'+kind+'">Calcular '+title.toLowerCase()+'</button><div id="'+kind+'Result" class="result-holder"><div class="placeholder">Configure la vista y calcule.</div></div>';
+ const view=document.getElementById(kind+"View"),dir=document.getElementById(kind+"Direction"),field=document.getElementById(kind+"DirectionField");
+ view.value=current.view;dir.value=current.direction;
+ const update=()=>{field.hidden=view.value==="frontal";document.getElementById(kind+"MarkerInfo").textContent=kind==="shoulder"?(view.value==="frontal"?"Frontal: cadera + hombro + codo.":"Perfil: cadera + hombro + codo."):(kind==="elbow"?(view.value==="frontal"?"Frontal: codo + muñeca + índice.":"Perfil: hombro + codo + muñeca."):"Codo + muñeca + índice.");};
+ view.onchange=update;update();
+ document.getElementById("calculate"+kind).onclick=()=>{kinoveaState[kind]={view:view.value,direction:dir.value,threshold:kind==="shoulder"?80:kind==="elbow"?60:Math.max(1,kNum(document.getElementById("wristThreshold").value,60))};document.getElementById(kind+"Result").innerHTML=kAnalysisRows(kind,view.value,dir.value,kinoveaState[kind].threshold);dirty=true;};
+}
+function kRenderAnalyses(){if(kinoveaState.data){kPanel("shoulder","hombro",80);kPanel("elbow","codo",60);kPanel("wrist","muñeca",60)}}
+function restoreKinoveaState(saved){
+ kinoveaState={...kinoveaState,...saved,videoUrl:""};
+ if(saved.range)kinoveaState.range={...{mode:"all",start:0,end:0,cycles:1},...saved.range};
+ if(saved.shoulder)kinoveaState.shoulder=saved.shoulder;if(saved.elbow)kinoveaState.elbow=saved.elbow;if(saved.wrist)kinoveaState.wrist=saved.wrist;
+ renderKRange();renderKinovea();
+}
+function loadKinoveaJson(file){
+ return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);kinoveaState.data=data;kinoveaState.jsonFileName=file.name;kinoveaState.mapping={};kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();bindKinovea();kSetStatus("JSON de Kinovea cargado correctamente.");});
+}
+
 function calculate(){
  const official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  document.getElementById("turnoEfectivo").textContent=fmt(eff,1);document.getElementById("tntrPausas").textContent=fmt(pauses,1);document.getElementById("tntrComida").textContent=fmt(meal,1);document.getElementById("tntrNoRep").textContent=fmt(nonRep,1);document.getElementById("tiempoNeto").textContent=fmt(tntr,1);document.getElementById("duracionTNTR").textContent=fmt(tntr,1);
@@ -36,7 +183,7 @@ function calculate(){
  set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalPostureDx",dxS);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
  set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalPostureIx",ixS);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
 }
-function show(i){current=Math.max(0,Math.min(screens.length-1,i));screens.forEach((s,k)=>s.classList.toggle("active",k===current));counter.textContent="Pantalla "+(current+1)+" de "+screens.length;prev.disabled=current===0;next.disabled=current===screens.length-1;window.scrollTo({top:0,behavior:"smooth"});calculate()}
+function show(i){kRenderAnalyses();current=Math.max(0,Math.min(screens.length-1,i));screens.forEach((s,k)=>s.classList.toggle("active",k===current));counter.textContent="Pantalla "+(current+1)+" de "+screens.length;prev.disabled=current===0;next.disabled=current===screens.length-1;window.scrollTo({top:0,behavior:"smooth"});calculate()}
 function markDirty(){dirty=true;status.textContent="";calculate()}
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});prev.addEventListener("click",()=>show(current-1));next.addEventListener("click",()=>show(current+1));
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
@@ -46,5 +193,11 @@ fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!
 document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";show(0)});
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
 try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
+
+const kvVideo=document.getElementById("kinoveaVideo"),kvJson=document.getElementById("kinoveaJson");
+if(kvVideo)kvVideo.addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;if(kinoveaState.videoUrl)URL.revokeObjectURL(kinoveaState.videoUrl);kinoveaState.videoUrl=URL.createObjectURL(f);document.getElementById("kinoveaVideoInfo").textContent=f.name;dirty=true;kSetStatus("Vídeo cargado. Cargue el JSON de Kinovea.")});
+if(kvJson)kvJson.addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;loadKinoveaJson(f).catch(err=>kSetStatus("Error al leer el JSON de Kinovea: "+err.message)).finally(()=>e.target.value="")});
+bindKinovea();renderKinovea();
+
 show(0);
 })();
