@@ -107,6 +107,30 @@
     <div><span>Frecuencia de captura</span><output id="summaryFps">—</output></div>
   </div>
 
+  <div class="analysis-panel">
+    <h3>Intervalo de análisis</h3>
+    <p class="analysis-help">Indique qué parte de la grabación debe utilizar el programa en todos los cálculos posteriores.</p>
+    <div class="analysis-grid">
+      <label>Datos a analizar
+        <select id="analysisRangeMode">
+          <option value="all">Todo el vídeo</option>
+          <option value="interval">Desde un tiempo hasta otro</option>
+          <option value="cycles">Número de ciclos visibles en el vídeo</option>
+        </select>
+      </label>
+      <label id="analysisStartField">Tiempo inicial (s)
+        <input type="number" id="analysisStart" min="0" step="0.001" value="0">
+      </label>
+      <label id="analysisEndField">Tiempo final (s)
+        <input type="number" id="analysisEnd" min="0" step="0.001" value="0">
+      </label>
+      <label id="analysisCyclesField" hidden>Número de ciclos
+        <input type="number" id="analysisCycles" min="1" step="1" value="1">
+      </label>
+    </div>
+    <div id="analysisRangeInfo" class="notice">Todo el vídeo se utilizará en los cálculos.</div>
+  </div>
+
   <div class="mapping-container">
     <div class="mapping-heading">
       <h3>Asignación de marcadores</h3>
