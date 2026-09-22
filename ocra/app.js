@@ -367,8 +367,25 @@ function renderKinoveaFileList(){
    kSetStatus("JSON eliminado. El estudio continúa con los archivos restantes.");
  }));
 }
-function loadKinoveaJson(file){
- return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);kinoveaState.dataSets=kinoveaState.dataSets||[];const exists=kinoveaState.dataSets.some(x=>x.fileName===file.name&&x.data?.duration===data.duration&&x.data?.frames?.length===data.frames.length);if(exists)return;const ds={fileName:file.name,data,mapping:{}};kinoveaState.dataSets.push(ds);kinoveaState.data=kinoveaState.data||data;kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();renderKinoveaFileList();kSetStatus("JSON de Kinovea cargado correctamente. Se han cargado "+kinoveaState.dataSets.length+" archivo(s). Puede seleccionar varios a la vez.");});
+async function sha256Hex(text){
+ const bytes=new TextEncoder().encode(text);
+ const hash=await crypto.subtle.digest("SHA-256",bytes);
+ return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function loadKinoveaJson(file){
+ const txt=await file.text();
+ const raw=JSON.parse(txt);
+ const data=parseKinovea(raw);
+ kinoveaState.dataSets=kinoveaState.dataSets||[];
+ const hash=await sha256Hex(txt);
+ if(kinoveaState.dataSets.some(x=>x.sha256===hash))return;
+ const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{}};
+ kinoveaState.dataSets.push(ds);
+ kinoveaState.data=kinoveaState.data||data;
+ kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
+ if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};
+ dirty=true;renderKinovea();renderKRange();renderKinoveaFileList();
+ kSetStatus("JSON de Kinovea cargado correctamente. El estudio conservará una copia del JSON original y su huella SHA-256.");
 }
 
 function calculate(){
