@@ -147,7 +147,7 @@ function recoverySyncOrganisation(){
  const r=recoveryState.lastResult;
  if(!r?.valid)return;
  const pauses=(r.pauses||[]).filter(p=>p.habitual&&p.duration>=recoveryState.minPause&&(p.type!=="meal"||!r.meal||p.id!==r.meal.id));
- const shortMeals=(r.pauses||[]).filter(p=>p.habitual&&p.type==="meal"&&p.duration>=recoveryState.minPause&&!r.meal);
+ const shortMeals=(r.pauses||[]).filter(p=>p.habitual&&p.type==="meal"&&p.duration>=recoveryState.minPause&&(!r.meal||p.id!==r.meal.id));
  const meal=r.meal;
  const set=(name,value)=>{const el=form.elements[name];if(el)el.value=String(value);};
  set("numPausas",pauses.length+shortMeals.length);
