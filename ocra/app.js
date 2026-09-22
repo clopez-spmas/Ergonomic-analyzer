@@ -195,8 +195,7 @@ document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿C
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
 try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
 
-const kvVideo=document.getElementById("kinoveaVideo"),kvJson=document.getElementById("kinoveaJson");
-if(kvVideo)kvVideo.addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;if(kinoveaState.videoUrl)URL.revokeObjectURL(kinoveaState.videoUrl);kinoveaState.videoUrl=URL.createObjectURL(f);document.getElementById("kinoveaVideoInfo").textContent=f.name;dirty=true;kSetStatus("Vídeo cargado. Cargue el JSON de Kinovea.")});
+const kvJson=document.getElementById("kinoveaJson");
 if(kvJson)kvJson.addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;loadKinoveaJson(f).catch(err=>kSetStatus("Error al leer el JSON de Kinovea: "+err.message)).finally(()=>e.target.value="")});
 bindKinovea();renderKinovea();
 
