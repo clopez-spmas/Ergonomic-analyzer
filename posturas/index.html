@@ -27,7 +27,7 @@
 <section class="screen active" data-screen="0">
   <div class="screen-nav">
     <button type="button" class="nav-secondary" data-prev disabled>Anterior</button>
-    <div class="screen-counter">Pantalla 1 de 3</div>
+    <div class="screen-counter">Pantalla 1 de 4</div>
     <button type="button" class="nav-primary" data-next>Siguiente</button>
   </div>
 
@@ -67,7 +67,7 @@
 <section class="screen" data-screen="1">
   <div class="screen-nav">
     <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 2 de 3</div>
+    <div class="screen-counter">Pantalla 2 de 4</div>
     <button type="button" class="nav-primary" data-next>Siguiente</button>
   </div>
 
@@ -118,14 +118,14 @@
   </div>
 
   <div class="notice">
-    <strong>Importante:</strong> en esta fase solo se prepara el vídeo y el tracking. Los puntos y datos concretos que se utilizarán para hombro, codo y muñeca se definirán después.
+    <strong>Importante:</strong> en esta fase solo se prepara el vídeo y el tracking. Los puntos y datos concretos para hombro y codo se seleccionarán en las pantallas de análisis. Para codo se reutilizan los marcadores ya asignados.
   </div>
 </section>
 
 <section class="screen" data-screen="2">
   <div class="screen-nav">
     <button type="button" class="nav-secondary" data-prev>Anterior</button>
-    <div class="screen-counter">Pantalla 3 de 3</div>
+    <div class="screen-counter">Pantalla 3 de 4</div>
     <button type="button" class="nav-primary" id="prepareButton">Calcular / actualizar análisis</button>
   </div>
 
@@ -143,6 +143,24 @@
 
   <div class="notice">
     <strong>Criterios:</strong> en perfil se analiza flexión ≥80° y extensión &gt;20°; en frontal se analiza abducción ≥80°. El usuario solo asigna los marcadores anatómicos de Kinovea; el tipo de movimiento se determina automáticamente según la vista.
+  </div>
+</section>
+
+<section class="screen" data-screen="3">
+  <div class="screen-nav">
+    <button type="button" class="nav-secondary" data-prev>Anterior</button>
+    <div class="screen-counter">Pantalla 4 de 4</div>
+    <button type="button" class="nav-primary" id="elbowPrepareButton">Calcular / actualizar análisis</button>
+  </div>
+  <div class="screen-title">
+    <span>4</span>
+    <div>
+      <h2>Análisis de codo</h2>
+      <p>Se analiza flexión/extensión en perfil y pronación/supinación en frontal, tomando 0° como la postura natural de referencia.</p>
+    </div>
+  </div>
+  <div id="elbowStudy" class="prepared-study">
+    <div class="placeholder">Pendiente de cargar el vídeo y el JSON de Kinovea.</div>
   </div>
 </section>
 
