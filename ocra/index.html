@@ -378,6 +378,54 @@
   <div class="notice">Los componentes de postura (hombro, codo, muñeca y mano) se muestran por separado, pero actualmente no aportan puntuación al cálculo final. La estereotipia sí se incorpora al resultado. La fuerza se desglosa exactamente según las tres opciones Borg existentes.</div>
 </section>
 </section>
+<section class="screen" data-screen="16">
+  <div class="screen-title"><span>17</span><div><h2>Tablas para informe / Word</h2><p>Tablas preparadas para copiar y pegar directamente en Word. Los resultados se actualizan con los datos del estudio.</p></div></div>
+  <div class="tables-toolbar">
+    <button type="button" class="toolbar-btn" id="copyOCRAResultsBtn">Copiar tablas para Word</button>
+    <button type="button" class="toolbar-btn" id="printOCRAResultsBtn">Imprimir / guardar PDF</button>
+  </div>
+  <div id="wordTablesArea" class="word-tables-area">
+    <div class="word-table-block">
+      <h3>RESULTADOS CHECK LIST OCRA</h3>
+      <table class="word-table" id="wordResultsTable">
+        <thead><tr><th>Factor</th><th>Extremidad derecha</th><th>Extremidad izquierda</th></tr></thead>
+        <tbody>
+          <tr><td>Recuperación</td><td id="wordRecDx">—</td><td id="wordRecIx">—</td></tr>
+          <tr><td>Frecuencia</td><td id="wordFreqDx">—</td><td id="wordFreqIx">—</td></tr>
+          <tr><td>Fuerza</td><td id="wordForceDx">—</td><td id="wordForceIx">—</td></tr>
+          <tr><td>Postura + estereotipia</td><td id="wordPostureDx">—</td><td id="wordPostureIx">—</td></tr>
+          <tr><td>Complementarios</td><td id="wordCompDx">—</td><td id="wordCompIx">—</td></tr>
+          <tr><td>Suma de factores</td><td id="wordBaseDx">—</td><td id="wordBaseIx">—</td></tr>
+          <tr><td>Factor de recuperación</td><td id="wordRecFactorDx">—</td><td id="wordRecFactorIx">—</td></tr>
+          <tr><td>Factor de duración</td><td id="wordDurDx">—</td><td id="wordDurIx">—</td></tr>
+          <tr class="word-total"><td>ÍNDICE CHECK LIST OCRA</td><td id="wordIndexDx">—</td><td id="wordIndexIx">—</td></tr>
+          <tr><td>Valoración</td><td id="wordRiskDx">—</td><td id="wordRiskIx">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="word-table-block">
+      <h3>ÍNDICE DE RIESGO CHECK LIST OCRA</h3>
+      <table class="word-table risk-summary-table">
+        <thead><tr><th>IR</th><th>NIVEL DE RIESGO</th><th>EXTREMIDAD DERECHA</th><th>EXTREMIDAD IZQUIERDA</th></tr></thead>
+        <tbody><tr><td id="riskRangeDx">—</td><td id="riskLevelDx">—</td><td id="riskCellDx">—</td><td id="riskCellIx">—</td></tr></tbody>
+      </table>
+    </div>
+    <div class="word-table-block">
+      <h3>CLASIFICACIÓN DEL ÍNDICE CHECK LIST OCRA</h3>
+      <table class="word-table risk-scale-table">
+        <thead><tr><th>IR</th><th>Nivel de riesgo</th><th>Valoración</th></tr></thead>
+        <tbody>
+          <tr data-risk-class="green"><td>≤ 7,5</td><td>Verde</td><td>Aceptable</td></tr>
+          <tr data-risk-class="yellow"><td>7,6 – 11</td><td>Amarillo</td><td>Borderline / riesgo muy leve</td></tr>
+          <tr data-risk-class="light-red"><td>11,1 – 14</td><td>Rojo suave</td><td>Riesgo leve</td></tr>
+          <tr data-risk-class="red"><td>14,1 – 22,5</td><td>Rojo</td><td>Riesgo medio</td></tr>
+          <tr data-risk-class="purple"><td>&gt; 22,5</td><td>Morado</td><td>Riesgo alto</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="notice">La clasificación se muestra por extremidad y la celda del índice se colorea automáticamente según el rango obtenido.</div>
+</section>
 </form>
 <script src="app.js"></script>
 </body>
