@@ -199,8 +199,26 @@ document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿C
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
 try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
 
-const kvJson=document.getElementById("kinoveaJson");
-if(kvJson)kvJson.addEventListener("change",e=>{const files=[...e.target.files||[]];if(!files.length)return;files.reduce((p,f)=>p.then(()=>loadKinoveaJson(f)),Promise.resolve()).then(()=>renderKinoveaFileList()).catch(err=>kSetStatus("Error al leer el JSON de Kinovea: "+err.message));});
+function addKinoveaFileInput(){
+ const container=document.getElementById("kinoveaFileInputs");if(!container)return;
+ const count=container.querySelectorAll("input[data-kinovea-file]").length;
+ if(count>=12){kSetStatus("Ya se han alcanzado los 12 archivos JSON permitidos.");return}
+ const slot=count+1,wrap=document.createElement("label");wrap.setAttribute("data-kinovea-slot",slot);
+ wrap.innerHTML="JSON "+slot+'<input type="file" accept=".json,application/json" data-kinovea-file><small>Seleccione un archivo desde cualquier carpeta.</small>';
+ container.appendChild(wrap);
+ const input=wrap.querySelector("input");
+ input.addEventListener("change",async e=>{
+   const file=e.target.files?.[0];if(!file)return;
+   try{
+     await loadKinoveaJson(file);
+     renderKinoveaFileList();
+     if(container.querySelectorAll("input[data-kinovea-file]").length<12) addKinoveaFileInput();
+   }catch(err){kSetStatus("Error al leer el JSON de Kinovea: "+err.message)}
+ });
+}
+const addKinoveaJsonBtn=document.getElementById("addKinoveaJsonBtn");
+if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileInput);
+addKinoveaFileInput();
 bindKinovea();renderKinovea();
 
 show(0);
