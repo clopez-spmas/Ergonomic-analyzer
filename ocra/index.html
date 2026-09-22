@@ -199,7 +199,7 @@
 <section class="screen" data-screen="8">
   <div class="screen-title"><span>9</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Cargue únicamente el JSON exportado por Kinovea y seleccione el periodo que se analizará.</p></div></div>
   <div class="form-grid">
-    <label>JSON de Kinovea<input id="kinoveaJson" type="file" accept=".json,application/json" multiple></label>
+    <label>JSON de Kinovea (puede seleccionar varios archivos a la vez)<input id="kinoveaJson" type="file" accept=".json,application/json" multiple><small>Seleccione varios JSON manteniendo Ctrl (o Mayús) en el selector de archivos. Los archivos se conservarán juntos para el mismo vídeo/estudio.</small><div id="kinoveaFileList" class="notice">No hay JSON seleccionados.</div></label>
   </div>
   <div class="calculation-box">
     <strong>Periodo de análisis</strong>
@@ -209,7 +209,7 @@
       <label id="kinoveaEndField" hidden>Tiempo final (s)<input id="kinoveaEnd" type="number" min="0" step="0.01" value="0"></label>
       <label id="kinoveaCyclesField" hidden>Número de ciclos visibles<input id="kinoveaCycles" type="number" min="1" step="1" value="1"></label>
     </div>
-    <div id="kinoveaRangeSummary" class="notice">Cargue el JSON para definir el intervalo.</div>
+    <div id="kinoveaRangeSummary" class="notice">Seleccione el modo de análisis. Los campos adicionales aparecerán solo cuando sean necesarios.</div>
   </div>
   <div id="kinoveaMapping" class="calculation-box"><strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div></div>
 </section>
