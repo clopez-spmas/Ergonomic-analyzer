@@ -1,10 +1,7 @@
 (()=>{"use strict";
 const form=document.getElementById("ocraForm"),screens=[...document.querySelectorAll(".screen")],counter=document.getElementById("screenCounter"),prev=document.getElementById("prevBtn"),next=document.getElementById("nextBtn"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
-let current=0,dirty=false;
+let dirty=false;
 const STORAGE_KEY="ergonomic-analyzer-ocra-draft",fields=[...form.querySelectorAll("input,select,textarea")];
-function navigate(delta){show(current+delta)}
-prev.addEventListener("click",()=>navigate(-1));
-next.addEventListener("click",()=>navigate(1));
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
 const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
@@ -222,7 +219,7 @@ function renderKinoveaFileList(){
  });
 }
 function loadKinoveaJson(file){
- return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);kinoveaState.dataSets=kinoveaState.dataSets||[];const exists=kinoveaState.dataSets.some(x=>x.fileName===file.name&&x.data?.duration===data.duration&&x.data?.frames?.length===data.frames.length);if(exists)return;const ds={fileName:file.name,data,mapping:{}};kinoveaState.dataSets.push(ds);kinoveaState.data=kinoveaState.data||data;kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();bindKinovea();renderKinoveaFileList();kSetStatus("JSON de Kinovea cargado correctamente. Se han cargado "+kinoveaState.dataSets.length+" archivo(s). Puede seleccionar varios a la vez.");});
+ return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);kinoveaState.dataSets=kinoveaState.dataSets||[];const exists=kinoveaState.dataSets.some(x=>x.fileName===file.name&&x.data?.duration===data.duration&&x.data?.frames?.length===data.frames.length);if(exists)return;const ds={fileName:file.name,data,mapping:{}};kinoveaState.dataSets.push(ds);kinoveaState.data=kinoveaState.data||data;kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();renderKinoveaFileList();kSetStatus("JSON de Kinovea cargado correctamente. Se han cargado "+kinoveaState.dataSets.length+" archivo(s). Puede seleccionar varios a la vez.");});
 }
 
 function calculate(){
@@ -241,14 +238,13 @@ function calculate(){
  set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalPostureIx",ixS);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
 }
 function safeCalculate(){try{calculate();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
-function show(i){current=Math.max(0,Math.min(screens.length-1,i));screens.forEach((s,k)=>s.classList.toggle("active",k===current));counter.textContent="Pantalla "+(current+1)+" de "+screens.length;prev.disabled=current===0;next.disabled=current===screens.length-1;window.scrollTo({top:0,behavior:"smooth"});safeCalculate()}
 function markDirty(){dirty=true;status.textContent="";safeCalculate()}
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
 document.getElementById("saveBtn").addEventListener("click",()=>{const d=values(),blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente."});
 document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
 fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
-document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";show(0)});
+document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);});
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
 try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
 
@@ -273,5 +269,5 @@ if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileIn
 addKinoveaFileInput();
 bindKinovea();renderKinovea();
 
-show(0);
+window.OCRA_Navigation.show(0);
 })();
