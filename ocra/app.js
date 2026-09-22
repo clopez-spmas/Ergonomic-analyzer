@@ -2,6 +2,8 @@
 const form=document.getElementById("ocraForm"),screens=[...document.querySelectorAll(".screen")],counter=document.getElementById("screenCounter"),prev=document.getElementById("prevBtn"),next=document.getElementById("nextBtn"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
 let current=0,dirty=false;
 const STORAGE_KEY="ergonomic-analyzer-ocra-draft",fields=[...form.querySelectorAll("input,select,textarea")];
+prev.addEventListener("click",()=>show(current-1));
+next.addEventListener("click",()=>show(current+1));
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
 const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
@@ -239,7 +241,7 @@ function calculate(){
 }
 function show(i){kRenderAnalyses();current=Math.max(0,Math.min(screens.length-1,i));screens.forEach((s,k)=>s.classList.toggle("active",k===current));counter.textContent="Pantalla "+(current+1)+" de "+screens.length;prev.disabled=current===0;next.disabled=current===screens.length-1;window.scrollTo({top:0,behavior:"smooth"});calculate()}
 function markDirty(){dirty=true;status.textContent="";calculate()}
-fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});prev.addEventListener("click",()=>show(current-1));next.addEventListener("click",()=>show(current+1));
+fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
 document.getElementById("saveBtn").addEventListener("click",()=>{const d=values(),blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente."});
 document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
