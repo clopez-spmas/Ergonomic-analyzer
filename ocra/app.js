@@ -315,8 +315,6 @@ renderKinovea();
 
 
 
-})();
-
 function initApp(){
   // La navegación se inicializa primero y no depende del cálculo ni de Kinovea.
   initNavigation();
@@ -325,3 +323,4 @@ function initApp(){
 }
 
 initApp();
+})();
