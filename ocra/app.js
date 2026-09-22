@@ -38,12 +38,157 @@ function initNavigation(){
 }
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
-function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);dirty=false;safeCalculate();status.textContent="Estudio cargado correctamente."}
+const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""},recovery:{...recoveryState,pauses:(recoveryState.pauses||[]).map(p=>({...p}))}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
+function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();safeCalculate();status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
 const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5};
 const recAuto={480:[7,6,5,4,3,2,1,0],460:[7,6,5,4,3,2,1],440:[6.5,5.5,4.5,3.5,2.5,1.5,.5],420:[6,5,4,3,2.5,1.5,0],390:[5.5,4.5,3.5,2.5,1.5,.5,0],360:[5,4,3,2,1,0],330:[4.5,3.5,2.5,1.5,.5,0],300:[4,3,2,1,0],270:[3.5,2.5,1.5,.5,0],240:[3,2,1,0],210:[2.5,1.5,.5,0],180:[2,1,0],120:[1,0],0:[0]};
+let recoveryState={method:"schedule",start:"",end:"",minPause:8,pauses:[],mealId:null,lastResult:null};
+
+function recoveryTimeToMinutes(value){
+ const m=/^(\\d{1,2}):(\\d{2})$/.exec(String(value||""));
+ if(!m)return null;
+ const h=Number(m[1]),min=Number(m[2]);
+ return Number.isFinite(h)&&Number.isFinite(min)&&h>=0&&h<24&&min>=0&&min<60?h*60+min:null;
+}
+function recoveryMinutesToTime(total){
+ const t=((Math.round(total)%1440)+1440)%1440;
+ return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+}
+function recoveryNormalise(){
+ recoveryState.pauses=Array.isArray(recoveryState.pauses)?recoveryState.pauses:[];
+ recoveryState.minPause=Number(recoveryState.minPause)===10?10:8;
+ return recoveryState;
+}
+function recoveryResidualScore(minutes){
+ if(minutes<20)return 0;
+ if(minutes<=40)return .5;
+ if(minutes<80)return 1;
+ return null;
+}
+function calculateRecoverySchedule(state){
+ const s=recoveryTimeToMinutes(state.start), rawEnd=recoveryTimeToMinutes(state.end);
+ if(s===null||rawEnd===null)return {hours:null,valid:false,reason:"Indique la hora de inicio y finalización del turno."};
+ let e=rawEnd;
+ if(e<=s)e+=1440;
+ const duration=e-s;
+ if(duration<=0)return {hours:null,valid:false,reason:"La duración del turno debe ser superior a 0 minutos."};
+ const normalised=(state.pauses||[]).map((p,index)=>{
+   const ps=recoveryTimeToMinutes(p.start),peRaw=recoveryTimeToMinutes(p.end);
+   if(ps===null||peRaw===null)return null;
+   let pe=peRaw;
+   while(pe<=ps)pe+=1440;
+   while(ps<s) { /* no mutation of source */ break; }
+   let relS=ps-s,relE=pe-s;
+   while(relE<0){relS+=1440;relE+=1440}
+   while(relS>duration){relS-=1440;relE-=1440}
+   return {id:p.id||("pause_"+index),start:relS,end:relE,duration:Math.max(0,relE-relS),habitual:p.habitual!==false,type:p.type==="meal"?"meal":"pause",label:p.label||""};
+ }).filter(Boolean);
+ const longMeals=normalised.filter(p=>p.type==="meal"&&p.habitual&&p.duration>=30&&p.start>=0&&p.end<=duration);
+ const primaryMeal=longMeals[0]||null;
+ const validPauses=normalised.filter(p=>p.habitual&&p.duration>=state.minPause&&p.start>=0&&p.end<=duration);
+ const validForBlocks=validPauses.filter(p=>!primaryMeal||p.id!==primaryMeal.id);
+ if(primaryMeal){
+   validForBlocks.push(...validPauses.filter(p=>p.id===primaryMeal.id));
+ }else{
+   /* A meal under 30 minutes remains a normal pause and can recover its containing block. */
+ }
+ const steps=[], recoveredRanges=[];
+ let no=0;
+ const addBlock=(a,b)=>{
+   if(b<=a)return;
+   const hit=validForBlocks.some(p=>p.end>a&&p.start<b);
+   steps.push({kind:"block",start:a,end:b,recovered:hit,hours:hit?0:1,pauseIds:validForBlocks.filter(p=>p.end>a&&p.start<b).map(p=>p.id)});
+   if(hit)recoveredRanges.push([a,b]); else no+=1;
+ };
+ const addResidual=(a,b)=>{
+   if(b<=a)return;
+   const value=recoveryResidualScore(b-a);
+   steps.push({kind:"residual",start:a,end:b,recovered:value===0,hours:value===null?0:value,pauseIds:[]});
+   if(value!==null)no+=value;
+ };
+ const scanSequence=(from,to)=>{
+   let cursor=to;
+   while(cursor-60>=from){addBlock(cursor-60,cursor);cursor-=60}
+   addResidual(from,cursor);
+ };
+ if(primaryMeal){
+   const preFrom=s,preTo=Math.max(s,Math.min(e,primaryMeal.start-60));
+   if(preTo>preFrom)scanSequence(preFrom,preTo);
+   const postFrom=Math.min(e,Math.max(s,primaryMeal.end)),postTo=Math.max(postFrom,e-60);
+   if(postTo>postFrom)scanSequence(postFrom,postTo);
+ }else{
+   const to=Math.max(s,e-60);
+   if(to>s)scanSequence(s,to);
+ }
+ return {hours:Math.max(0,no),valid:true,reason:"",duration,meal:primaryMeal,pauses:normalised,steps,recoveredRanges};
+}
+function recoveryStepLabel(step){
+ const a=recoveryMinutesToTime(recoveryTimeToMinutes(recoveryState.start)+step.start);
+ const b=recoveryMinutesToTime(recoveryTimeToMinutes(recoveryState.start)+step.end);
+ if(step.kind==="block")return a+"–"+b+" · bloque de 60 min";
+ return a+"–"+b+" · periodo parcial";
+}
+function recoveryRenderResult(result){
+ const el=document.getElementById("recoveryScheduleResult"),detail=document.getElementById("recoveryScheduleDetail");
+ if(!el||!detail)return;
+ if(!result.valid){el.textContent="—";detail.innerHTML='<div class="placeholder">'+escK(result.reason)+'</div>';return}
+ el.textContent=fmt(result.hours,1)+" h";
+ const rows=result.steps.map(step=>{
+   const pauseNames=step.pauseIds.map(id=>{const p=(result.pauses||[]).find(x=>x.id===id);return p?"pausa "+(p.label||id):id}).join(", ");
+   const state=step.kind==="residual"&&step.hours===0?"Recuperado automáticamente":step.hours===0?"Recuperado":step.hours===.5?"0,5 h sin recuperación":"1 h sin recuperación";
+   return "<tr><td>"+recoveryStepLabel(step)+"</td><td>"+(step.kind==="block"?"Sí":"No")+" </td><td>"+(pauseNames||"—")+"</td><td>"+state+"</td></tr>";
+ }).join("");
+ const meal=result.meal?"Comida válida: "+recoveryMinutesToTime(recoveryTimeToMinutes(recoveryState.start)+result.meal.start)+"–"+recoveryMinutesToTime(recoveryTimeToMinutes(recoveryState.start)+result.meal.end)+" ("+fmt(result.meal.duration,0)+" min).":"No hay comida ≥30 min; cualquier comida corta se trata como pausa.";
+ detail.innerHTML='<div class="notice"><strong>'+meal+'</strong> La última hora del turno se considera recuperada por defecto; con comida válida, también se considera recuperada la hora inmediatamente anterior. Las pausas situadas en esos tramos no añaden otra hora de recuperación.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Periodo</th><th>Bloque 60 min</th><th>Pausa incluida</th><th>Valoración</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function recoverySyncOrganisation(){
+ const r=recoveryState.lastResult;
+ if(!r?.valid)return;
+ const pauses=(r.pauses||[]).filter(p=>p.habitual&&p.duration>=recoveryState.minPause&&p.type!=="meal");
+ const meal=r.meal;
+ const set=(name,value)=>{const el=form.elements[name];if(el)el.value=String(value);};
+ set("numPausas",pauses.length);
+ set("tiempoPausas",Math.round(pauses.reduce((s,p)=>s+p.duration,0)));
+ set("pausaComer",meal?Math.round(meal.duration):0);
+}
+function recoveryCalculateAndRender(){
+ recoveryNormalise();
+ const result=calculateRecoverySchedule(recoveryState);
+ recoveryState.lastResult=result;
+ recoveryRenderResult(result);
+ recoverySyncOrganisation();
+ const auto=document.getElementById("recAutomatico");
+ if(auto)auto.textContent=result.valid?fmt(result.hours,1):"—";
+ const mult=document.getElementById("recMultAutomatico");
+ if(mult)mult.textContent=result.valid?fmt(recoveryMultiplier(result.hours),3):"—";
+ return result;
+}
+function recoveryRenderInputs(){
+ recoveryNormalise();
+ const start=document.getElementById("recoveryStart"),end=document.getElementById("recoveryEnd"),min=document.getElementById("recoveryMinPause");
+ if(start)start.value=recoveryState.start||form.elements.horaInicio?.value||"";
+ if(end)end.value=recoveryState.end||form.elements.horaFin?.value||"";
+ if(min)min.value=String(recoveryState.minPause);
+ const tbody=document.getElementById("recoveryPausesBody");if(!tbody)return;
+ tbody.innerHTML=(recoveryState.pauses||[]).map((p,i)=>'<tr><td>'+(i+1)+'</td><td><select data-recovery-type="'+i+'"><option value="pause" '+(p.type==="pause"?"selected":"")+'>Pausa habitual</option><option value="meal" '+(p.type==="meal"?"selected":"")+'>Comida</option></select></td><td><input type="time" data-recovery-start="'+i+'" value="'+escK(p.start||"")+'"></td><td><input type="time" data-recovery-end="'+i+'" value="'+escK(p.end||"")+'"></td><td><input type="checkbox" data-recovery-habitual="'+i+'" '+(p.habitual!==false?"checked":"")+'></td><td><button type="button" class="toolbar-btn" data-recovery-remove="'+i+'">Eliminar</button></td></tr>').join("")||'<tr><td colspan="6">No hay pausas añadidas.</td></tr>';
+ tbody.querySelectorAll("[data-recovery-type]").forEach(x=>x.onchange=()=>{recoveryState.pauses[Number(x.dataset.recoveryType)].type=x.value;dirty=true;recoveryCalculateAndRender();safeCalculate()});
+ tbody.querySelectorAll("[data-recovery-start]").forEach(x=>x.onchange=()=>{recoveryState.pauses[Number(x.dataset.recoveryStart)].start=x.value;dirty=true;recoveryCalculateAndRender();safeCalculate()});
+ tbody.querySelectorAll("[data-recovery-end]").forEach(x=>x.onchange=()=>{recoveryState.pauses[Number(x.dataset.recoveryEnd)].end=x.value;dirty=true;recoveryCalculateAndRender();safeCalculate()});
+ tbody.querySelectorAll("[data-recovery-habitual]").forEach(x=>x.onchange=()=>{recoveryState.pauses[Number(x.dataset.recoveryHabitual)].habitual=x.checked;dirty=true;recoveryCalculateAndRender();safeCalculate()});
+ tbody.querySelectorAll("[data-recovery-remove]").forEach(x=>x.onclick=()=>{recoveryState.pauses.splice(Number(x.dataset.recoveryRemove),1);dirty=true;recoveryRenderInputs();recoveryCalculateAndRender();safeCalculate()});
+}
+function initRecoverySchedule(){
+ recoveryNormalise();
+ const add=document.getElementById("addRecoveryPauseBtn");
+ if(add)add.onclick=()=>{recoveryState.pauses.push({id:"pause_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6),type:"pause",start:"",end:"",habitual:true,label:""});dirty=true;recoveryRenderInputs();recoveryCalculateAndRender();};
+ [["recoveryStart","start"],["recoveryEnd","end"]].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=()=>{recoveryState[key]=el.value;dirty=true;recoveryCalculateAndRender();safeCalculate()}});
+ const min=document.getElementById("recoveryMinPause");if(min)min.onchange=()=>{recoveryState.minPause=Number(min.value)===10?10:8;dirty=true;recoveryCalculateAndRender();safeCalculate()};
+ recoveryRenderInputs();
+ recoveryCalculateAndRender();
+}
+
 const freqYes=[[0,0],[2.5,0],[7.5,0],[12.5,0],[17.5,0],[20,0],[22.5,.5],[27.5,1],[30,1],[32.5,2],[35,2],[37.5,3],[40,3],[42.5,4],[45,4],[47.5,5],[50,5],[52.5,6],[55,6],[57.5,7],[60,7],[62.5,8],[65,8],[67.5,9],[70,9],[72.5,9]];
 const freqNo=[[0,0],[2.5,0],[7.5,0],[12.5,0],[17.5,0],[20,0],[22.5,.5],[27.5,1],[30,2],[32.5,2],[35,2],[37.5,4],[40,4],[42.5,5],[45,5],[47.5,6],[50,6],[52.5,7],[55,7],[57.5,8],[60,8],[62.5,9],[65,9],[67.5,10],[70,10],[72.5,10]];
 const force34=[[0,0],[.05,.5],[.10,.5],[.18,1],[.26,1.5],[.33,2],[.37,2.5],[.42,3],[.46,3.5],[.50,4],[.54,4.5],[.58,5],[.63,5.5],[.67,6],[.75,6.5],[.83,7],[.92,7.5],[1,8]];
@@ -391,7 +536,7 @@ async function loadKinoveaJson(file){
 function calculate(){
  const official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  document.getElementById("turnoEfectivo").textContent=fmt(eff,1);document.getElementById("tntrPausas").textContent=fmt(pauses,1);document.getElementById("tntrComida").textContent=fmt(meal,1);document.getElementById("tntrNoRep").textContent=fmt(nonRep,1);document.getElementById("tiempoNeto").textContent=fmt(tntr,1);document.getElementById("duracionTNTR").textContent=fmt(tntr,1);
- const autoH=recoveryHours(eff,n("numPausas"),meal),manualRaw=form.elements.horasSinRecManual?.value.trim(),manual=manualRaw===""?null:parseFloat(manualRaw),useH=Number.isFinite(manual)?Math.max(0,Math.min(8,manual)):autoH,rm=recoveryMultiplier(useH);
+ const recoveryResult=recoveryCalculateAndRender(),autoH=recoveryResult.valid?recoveryResult.hours:recoveryHours(eff,n("numPausas"),meal),manualRaw=form.elements.horasSinRecManual?.value.trim(),manual=manualRaw===""?null:parseFloat(manualRaw),useH=Number.isFinite(manual)?Math.max(0,Math.min(8,manual)):autoH,rm=recoveryMultiplier(useH);
  document.getElementById("recAutomatico").textContent=autoH===null?"—":fmt(autoH,1);document.getElementById("recMultAutomatico").textContent=autoH===null?"—":fmt(recoveryMultiplier(autoH),3);document.getElementById("horasSinRecuperacion").textContent=useH===null?"—":fmt(useH,1);document.getElementById("recOrigen").textContent=useH===null?"—":(Number.isFinite(manual)?"Manual":"Automático");document.getElementById("multRecuperacion").textContent=rm===null?"—":fmt(rm,3);
  const md=lookup(duration,tntr);document.getElementById("multDuracion").textContent=fmt(md,3);
  const cycles=n("ciclosEfectivos"),obs=n("cicloObservado"),cycle=cycles>0?60*tntr/cycles:0,diff=cycle>0&&obs>0?Math.abs(cycle-obs)/cycle*100:null;
@@ -426,6 +571,7 @@ if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileIn
 
 
 function initCore(){
+initRecoverySchedule();
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
 document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
