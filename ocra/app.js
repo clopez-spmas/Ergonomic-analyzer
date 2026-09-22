@@ -1,5 +1,5 @@
 (()=>{"use strict";
-const form=document.getElementById("ocraForm"),screens=[...document.querySelectorAll(".screen")],counter=document.getElementById("screenCounter"),prev=document.getElementById("prevBtn"),next=document.getElementById("nextBtn"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
+const form=document.getElementById("ocraForm"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
 let dirty=false;
 const STORAGE_KEY="ergonomic-analyzer-ocra-draft",fields=[...form.querySelectorAll("input,select,textarea")];
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
@@ -267,7 +267,40 @@ function addKinoveaFileInput(){
 const addKinoveaJsonBtn=document.getElementById("addKinoveaJsonBtn");
 if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileInput);
 addKinoveaFileInput();
-bindKinovea();renderKinovea();
+bindKinovea();
+renderKinovea();
 
-window.OCRA_Navigation.show(0);
+function initNavigation(){
+ const screens=[...document.querySelectorAll(".screen")];
+ const counter=document.getElementById("screenCounter");
+ const prev=document.getElementById("prevBtn");
+ const next=document.getElementById("nextBtn");
+ let current=0;
+
+ function renderNavigation(){
+   current=Math.max(0,Math.min(screens.length-1,current));
+   screens.forEach((screen,index)=>screen.classList.toggle("active",index===current));
+   counter.textContent="Pantalla "+(current+1)+" de "+screens.length;
+   prev.disabled=current===0;
+   next.disabled=current===screens.length-1;
+   window.scrollTo({top:0,behavior:"smooth"});
+ }
+
+ function show(index){
+   current=Number.isFinite(index)?index:0;
+   renderNavigation();
+ }
+
+ function navigate(delta){
+   show(current+delta);
+ }
+
+ prev.addEventListener("click",()=>navigate(-1));
+ next.addEventListener("click",()=>navigate(1));
+
+ window.OCRA_Navigation={show,navigate,get current(){return current}};
+ renderNavigation();
+}
+
+initNavigation();
 })();
