@@ -17,7 +17,7 @@
 
 <nav class="screen-nav" aria-label="Navegación del estudio">
   <button type="button" id="homeBtn" class="nav-secondary">Inicio</button>
-  <div class="screen-counter" id="screenCounter">Pantalla 1 de 15</div>
+  <div class="screen-counter" id="screenCounter">Pantalla 1 de 16</div>
   <button type="button" id="prevBtn" class="nav-secondary">Anterior</button>
   <button type="button" id="nextBtn" class="nav-primary">Siguiente</button>
 </nav>
@@ -196,13 +196,49 @@
   </details>
 </section>
 
-<section class="screen" data-screen="8"><div class="screen-title"><span>9</span><div><h2>Postura de hombro</h2><p>Pantalla preparada. La metodología y los cálculos posturales se desarrollarán posteriormente.</p></div></div><div class="placeholder">Módulo preparado para desarrollo posterior. No se realizan cálculos en esta fase.</div></section>
-<section class="screen" data-screen="9"><div class="screen-title"><span>10</span><div><h2>Postura de codo</h2><p>Pantalla preparada. La metodología y los cálculos posturales se desarrollarán posteriormente.</p></div></div><div class="placeholder">Módulo preparado para desarrollo posterior. No se realizan cálculos en esta fase.</div></section>
-<section class="screen" data-screen="10"><div class="screen-title"><span>11</span><div><h2>Postura de muñeca</h2><p>Pantalla preparada. La metodología y los cálculos posturales se desarrollarán posteriormente.</p></div></div><div class="placeholder">Módulo preparado para desarrollo posterior. No se realizan cálculos en esta fase.</div></section>
-<section class="screen" data-screen="11"><div class="screen-title"><span>12</span><div><h2>Postura de mano y dedos</h2><p>Pantalla preparada. La metodología y los cálculos posturales se desarrollarán posteriormente.</p></div></div><div class="placeholder">Módulo preparado para desarrollo posterior. No se realizan cálculos en esta fase.</div></section>
+<section class="screen" data-screen="8">
+  <div class="screen-title"><span>9</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Cargue el vídeo y el JSON exportado por Kinovea y seleccione el tramo que se analizará.</p></div></div>
+  <div class="form-grid">
+    <label>Vídeo<input id="kinoveaVideo" type="file" accept="video/*"></label>
+    <label>JSON de Kinovea<input id="kinoveaJson" type="file" accept=".json,application/json"></label>
+  </div>
+  <div id="kinoveaVideoInfo" class="notice">Ningún vídeo seleccionado.</div>
+  <div class="calculation-box">
+    <strong>Periodo de análisis</strong>
+    <div class="form-grid">
+      <label>Modo<select id="kinoveaRangeMode"><option value="all">Todo el vídeo</option><option value="interval">Desde un tiempo hasta otro</option><option value="cycles">Número de ciclos visibles en el vídeo</option></select></label>
+      <label id="kinoveaStartField" hidden>Tiempo inicial (s)<input id="kinoveaStart" type="number" min="0" step="0.01" value="0"></label>
+      <label id="kinoveaEndField" hidden>Tiempo final (s)<input id="kinoveaEnd" type="number" min="0" step="0.01" value="0"></label>
+      <label id="kinoveaCyclesField" hidden>Número de ciclos visibles<input id="kinoveaCycles" type="number" min="1" step="1" value="1"></label>
+    </div>
+    <div id="kinoveaRangeSummary" class="notice">Cargue el JSON para definir el intervalo.</div>
+  </div>
+  <div id="kinoveaMapping" class="calculation-box"><strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div></div>
+</section>
+
+<section class="screen" data-screen="9">
+  <div class="screen-title"><span>10</span><div><h2>Datos importados de Kinovea</h2><p>Comprobación de los datos que el programa ha leído del JSON.</p></div></div>
+  <div id="kinoveaSummary" class="calculation-box"><div class="placeholder">Cargue el JSON de Kinovea.</div></div>
+  <div id="kinoveaDataTable" class="calculation-box"><div class="placeholder">Todavía no hay datos importados.</div></div>
+</section>
+
+<section class="screen" data-screen="10">
+  <div class="screen-title"><span>11</span><div><h2>Postura de hombro</h2><p>Análisis de flexión, extensión y abducción a partir de los marcadores de Kinovea.</p></div></div>
+  <div id="ocraShoulderPanel" class="calculation-box"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div>
+</section>
+
+<section class="screen" data-screen="11">
+  <div class="screen-title"><span>12</span><div><h2>Postura de codo</h2><p>Análisis de flexión, extensión y pronación/supinación.</p></div></div>
+  <div id="ocraElbowPanel" class="calculation-box"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div>
+</section>
+
+<section class="screen" data-screen="15">
+  <div class="screen-title"><span>13</span><div><h2>Postura de muñeca</h2><p>Análisis de flexión, extensión y desviación radial/cubital.</p></div></div>
+  <div id="ocraWristPanel" class="calculation-box"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div>
+</section>
 
 <section class="screen" data-screen="12">
-  <div class="screen-title"><span>13</span><div><h2>Estereotipia</h2><p>Seleccione las condiciones observadas. El programa calcula la puntuación correspondiente.</p></div></div>
+  <div class="screen-title"><span>14</span><div><h2>Estereotipia</h2><p>Seleccione las condiciones observadas. El programa calcula la puntuación correspondiente.</p></div></div>
   <div class="side-grid">
     <fieldset><legend>Derecha (DX)</legend>
       <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
@@ -224,7 +260,7 @@
 </section>
 
 <section class="screen" data-screen="13">
-  <div class="screen-title"><span>14</span><div><h2>Factores complementarios</h2><p>Seleccione una condición del bloque físico-mecánico y una del bloque socio-organizativo.</p></div></div>
+  <div class="screen-title"><span>15</span><div><h2>Factores complementarios</h2><p>Seleccione una condición del bloque físico-mecánico y una del bloque socio-organizativo.</p></div></div>
   <div class="side-grid">
     <fieldset><legend>Bloque A · físico-mecánico</legend>
       <div class="checklist">
@@ -255,7 +291,7 @@
 </section>
 
 <section class="screen" data-screen="14">
-  <div class="screen-title"><span>15</span><div><h2>Cálculo y resultado final</h2><p>Resultado independiente para la extremidad derecha (DX) y la izquierda (IX).</p></div></div>
+  <div class="screen-title"><span>16</span><div><h2>Cálculo y resultado final</h2><p>Resultado independiente para la extremidad derecha (DX) y la izquierda (IX).</p></div></div>
   <div class="final-side-grid">
     <section class="final-side"><h3>Extremidad derecha · DX</h3><div class="result-list">
       <div><span>Frecuencia</span><output id="finalFreqDx">—</output></div>
