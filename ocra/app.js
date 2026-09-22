@@ -168,8 +168,9 @@ function restoreKinoveaState(saved){
  if(saved.shoulder)kinoveaState.shoulder=saved.shoulder;if(saved.elbow)kinoveaState.elbow=saved.elbow;if(saved.wrist)kinoveaState.wrist=saved.wrist;
  renderKRange();renderKinovea();
 }
+function renderKinoveaFileList(){const el=document.getElementById("kinoveaFileList");if(!el)return;const files=kinoveaState.dataSets||[];el.innerHTML=files.length?("<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li>"+(i+1)+". "+escK(x.fileName)+"</li>").join("")+"</ul>"):"No hay JSON seleccionados.";}
 function loadKinoveaJson(file){
- return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);const ds={fileName:file.name,data,mapping:{}};kinoveaState.dataSets=kinoveaState.dataSets||[];kinoveaState.dataSets.push(ds);kinoveaState.data=kinoveaState.data||data;kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();bindKinovea();kSetStatus("JSON de Kinovea cargado correctamente. Puede cargar otro JSON del mismo vídeo con otros marcadores.");});
+ return file.text().then(txt=>{const raw=JSON.parse(txt),data=parseKinovea(raw);kinoveaState.dataSets=kinoveaState.dataSets||[];const exists=kinoveaState.dataSets.some(x=>x.fileName===file.name&&x.data?.duration===data.duration&&x.data?.frames?.length===data.frames.length);if(exists)return;const ds={fileName:file.name,data,mapping:{}};kinoveaState.dataSets.push(ds);kinoveaState.data=kinoveaState.data||data;kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};renderKinovea();renderKRange();bindKinovea();renderKinoveaFileList();kSetStatus("JSON de Kinovea cargado correctamente. Se han cargado "+kinoveaState.dataSets.length+" archivo(s). Puede seleccionar varios a la vez.");});
 }
 
 function calculate(){
@@ -199,7 +200,7 @@ window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.return
 try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft));status.textContent="Hay un borrador guardado localmente en este navegador."}}catch(e){}
 
 const kvJson=document.getElementById("kinoveaJson");
-if(kvJson)kvJson.addEventListener("change",e=>{const files=[...e.target.files||[]];if(!files.length)return;files.reduce((p,f)=>p.then(()=>loadKinoveaJson(f)),Promise.resolve()).catch(err=>kSetStatus("Error al leer el JSON de Kinovea: "+err.message)).finally(()=>{e.target.value="";});});
+if(kvJson)kvJson.addEventListener("change",e=>{const files=[...e.target.files||[]];if(!files.length)return;files.reduce((p,f)=>p.then(()=>loadKinoveaJson(f)),Promise.resolve()).then(()=>renderKinoveaFileList()).catch(err=>kSetStatus("Error al leer el JSON de Kinovea: "+err.message));});
 bindKinovea();renderKinovea();
 
 show(0);
