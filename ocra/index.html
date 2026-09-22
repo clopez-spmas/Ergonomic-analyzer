@@ -96,16 +96,44 @@
 </section>
 
 <section class="screen" data-screen="4">
-  <div class="screen-title"><span>5</span><div><h2>Recuperación</h2><p>El cálculo automático puede ser sustituido por el cálculo manual del evaluador.</p></div></div>
+  <div class="screen-title"><span>5</span><div><h2>Recuperación</h2><p>Introduzca el horario y todas las pausas habituales de la jornada. El programa aplica el procedimiento descrito en el documento de referencia, de derecha a izquierda y con bloques de 60 minutos.</p></div></div>
+
   <div class="calculation-box">
-    <strong>Cálculo automático</strong>
-    <div class="result-grid">
-      <div><span>Horas sin recuperación adecuada (automático)</span><output id="recAutomatico">—</output></div>
-      <div><span>Multiplicador automático</span><output id="recMultAutomatico">—</output></div>
+    <strong>Horario que se analizará</strong>
+    <div class="form-grid">
+      <label>Inicio del turno<input id="recoveryStart" type="time"></label>
+      <label>Fin del turno<input id="recoveryEnd" type="time"></label>
+      <label>Duración mínima de una pausa válida<select id="recoveryMinPause"><option value="8">8 minutos</option><option value="10">10 minutos</option></select></label>
     </div>
+    <div class="notice">Se pueden introducir tantas pausas como sean necesarias. Marque como habitual únicamente las interrupciones que se realizan la mayoría de los días. Las ocasionales no participan en el cálculo.</div>
   </div>
+
+  <div class="calculation-box">
+    <strong>Pausas y comida</strong>
+    <div class="result-table-wrap">
+      <table class="compact-table">
+        <thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Habitual</th><th></th></tr></thead>
+        <tbody id="recoveryPausesBody"><tr><td colspan="6">No hay pausas añadidas.</td></tr></tbody>
+      </table>
+    </div>
+    <button type="button" class="toolbar-btn" id="addRecoveryPauseBtn">Añadir pausa</button>
+    <div class="notice">Una comida de ≥30 min se utiliza para recuperar la hora inmediatamente anterior. Una comida de &lt;30 min se trata como una pausa normal y no activa esa recuperación automática.</div>
+  </div>
+
+  <div class="calculation-box selected-box">
+    <strong>Resultado del procedimiento de recuperación</strong>
+    <div class="result-grid">
+      <div><span>Horas sin recuperación adecuada</span><output id="recAutomatico">—</output></div>
+      <div><span>Multiplicador de recuperación</span><output id="recMultAutomatico">—</output></div>
+    </div>
+    <div id="recoveryScheduleResult" class="result-grid">
+      <div><span>Resultado</span><output>—</output></div>
+    </div>
+    <div id="recoveryScheduleDetail" class="calculation-box"><div class="placeholder">Introduzca el horario y las pausas para obtener el desglose.</div></div>
+  </div>
+
   <div class="form-grid">
-    <label>Horas sin recuperación adecuada calculadas manualmente (opcional)<input name="horasSinRecManual" type="number" min="0" step="0.5" placeholder="Dejar vacío para utilizar el cálculo automático"></label>
+    <label>Horas sin recuperación introducidas directamente (opcional)<input name="horasSinRecManual" type="number" min="0" step="0.5" placeholder="Si se rellena, este valor sustituirá al cálculo por pausas"></label>
   </div>
   <div class="calculation-box selected-box">
     <strong>Valor que utilizará el cálculo OCRA</strong>
@@ -116,18 +144,18 @@
     </div>
   </div>
   <details class="help-panel">
-    <summary>ⓘ Ayuda para calcular manualmente la recuperación</summary>
+    <summary>ⓘ Criterio de cálculo utilizado</summary>
     <div class="help-content">
-      <p>Considere como recuperación las interrupciones habituales de al menos 8–10 minutos consecutivos. La comida cuenta como tal cuando dura al menos 30 minutos. Una comida de menos de 30 minutos se considera una pausa normal y no debe utilizarse para marcar automáticamente la hora anterior como recuperada.</p>
-      <p>Marque primero como recuperada la última hora del turno. Si existe una comida de al menos 30 minutos, considere recuperada también la hora inmediatamente anterior a la comida. Después examine los bloques de 60 minutos restantes de derecha a izquierda en las dos secuencias alrededor de la comida.</p>
+      <p>El procedimiento considera como recuperación las interrupciones habituales de al menos 8–10 minutos consecutivos. La comida cuenta como descanso para comer cuando dura al menos 30 minutos. Una comida inferior a 30 minutos se considera una pausa normal y no marca automáticamente como recuperada la hora anterior.</p>
+      <p>Primero se considera recuperada la última hora del turno. Si existe una comida válida, también se considera recuperada la hora inmediatamente anterior a la comida. El resto se analiza en bloques de 60 minutos de derecha a izquierda, en las dos secuencias alrededor de la comida.</p>
       <ul>
-        <li>Bloque con una pausa válida → 1 hora recuperada.</li>
-        <li>Bloque sin pausa válida → 1 hora sin recuperación adecuada.</li>
-        <li>Periodo inferior a 20 min → 0 h sin recuperación.</li>
-        <li>Periodo ≥20 y ≤40 min → 0,5 h.</li>
-        <li>Periodo &gt;40 y &lt;80 min → 1 h.</li>
+        <li>Bloque de 60 min con una pausa válida → recuperado.</li>
+        <li>Bloque de 60 min sin pausa válida → 1 h sin recuperación adecuada.</li>
+        <li>Periodo residual &lt;20 min → 0 h sin recuperación.</li>
+        <li>Periodo residual ≥20 y ≤40 min → 0,5 h.</li>
+        <li>Periodo residual &gt;40 y &lt;80 min → 1 h.</li>
       </ul>
-      <p>Solo deben contar las pausas habituales, no interrupciones ocasionales. Como referencia, una jornada de 8 h de 08:00 a 16:00, comida 12:00–12:30 y pausas válidas a 09:30 y 14:00 da 3,5 h sin recuperación adecuada.</p>
+      <p>Las pausas situadas en la hora previa a una comida válida o en la última hora del turno no añaden una hora adicional de recuperación. El procedimiento admite múltiples pausas de diferente duración y horario.</p>
     </div>
   </details>
 </section>
