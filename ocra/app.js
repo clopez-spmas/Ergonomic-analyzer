@@ -214,8 +214,13 @@ function ensureManualPosture(){
  ["shoulder","elbow","wrist"].forEach(kind=>{
    p[kind]=p[kind]||{};
    ["right","left"].forEach(side=>{
-     p[kind][side]={source:"manual",flex:0,ext:0,...(p[kind][side]||{})};
-     p[kind][side].source=p[kind][side].source==="kinovea"?"kinovea":"manual";
+     const previous=p[kind][side];
+     if(!previous || !previous.source){
+       const hasKinovea=kSideHasKinovea(kind,side);
+       p[kind][side]={source:hasKinovea?"kinovea":"manual",flex:0,ext:0,...(previous||{})};
+     }else{
+       p[kind][side]={source:previous.source==="kinovea"?"kinovea":"manual",flex:0,ext:0,...previous};
+     }
      p[kind][side].flex=kNum(p[kind][side].flex,0);
      p[kind][side].ext=kNum(p[kind][side].ext,0);
    });
