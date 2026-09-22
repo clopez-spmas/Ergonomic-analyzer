@@ -130,8 +130,7 @@ function bindAnalysisRange(){
   state.analysisRange={mode:m,start:Number(start.value)||0,end:Number(end.value)||Number(state.kinovea?.duration||0),cycles:Math.max(1,Math.floor(Number(cycles.value)||1))};
   state.dirty=true;
  };
- [mode,start,end,cycles].forEach(el=>el.addEventListener("input",update));
- mode.addEventListener("change",update);
+ mode.oninput=update;start.oninput=update;end.oninput=update;cycles.oninput=update;mode.onchange=update;
  update();
 }
 function getAnalysisRange(){
