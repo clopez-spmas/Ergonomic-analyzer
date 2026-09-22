@@ -219,7 +219,7 @@ function ensureManualPosture(){
        const hasKinovea=kSideHasKinovea(kind,side);
        p[kind][side]={source:hasKinovea?"kinovea":"manual",kinoveaFileId:hasKinovea?kKinoveaFileId(kind,side):null,flex:0,ext:0,...(previous||{})};
      }else{
-       p[kind][side]={source:previous.source==="kinovea"?"kinovea",kinoveaFileId:previous.source==="kinovea"?(previous.kinoveaFileId||kKinoveaFileId(kind,side)):null,flex:0,ext:0,...previous};
+       p[kind][side]={source:previous.source==="kinovea"?"kinovea":"manual",kinoveaFileId:previous.source==="kinovea"?(previous.kinoveaFileId||kKinoveaFileId(kind,side)):null,flex:0,ext:0,...previous};
      }
      p[kind][side].flex=kNum(p[kind][side].flex,0);
      p[kind][side].ext=kNum(p[kind][side].ext,0);
