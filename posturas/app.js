@@ -13,7 +13,7 @@
     range: { mode: "all", start: 0, end: 0, cycles: 1 },
     shoulder: { view: "profile-right", direction: "right" },
     elbow: { view: "profile-right", direction: "right" },
-    wrist: { view: "profile-right", direction: "right", threshold: 60 }
+    wrist: { view: "profile-right", direction: "right", threshold: 60 }, inputMode: "kinovea", manualDuration: 60, manual: { shoulder:{}, elbow:{}, wrist:{} }
   };
 
   const POINTS = [
@@ -41,6 +41,7 @@
     if (state.screen === 3) renderShoulder();
     if (state.screen === 4) renderElbow();
     if (state.screen === 5) renderWrist();
+    updateInputModeUI();
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -247,6 +248,15 @@
     return '<div class="result-table-wrap"><table class="result-table"><thead><tr><th>Movimiento</th><th>Criterio</th><th>Tiempo</th><th>% del tiempo analizado</th></tr></thead><tbody>'+rows.join("")+'</tbody></table></div>';
   }
 
+  function updateInputModeUI(){const manual=$("inputMode")?.value==="manual";state.inputMode=manual?"manual":"kinovea";if($("manualDurationField"))$("manualDurationField").hidden=!manual;if($("manualModeNotice"))$("manualModeNotice").hidden=!manual;if($("kinoveaInputFields"))$("kinoveaInputFields").hidden=manual;if($("mappingSection"))$("mappingSection").hidden=manual;if(manual)state.manualDuration=Math.max(.001,num($("manualDuration")?.value,60));}
+  function mf(id,label,value=0){return '<label>'+label+'<input type="number" id="'+id+'" min="0" step="0.1" value="'+esc(value)+'"></label>';}
+  function mv(id){return Math.max(0,num($(id)?.value,0));}
+  function mr(name,threshold,angle,time,duration){const used=angle>=threshold?time:0;return '<tr><td>'+esc(name)+'</td><td>'+threshold+'° · introducido '+fmt(angle,1)+'°</td><td>'+fmt(used,3)+' s</td><td>'+fmt(duration?used/duration*100:0,2)+' %</td></tr>';}
+  function manualPanel(type){const duration=Math.max(.001,num($("manualDuration")?.value,state.manualDuration||60));state.manualDuration=duration;const view=state[type].view||"profile-right", side=view==="profile-left"?"left":"right", box=$(type==="shoulder"?"preparedStudy":type==="elbow"?"elbowStudy":"wristStudy"), d=state.manual[type][side]||{};let title=type==="shoulder"?"hombro":type==="elbow"?"codo":"muñeca",th=type==="shoulder"?80:type==="elbow"?60:(state.wrist.threshold||60);let html='<div class="manual-entry"><h3>Entrada manual · '+title+'</h3><p class="analysis-help">Introduzca ángulo y tiempo de exposición. El porcentaje se calcula automáticamente respecto al tiempo total de análisis ('+fmt(duration,3)+' s).</p><div class="analysis-grid">'+mf(type+'View','Vista',view)+'</div>';
+    if(view==="frontal"){["right","left"].forEach(s=>{const x=state.manual[type][s]||{};if(type==="shoulder")html+='<div class="manual-card"><h4>Hombro '+(s==="right"?"derecho":"izquierdo")+'</h4><div class="analysis-grid">'+mf('mS'+s+'A','Ángulo de abducción (°)',x.angle)+mf('mS'+s+'T','Tiempo de abducción (s)',x.time)+'</div></div>';if(type==="elbow")html+='<div class="manual-card"><h4>Codo '+(s==="right"?"derecho":"izquierdo")+'</h4><div class="analysis-grid">'+mf('mE'+s+'PA','Ángulo de pronación (°)',x.pronAngle)+mf('mE'+s+'PT','Tiempo de pronación (s)',x.pronTime)+mf('mE'+s+'SA','Ángulo de supinación (°)',x.supAngle)+mf('mE'+s+'ST','Tiempo de supinación (s)',x.supTime)+'</div></div>';if(type==="wrist")html+='<div class="manual-card"><h4>Muñeca '+(s==="right"?"derecha":"izquierda")+'</h4><div class="analysis-grid">'+mf('mW'+s+'RA','Ángulo radial (°)',x.radialAngle)+mf('mW'+s+'RT','Tiempo radial (s)',x.radialTime)+mf('mW'+s+'CA','Ángulo cubital (°)',x.cubitalAngle)+mf('mW'+s+'CT','Tiempo cubital (s)',x.cubitalTime)+'</div></div>';});}
+    else {const p=type[0].toUpperCase()+type.slice(1)+side;if(type==="shoulder")html+='<div class="manual-card"><h4>Hombro '+(side==="right"?"derecho":"izquierdo")+'</h4><div class="analysis-grid">'+mf('m'+p+'FA','Ángulo de flexión (°)',d.flexAngle)+mf('m'+p+'FT','Tiempo de flexión (s)',d.flexTime)+mf('m'+p+'EA','Ángulo de extensión (°)',d.extAngle)+mf('m'+p+'ET','Tiempo de extensión (s)',d.extTime)+'</div></div>';if(type==="elbow")html+='<div class="manual-card"><h4>Codo '+(side==="right"?"derecho":"izquierdo")+'</h4><div class="analysis-grid">'+mf('m'+p+'FA','Ángulo de flexión (°)',d.flexAngle)+mf('m'+p+'FT','Tiempo de flexión (s)',d.flexTime)+mf('m'+p+'EA','Ángulo de extensión (°)',d.extAngle)+mf('m'+p+'ET','Tiempo de extensión (s)',d.extTime)+'</div></div>';if(type==="wrist")html+='<div class="manual-card"><h4>Muñeca '+(side==="right"?"derecha":"izquierda")+'</h4><div class="analysis-grid">'+mf('m'+p+'FA','Ángulo de flexión (°)',d.flexAngle)+mf('m'+p+'FT','Tiempo de flexión (s)',d.flexTime)+mf('m'+p+'EA','Ángulo de extensión (°)',d.extAngle)+mf('m'+p+'ET','Tiempo de extensión (s)',d.extTime)+'</div></div>';}
+    html+='<button type="button" class="nav-primary" id="manualCalc">Calcular '+title+'</button><div id="manualResult" class="shoulder-result"><div class="placeholder">Introduzca los datos y calcule.</div></div></div>';box.innerHTML=html;const v=$(type+'View');v.outerHTML='<label>Vista<select id="'+type+'View"><option value="profile-right">Perfil derecho</option><option value="profile-left">Perfil izquierdo</option><option value="frontal">Frontal</option></select></label>';;$(type+'View').value=view;$(type+'View').onchange=()=>{state[type].view=$(type+'View').value;manualPanel(type);};$("manualCalc").onclick=()=>{state[type].view=$(type+'View').value;$("manualResult").innerHTML=manualCalculate(type);};}
+  function manualCalculate(type){const duration=Math.max(.001,num($("manualDuration")?.value,state.manualDuration||60)),view=state[type].view||"profile-right",th=type==="shoulder"?80:type==="elbow"?60:(state.wrist.threshold||60),rows=[];if(view==="frontal"){["right","left"].forEach(s=>{const x=state.manual[type][s]||{};if(type==="shoulder")rows.push(mr('Abducción '+(s==="right"?"derecha":"izquierda"),80,mv('mS'+s+'A'),mv('mS'+s+'T'),duration));if(type==="elbow")rows.push(mr('Pronación '+(s==="right"?"derecha":"izquierda"),60,mv('mE'+s+'PA'),mv('mE'+s+'PT'),duration),mr('Supinación '+(s==="right"?"derecha":"izquierda"),60,mv('mE'+s+'SA'),mv('mE'+s+'ST'),duration));if(type==="wrist")rows.push(mr('Desviación radial '+(s==="right"?"derecha":"izquierda"),th,mv('mW'+s+'RA'),mv('mW'+s+'RT'),duration),mr('Desviación cubital '+(s==="right"?"derecha":"izquierda"),th,mv('mW'+s+'CA'),mv('mW'+s+'CT'),duration));});}else{const s=view==="profile-left"?"left":"right",p=type[0].toUpperCase()+type.slice(1)+s,d=state.manual[type][s]||{};const vals=type==="shoulder"?[['Flexión',80,'FA','FT'],['Extensión',20,'EA','ET']]:type==="elbow"?[['Flexión',60,'FA','FT'],['Extensión',60,'EA','ET']]:[['Flexión de muñeca',th,'FA','FT'],['Extensión de muñeca',th,'EA','ET']];vals.forEach(a=>rows.push(mr(a[0]+' '+(s==="right"?"derecha":"izquierda"),a[1],mv('m'+p+a[2]),mv('m'+p+a[3]),duration)));}return resultTable(rows)+'<div class="analysis-summary"><span>Origen: <strong>Manual</strong></span><span>Tiempo total: <strong>'+fmt(duration,3)+' s</strong></span></div>';}
   function renderShoulder() {
     const box=$("preparedStudy");
     if (!state.kinovea) { box.innerHTML='<div class="placeholder">Cargue primero el JSON de Kinovea.</div>'; return; }
@@ -444,7 +454,7 @@
       state.mapping=data.mapping||{};
       state.shoulder=data.shoulder||data.shoulderAnalysis||state.shoulder;
       state.elbow=data.elbow||data.elbowAnalysis||state.elbow;
-      state.wrist=data.wrist||data.wristAnalysis||state.wrist;
+      state.wrist=data.wrist||data.wristAnalysis||state.wrist; state.inputMode=data.inputMode||"kinovea"; state.manualDuration=num(data.manualDuration,60); state.manual=data.manual||{shoulder:{},elbow:{},wrist:{}};
       bindRange();renderSummary();renderMapping();showScreen(0);
       status("Estudio cargado. Seleccione de nuevo el JSON de Kinovea para analizarlo.");
     }).catch(error=>status("No se pudo cargar el estudio: "+error.message))
@@ -454,14 +464,14 @@
   document.querySelectorAll("[data-prev]").forEach(button => button.onclick=()=>showScreen(state.screen-1));
   document.querySelectorAll("[data-next]").forEach(button => button.onclick=()=>{
     if(state.screen===0){saveIdentification();showScreen(1);return;}
-    if(state.screen===1){if(!state.kinovea){status("Cargue primero el JSON de Kinovea.");return;}showScreen(2);return;}
+    if(state.screen===1){if(state.inputMode==="kinovea"&&!state.kinovea){status("Cargue primero el JSON de Kinovea o seleccione Entrada manual.");return;}showScreen(2);return;}
     if(state.screen<screens.length-1)showScreen(state.screen+1);
   });
   $("homeButton").onclick=()=>location.href="../";
   $("newStudyButton").onclick=newStudy;
   $("saveStudyButton").onclick=saveStudy;
   $("loadStudyButton").onclick=()=>$("studyFileInput").click();
-  $("studyFileInput").onchange=loadStudy;
+  $("studyFileInput").onchange=loadStudy; $("inputMode").onchange=()=>{state.inputMode=$("inputMode").value;updateInputModeUI();showScreen(state.screen);}; $("manualDuration").oninput=()=>state.manualDuration=Math.max(.001,num($("manualDuration").value,60));
   $("videoFile").onchange=event=>{
     const file=event.target.files?.[0];if(!file)return;
     if(state.videoUrl)URL.revokeObjectURL(state.videoUrl);
