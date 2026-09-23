@@ -42,7 +42,7 @@
 <section class="screen" data-screen="1">
   <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 2 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
   <div class="screen-title"><span>2</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Cargue el vídeo y el JSON de Kinovea, defina el ámbito temporal del análisis y asigne los marcadores.</p></div></div>
-  <div class="form-grid">
+  <div class="analysis-panel"><h3>Origen de los datos posturales</h3><div class="analysis-grid"><label>Modo de entrada<select id="inputMode"><option value="kinovea">Kinovea</option><option value="manual">Entrada manual</option></select></label><label id="manualDurationField" hidden>Tiempo total de análisis (s)<input type="number" id="manualDuration" min="0.001" step="0.001" value="60"></label></div><div id="manualModeNotice" class="notice" hidden>En modo manual no es necesario cargar vídeo ni JSON. Introduzca los ángulos y tiempos en las pantallas de hombro, codo y muñeca.</div></div><div class="form-grid" id="kinoveaInputFields">
     <label>Vídeo de Kinovea<input type="file" id="videoFile" accept="video/*"><small>Se utiliza para visualizar la grabación.</small></label>
     <label>JSON de Kinovea<input type="file" id="jsonFile" accept=".json,application/json"><small>Se utilizarán tiempos y coordenadas de los marcadores.</small></label>
   </div>
@@ -61,7 +61,7 @@
     </div>
     <div id="analysisRangeInfo" class="notice">Todo el vídeo se utilizará en los cálculos.</div>
   </div>
-  <div class="mapping-container"><div class="mapping-heading"><h3>Asignación de marcadores</h3><p>Asigne cada marcador Kinovea al punto anatómico que vaya a utilizar. La asignación se guarda en el estudio.</p></div><div id="mappingContainer"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div></div>
+  <div class="mapping-container" id="mappingSection"><div class="mapping-heading"><h3>Asignación de marcadores</h3><p>Asigne cada marcador Kinovea al punto anatómico que vaya a utilizar. La asignación se guarda en el estudio.</p></div><div id="mappingContainer"><div class="placeholder">Cargue primero el JSON de Kinovea.</div></div></div>
 </section>
 
 <section class="screen" data-screen="2">
