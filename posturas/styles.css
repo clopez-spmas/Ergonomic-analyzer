@@ -54,3 +54,5 @@ select{font:inherit;padding:9px 10px;border:1px solid #cbd5e0;border-radius:8px;
 @media(max-width:600px){.analysis-grid{grid-template-columns:1fr}}
 
 .data-panel{margin-top:20px}.data-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.data-block{margin-top:18px;padding:16px;border:1px solid #d8e0e8;border-radius:10px;background:#fff}.data-block h3{margin:0 0 10px;color:#005a9c}.data-block .analysis-help{margin-bottom:12px}@media(max-width:760px){.data-summary-grid{grid-template-columns:1fr}}
+
+.manual-entry{margin-top:18px}.manual-card{border:1px solid #d8dee8;border-radius:12px;padding:16px;margin:12px 0;background:#fff}.manual-card h4{margin:0 0 12px}.manual-entry input{width:100%}
