@@ -177,6 +177,7 @@
 
   function renderKinoveaData() {
     const box = $("kinoveaDataPanel");
+    if(state.inputMode==="manual"){box.innerHTML='<div class="notice"><strong>Entrada manual seleccionada.</strong> No se utiliza Kinovea. Tiempo total de análisis: <strong>'+fmt(state.manualDuration,3)+' s</strong>. Los ángulos y tiempos se introducen en las pantallas siguientes.</div>';return;}
     if (!state.kinovea) { box.innerHTML = '<div class="placeholder">Cargue primero el JSON de Kinovea.</div>'; return; }
     const k = state.kinovea;
     let html = '<div class="data-summary-grid">';
