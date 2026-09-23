@@ -58,7 +58,7 @@ function recoveryMinutesToTime(total){
 }
 function recoveryNormalise(){
  recoveryState.pauses=Array.isArray(recoveryState.pauses)?recoveryState.pauses:[];
- recoveryState.minPause=Number(recoveryState.minPause)===10?10:8;
+ recoveryState.minPause=8;
  return recoveryState;
 }
 function recoveryResidualScore(minutes){
@@ -160,18 +160,13 @@ function recoveryCalculateAndRender(){
  recoveryState.lastResult=result;
  recoveryRenderResult(result);
  recoverySyncOrganisation();
- const auto=document.getElementById("recAutomatico");
- if(auto)auto.textContent=result.valid?fmt(result.hours,1):"—";
- const mult=document.getElementById("recMultAutomatico");
- if(mult)mult.textContent=result.valid?fmt(recoveryMultiplier(result.hours),3):"—";
  return result;
 }
 function recoveryRenderInputs(){
  recoveryNormalise();
- const start=document.getElementById("recoveryStart"),end=document.getElementById("recoveryEnd"),min=document.getElementById("recoveryMinPause");
- if(start)start.value=recoveryState.start||form.elements.horaInicio?.value||"";
- if(end)end.value=recoveryState.end||form.elements.horaFin?.value||"";
- if(min)min.value=String(recoveryState.minPause);
+ recoveryState.minPause=8;
+ recoveryState.start=form.elements.horaInicio?.value||"";
+ recoveryState.end=form.elements.horaFin?.value||"";
  const tbody=document.getElementById("recoveryPausesBody");if(!tbody)return;
  tbody.innerHTML=(recoveryState.pauses||[]).map((p,i)=>'<tr><td>'+(i+1)+'</td><td><select data-recovery-type="'+i+'"><option value="pause" '+(p.type==="pause"?"selected":"")+'>Pausa habitual</option><option value="meal" '+(p.type==="meal"?"selected":"")+'>Comida</option></select></td><td><input type="time" data-recovery-start="'+i+'" value="'+escK(p.start||"")+'"></td><td><input type="time" data-recovery-end="'+i+'" value="'+escK(p.end||"")+'"></td><td><input type="checkbox" data-recovery-habitual="'+i+'" '+(p.habitual!==false?"checked":"")+'></td><td><button type="button" class="toolbar-btn" data-recovery-remove="'+i+'">Eliminar</button></td></tr>').join("")||'<tr><td colspan="6">No hay pausas añadidas.</td></tr>';
  tbody.querySelectorAll("[data-recovery-type]").forEach(x=>x.onchange=()=>{recoveryState.pauses[Number(x.dataset.recoveryType)].type=x.value;dirty=true;recoveryCalculateAndRender();safeCalculate()});
@@ -184,8 +179,6 @@ function initRecoverySchedule(){
  recoveryNormalise();
  const add=document.getElementById("addRecoveryPauseBtn");
  if(add)add.onclick=()=>{recoveryState.pauses.push({id:"pause_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6),type:"pause",start:"",end:"",habitual:true,label:""});dirty=true;recoveryRenderInputs();recoveryCalculateAndRender();};
- [["recoveryStart","start"],["recoveryEnd","end"]].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=()=>{recoveryState[key]=el.value;dirty=true;recoveryCalculateAndRender();safeCalculate()}});
- const min=document.getElementById("recoveryMinPause");if(min){recoveryState.minPause=8;min.value="8";min.onchange=null;}
  recoveryRenderInputs();
  recoveryCalculateAndRender();
 }
@@ -537,8 +530,10 @@ async function loadKinoveaJson(file){
 function calculate(){
  const official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  document.getElementById("turnoEfectivo").textContent=fmt(eff,1);document.getElementById("tntrPausas").textContent=fmt(pauses,1);document.getElementById("tntrComida").textContent=fmt(meal,1);document.getElementById("tntrNoRep").textContent=fmt(nonRep,1);document.getElementById("tiempoNeto").textContent=fmt(tntr,1);document.getElementById("duracionTNTR").textContent=fmt(tntr,1);
- const recoveryResult=recoveryCalculateAndRender(),autoH=recoveryResult.valid?recoveryResult.hours:recoveryHours(eff,n("numPausas"),meal),manualRaw=form.elements.horasSinRecManual?.value.trim(),manual=manualRaw===""?null:parseFloat(manualRaw),useH=Number.isFinite(manual)?Math.max(0,Math.min(8,manual)):autoH,rm=recoveryMultiplier(useH);
- document.getElementById("recAutomatico").textContent=autoH===null?"—":fmt(autoH,1);document.getElementById("recMultAutomatico").textContent=autoH===null?"—":fmt(recoveryMultiplier(autoH),3);document.getElementById("horasSinRecuperacion").textContent=useH===null?"—":fmt(useH,1);document.getElementById("recOrigen").textContent=useH===null?"—":(Number.isFinite(manual)?"Manual":"Automático");document.getElementById("multRecuperacion").textContent=rm===null?"—":fmt(rm,3);
+ recoveryState.start=form.elements.horaInicio?.value||recoveryState.start||"";
+ recoveryState.end=form.elements.horaFin?.value||recoveryState.end||"";
+ recoveryState.minPause=8;
+ const recoveryResult=recoveryCalculateAndRender(),autoH=recoveryResult.valid?recoveryResult.hours:recoveryHours(eff,n("numPausas"),meal),rm=recoveryMultiplier(autoH);
  const md=lookup(duration,tntr);document.getElementById("multDuracion").textContent=fmt(md,3);
  const cycles=n("ciclosEfectivos"),obs=n("cicloObservado"),cycle=cycles>0?60*tntr/cycles:0,diff=cycle>0&&obs>0?Math.abs(cycle-obs)/cycle*100:null;
  document.getElementById("cicloNeto").textContent=cycle?fmt(cycle,2):"—";document.getElementById("diferenciaCiclo").textContent=diff===null?"—":fmt(diff,2);document.getElementById("minNoJustificados").textContent=diff===null?"—":fmt(Math.abs(cycle-obs)*cycles/60,2);document.getElementById("alertaCiclo").textContent=diff===null?"—":diff>5?"Revisar: > 5 %":"Concordante: ≤ 5 %";
