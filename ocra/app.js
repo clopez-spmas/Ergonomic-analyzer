@@ -1,7 +1,7 @@
 (()=>{"use strict";
 const form=document.getElementById("ocraForm"),status=document.getElementById("status"),fileInput=document.getElementById("fileInput");
 let dirty=false;
-const STORAGE_KEY="ergonomic-analyzer-ocra-draft",fields=[...form.querySelectorAll("input,select,textarea")];
+const fields=[...form.querySelectorAll("input,select,textarea")];
 
 function initNavigation(){
  const screens=[...document.querySelectorAll(".screen")];
@@ -570,12 +570,12 @@ function initCore(){
 initRecoverySchedule();
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
-document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
+document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);localStorage.setItem(STORAGE_KEY,JSON.stringify(d));dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
 document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
 fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
 document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);});
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
-try{const draft=localStorage.getItem(STORAGE_KEY);if(draft){apply(JSON.parse(draft))}}catch(e){}
+
 
 }
 
