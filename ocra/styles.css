@@ -36,6 +36,7 @@
 .risk-scale-table tr[data-risk-class="light-red"] td{background:#f4cccc}
 .risk-scale-table tr[data-risk-class="red"] td{background:#ea9999}
 .risk-scale-table tr[data-risk-class="purple"] td{background:#d9b3e6}
+.recovery-info p,.screen[data-screen="4"] .notice{line-height:1.5;text-align:justify}
 @media print{
  body{background:#fff!important}
  .ocra-header,.screen-nav,.study-toolbar,.status,.tables-toolbar,.screen-title,.notice{display:none!important}
