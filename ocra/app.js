@@ -534,6 +534,8 @@ function calculate(){
  recoveryState.end=form.elements.horaFin?.value||recoveryState.end||"";
  recoveryState.minPause=8;
  const recoveryResult=recoveryCalculateAndRender(),autoH=recoveryResult.valid?recoveryResult.hours:recoveryHours(eff,n("numPausas"),meal),rm=recoveryMultiplier(autoH);
+ document.getElementById("recAutomatico").textContent=fmt(autoH,1)+" h";
+ document.getElementById("recMultAutomatico").textContent=fmt(rm,3);
  const md=lookup(duration,tntr);document.getElementById("multDuracion").textContent=fmt(md,3);
  const cycles=n("ciclosEfectivos"),obs=n("cicloObservado"),cycle=cycles>0?60*tntr/cycles:0,diff=cycle>0&&obs>0?Math.abs(cycle-obs)/cycle*100:null;
  document.getElementById("cicloNeto").textContent=cycle?fmt(cycle,2):"—";document.getElementById("diferenciaCiclo").textContent=diff===null?"—":fmt(diff,2);document.getElementById("minNoJustificados").textContent=diff===null?"—":fmt(Math.abs(cycle-obs)*cycles/60,2);document.getElementById("alertaCiclo").textContent=diff===null?"—":diff>5?"Revisar: > 5 %":"Concordante: ≤ 5 %";
