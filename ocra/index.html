@@ -96,12 +96,14 @@
 </section>
 
 <section class="screen" data-screen="4">
-  <div class="screen-title"><span>5</span><div><h2>Recuperación</h2><p>Introduzca el horario y todas las pausas habituales de la jornada. El programa aplica el procedimiento descrito en el documento de referencia, de derecha a izquierda y con bloques de 60 minutos.</p></div></div>
+  <div class="screen-title"><span>5</span><div><h2>Recuperación</h2><p>Introduzca todas las pausas habituales de la jornada. El horario se toma de la pantalla «Organización del trabajo».</p></div></div>
 
   <div class="calculation-box">
     <strong>Horario que se analizará</strong>
-    <div class="form-grid">
-      <div class="recovery-info"><strong>Duración mínima de una pausa válida: 8 minutos</strong><p>Para el cálculo de la recuperación, una pausa solo se considera válida cuando tiene una duración mínima de 8 minutos. Este valor es fijo y no puede modificarse.</p></div>
+    <div class="recovery-info">
+      <p>El horario de inicio y finalización utilizado para el cálculo es el indicado en «Organización del trabajo».</p>
+      <p><strong>Duración mínima de una pausa válida: 8 minutos</strong></p>
+      <p>Para el cálculo de la recuperación, una pausa solo se considera válida cuando tiene una duración mínima de 8 minutos. Este valor es fijo y no puede modificarse.</p>
     </div>
     <div class="notice">Se pueden introducir tantas pausas como sean necesarias. Marque como habitual únicamente las interrupciones que se realizan la mayoría de los días. Las ocasionales no participan en el cálculo.</div>
   </div>
@@ -130,21 +132,10 @@
     <div id="recoveryScheduleDetail" class="calculation-box"><div class="placeholder">Introduzca el horario y las pausas para obtener el desglose.</div></div>
   </div>
 
-  <div class="form-grid">
-    <label>Horas sin recuperación introducidas directamente (opcional)<input name="horasSinRecManual" type="number" min="0" step="0.5" placeholder="Si se rellena, este valor sustituirá al cálculo por pausas"></label>
-  </div>
-  <div class="calculation-box selected-box">
-    <strong>Valor que utilizará el cálculo OCRA</strong>
-    <div class="result-grid">
-      <div><span>Horas sin recuperación utilizadas</span><output id="horasSinRecuperacion">—</output></div>
-      <div><span>Origen del dato</span><output id="recOrigen">—</output></div>
-      <div><span>Multiplicador de recuperación</span><output id="multRecuperacion">—</output></div>
-    </div>
-  </div>
   <details class="help-panel">
     <summary>ⓘ Criterio de cálculo utilizado</summary>
     <div class="help-content">
-      <p>El procedimiento considera como recuperación las interrupciones habituales de al menos 8–10 minutos consecutivos. La comida cuenta como descanso para comer cuando dura al menos 30 minutos. Una comida inferior a 30 minutos se considera una pausa normal y no marca automáticamente como recuperada la hora anterior.</p>
+      <p>El procedimiento considera como recuperación las interrupciones habituales de al menos 8 minutos consecutivos. La comida cuenta como descanso para comer cuando dura al menos 30 minutos. Una comida inferior a 30 minutos se considera una pausa normal y no marca automáticamente como recuperada la hora anterior.</p>
       <p>Primero se considera recuperada la última hora del turno. Si existe una comida válida, también se considera recuperada la hora inmediatamente anterior a la comida. El resto se analiza en bloques de 60 minutos de derecha a izquierda, en las dos secuencias alrededor de la comida.</p>
       <ul>
         <li>Bloque de 60 min con una pausa válida → recuperado.</li>
