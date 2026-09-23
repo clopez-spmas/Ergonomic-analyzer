@@ -185,7 +185,7 @@ function initRecoverySchedule(){
  const add=document.getElementById("addRecoveryPauseBtn");
  if(add)add.onclick=()=>{recoveryState.pauses.push({id:"pause_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6),type:"pause",start:"",end:"",habitual:true,label:""});dirty=true;recoveryRenderInputs();recoveryCalculateAndRender();};
  [["recoveryStart","start"],["recoveryEnd","end"]].forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.onchange=()=>{recoveryState[key]=el.value;dirty=true;recoveryCalculateAndRender();safeCalculate()}});
- const min=document.getElementById("recoveryMinPause");if(min)min.onchange=()=>{recoveryState.minPause=Number(min.value)===10?10:8;dirty=true;recoveryCalculateAndRender();safeCalculate()};
+ const min=document.getElementById("recoveryMinPause");if(min){recoveryState.minPause=8;min.value="8";min.onchange=null;}
  recoveryRenderInputs();
  recoveryCalculateAndRender();
 }
