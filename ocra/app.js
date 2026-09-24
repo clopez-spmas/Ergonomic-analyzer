@@ -508,11 +508,11 @@ function kPanel(kind,title,defaultThreshold){
   :missing
    ?'<div class="notice">'+missing+' El lado que no disponga de todos los marcadores se puede estudiar MANUALMENTE.</div>'
    :'<div class="notice">Los datos de Kinovea se utilizan por defecto cuando están disponibles. Puede cambiar cualquier lado a MANUAL si los datos no son adecuados para el análisis.</div>';
- const manualDuration=(kind==="shoulder"&&(postureStudyMode()==="manual"||!kinoveaState.data))?'<div class="form-grid"><label>Duración del periodo analizado (s)<input id="manualPostureDuration" type="number" min="0" step="0.01" value="'+kNum(ensureManualPosture().duration,0)+'"></label></div>':"";
+ const manualDuration="";
  box.innerHTML='<strong>Datos de postura</strong>'+warning+manualDuration+'<div class="side-grid">'+kManualControls(kind,"right",defaultThreshold)+kManualControls(kind,"left",defaultThreshold)+'</div><div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind)+'</div>';
  box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{const side=sel.dataset.postureSide,p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();safeCalculate()});
  box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{const p=ensureManualPosture()[kind][input.dataset.manualSide];p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();safeCalculate()});
- const durationInput=document.getElementById("manualPostureDuration");if(durationInput)durationInput.onchange=()=>{ensureManualPosture().duration=Math.max(0,kNum(durationInput.value,0));dirty=true;kRenderAnalyses();safeCalculate()};
+
 }
 function kRenderAnalyses(){["shoulder","elbow","wrist"].forEach(kind=>kPanel(kind,kind==="shoulder"?"hombro":kind==="elbow"?"codo":"muñeca",kind==="shoulder"?80:60))}
 function handInputSeconds(name,duration){
