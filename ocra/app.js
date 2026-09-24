@@ -667,6 +667,7 @@ initRecoverySchedule();
 initForceInputMode();
 initHandInputMode();
 initPostureStudyMode();
+kRenderAnalyses();
 
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
