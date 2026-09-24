@@ -452,7 +452,7 @@ function renderHandPosture(){
 function postureScores(){
  const duration=kManualDuration()||0,result={};
  ["right","left"].forEach(side=>{
-  const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulder=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=Math.max(0,kNum(time?.value,0)),handPct=duration>0?handSeconds/duration*100:0,hand=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),stereoValue=stereo(prefix);
+  const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulderBase=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),shoulder=document.querySelector('[name="'+prefix+'HombroCabeza"]')?.checked?shoulderBase*2:shoulderBase,elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=Math.max(0,kNum(time?.value,0)),handPct=duration>0?handSeconds/duration*100:0,hand=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),stereoValue=stereo(prefix);
   result[side]={shoulder,elbow,wrist,hand,stereo:stereoValue,base:Math.max(shoulder,elbow,wrist,hand),total:Math.max(shoulder,elbow,wrist,hand)+stereoValue};
  });
  return result;
