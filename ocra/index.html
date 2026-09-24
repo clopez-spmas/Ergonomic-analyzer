@@ -341,34 +341,30 @@
 </section>
 
 <section class="screen" data-screen="14">
-  <div class="screen-title"><span>15</span><div><h2>Factores complementarios</h2><p>Seleccione una condición del bloque físico-mecánico y una del bloque socio-organizativo.</p></div></div>
+  <div class="screen-title"><span>15</span><div><h2>Factor complementario</h2><p>Escoger una sola respuesta por grupo. Las puntuaciones seleccionadas se suman para obtener la puntuación final.</p></div></div>
   <div class="side-grid">
-    <fieldset><legend>Bloque A · físico-mecánico</legend>
+    <fieldset><legend>Bloque A: Factores físico-mecánicos</legend>
       <div class="checklist">
-        <label class="check-row"><input type="checkbox" name="compA_gloves" data-comp-a="2"> Guantes inadecuados &gt; mitad del tiempo</label>
-        <label class="check-row"><input type="checkbox" name="compA_abrupt" data-comp-a="2"> Movimientos bruscos/abruptos ≥ 2 por minuto</label>
-        <label class="check-row"><input type="checkbox" name="compA_impacts" data-comp-a="2"> Impactos repetidos / uso de las manos para golpear ≥ 10 por hora</label>
-        <label class="check-row"><input type="checkbox" name="compA_cold" data-comp-a="2"> Contacto con superficies frías &lt;0 °C o congelador &gt; mitad del tiempo</label>
-        <label class="check-row"><input type="checkbox" name="compA_vibration" data-comp-a="2"> Herramientas vibratorias ≥ 1/3 del tiempo</label>
-        <label class="check-row"><input type="checkbox" name="compA_highVibration" data-comp-a="4"> Herramienta de alta vibración ≥ 1/3 del ciclo</label>
-        <label class="check-row"><input type="checkbox" name="compA_compression" data-comp-a="2"> Herramientas de compresión que producen presión sobre músculos/tendones</label>
-        <label class="check-row"><input type="checkbox" name="compA_precision" data-comp-a="2"> Tareas de precisión &gt; mitad del tiempo</label>
-        <label class="check-row"><input type="checkbox" name="compA_multiple" data-comp-a="2"> Varios factores complementarios simultáneamente &gt; mitad del tiempo</label>
-        <label class="check-row"><input type="checkbox" name="compA_almost" data-comp-a="3"> Uno o más factores complementarios durante prácticamente todo el ciclo</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Se emplean por más de la mitad del tiempo guantes <strong>inadecuados</strong> para la tarea (incómodos, demasiado gruesos, talla incorrecta).</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Presencia de movimientos repentinos, bruscos con frecuencia de 2 o más por minuto.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Presencia de impactos repetidos (uso de las manos para dar golpes) con frecuencia de al menos 10 veces por hora.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Contacto con superficies frías (inferior a 0 °C) o desarrollo de labores en cámaras frigoríficas por más de la mitad del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Se emplean herramientas vibradoras por al menos un tercio del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="4" data-comp-a="4"> <strong>4</strong> · Se emplean instrumentos con elevado contenido de vibración (ej. martillo neumático, etc.) utilizados en al menos 1/3 del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Se emplean herramientas que provocan compresión sobre las estructuras musculosas y tendinosas (verificar la presencia de enrojecimiento, callos, heridas, etc. sobre la piel).</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Se realizan tareas de precisión durante más de la mitad del tiempo (tareas en áreas menores a 2 o 3 mm) que requieren distancia visual de acercamiento.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> <strong>2</strong> · Existen más factores complementarios al mismo tiempo que ocupan más de la mitad del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="3" data-comp-a="3"> <strong>3</strong> · Existen uno o más factores complementarios que ocupan casi todo el tiempo del ciclo.</label>
       </div>
     </fieldset>
-    <fieldset><legend>Bloque B · socio-organizativo</legend>
-      <label>Condición aplicable
-        <select name="complementarioB">
-          <option value="0">Ninguna</option>
-          <option value="1">Ritmo determinado por máquina, con zonas de recuperación/buffer y posibilidad de modular</option>
-          <option value="2">Ritmo completamente determinado por máquina / cinta fija</option>
-        </select>
-      </label>
+    <fieldset><legend>Bloque B: Factores socio-organizativos</legend>
+      <div class="checklist">
+        <label class="check-row"><input type="radio" name="compB" value="1" data-comp-b="1"> <strong>1</strong> · El ritmo de trabajo está determinado por la máquina, pero existen “espacios de recuperación” por lo que el ritmo se puede acelerar o desacelerar.</label>
+        <label class="check-row"><input type="radio" name="compB" value="2" data-comp-b="2"> <strong>2</strong> · El ritmo de trabajo está completamente determinado por la máquina.</label>
+      </div>
     </fieldset>
   </div>
   <div class="calculation-box"><strong>Resultado</strong><div class="result-grid"><div><span>Complementarios A</span><output id="compA">0,00</output></div><div><span>Complementarios B</span><output id="compB">0,00</output></div><div><span>Complementarios total</span><output id="compTotal">0,00</output></div></div></div>
-  <div class="notice">Durante esta fase de pruebas se mantiene la suma A + B tal como resulte, sin aplicar un límite máximo de 5.</div>
 </section>
 
 <section class="screen" data-screen="15">
