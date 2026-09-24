@@ -177,18 +177,30 @@
 </section>
 
 <section class="screen" data-screen="7">
-  <div class="screen-title"><span>8</span><div><h2>Fuerza</h2><p>Introduzca los segundos de cada nivel de fuerza durante el ciclo, por separado para DX e IX.</p></div></div>
+  <div class="screen-title"><span>8</span><div><h2>Fuerza</h2><p>Introduzca la duración de cada nivel de fuerza durante el ciclo, por separado para DX e IX.</p></div></div>
+  <div class="calculation-box">
+    <strong>Modo de introducción</strong>
+    <div class="form-grid">
+      <label>Unidad de entrada
+        <select id="fuerzaModo">
+          <option value="segundos">Segundos por ciclo</option>
+          <option value="porcentaje">% del tiempo de ciclo</option>
+        </select>
+      </label>
+    </div>
+    <div class="notice" style="display:block !important;">Seleccione una sola unidad de entrada. El programa utilizará exclusivamente el valor introducido y realizará el cálculo según la tabla de puntuaciones de fuerza del Word.</div>
+  </div>
   <div class="side-grid">
     <fieldset><legend>Derecha (DX)</legend>
-      <label>Fuerza Borg 3–4: segundos/ciclo<input name="dxFuerza34" type="number" min="0" step="0.1"></label>
-      <label>Fuerza Borg 5–7: segundos/ciclo<input name="dxFuerza57" type="number" min="0" step="0.1"></label>
-      <label>Fuerza Borg 8–10: segundos/ciclo<input name="dxFuerza810" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 3–4: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza34" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 5–7: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza57" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 8–10: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza810" type="number" min="0" step="0.1"></label>
       <div class="result-grid one-column"><div><span>Puntuación fuerza DX</span><output id="dxFuerzaScore">—</output></div></div>
     </fieldset>
     <fieldset><legend>Izquierda (IX)</legend>
-      <label>Fuerza Borg 3–4: segundos/ciclo<input name="ixFuerza34" type="number" min="0" step="0.1"></label>
-      <label>Fuerza Borg 5–7: segundos/ciclo<input name="ixFuerza57" type="number" min="0" step="0.1"></label>
-      <label>Fuerza Borg 8–10: segundos/ciclo<input name="ixFuerza810" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 3–4: <span class="fuerza-unidad">segundos/ciclo</span><input name="ixFuerza34" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 5–7: <span class="fuerza-unidad">segundos/ciclo</span><input name="ixFuerza57" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 8–10: <span class="fuerza-unidad">segundos/ciclo</span><input name="ixFuerza810" type="number" min="0" step="0.1"></label>
       <div class="result-grid one-column"><div><span>Puntuación fuerza IX</span><output id="ixFuerzaScore">—</output></div></div>
     </fieldset>
   </div>
@@ -207,7 +219,7 @@
         <tr><td>8–9</td><td>Muy, muy duro / extremadamente duro</td><td>Aplicar una fuerza muy elevada para empujar, tirar, presionar, cerrar/abrir o manipular un componente.</td></tr>
         <tr><td>10</td><td>Máximo</td><td>Esfuerzo máximo o prácticamente máximo que la persona puede realizar.</td></tr>
       </tbody></table>
-      <p class="source-note">Referencias de apoyo: INSST (manipulación manual, empuje/tracción y valoración del esfuerzo) y Ergo/IBV (módulo OCRA Checklist). Los ejemplos no sustituyen la valoración del evaluador.</p>
+      <p class="source-note">La puntuación se calcula con las puntuaciones intermedias de la Tabla 14 del OCRA Checklist del documento Word utilizado como referencia.</p>
     </div>
   </details>
 </section>
