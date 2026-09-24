@@ -443,9 +443,27 @@ function kPanel(kind,title,defaultThreshold){
  const durationInput=document.getElementById("manualPostureDuration");if(durationInput)durationInput.onchange=()=>{ensureManualPosture().duration=Math.max(0,kNum(durationInput.value,0));dirty=true;kRenderAnalyses();safeCalculate()};
 }
 function kRenderAnalyses(){["shoulder","elbow","wrist"].forEach(kind=>kPanel(kind,kind==="shoulder"?"hombro":kind==="elbow"?"codo":"muñeca",kind==="shoulder"?80:60))}
+function handInputSeconds(name,duration){
+ const value=Math.max(0,kNum(document.querySelector('[name="'+name+'"]')?.value,0));
+ const mode=document.getElementById("manoModo")?.value||"segundos";
+ return mode==="porcentaje"?duration*value/100:value;
+}
+function updateHandModeUI(){
+ const mode=document.getElementById("manoModo")?.value||"segundos";
+ const unidad=mode==="porcentaje"?"% del tiempo":"segundos";
+ document.querySelectorAll(".mano-unidad").forEach(el=>el.textContent=unidad);
+ document.querySelectorAll('input[name="dxManoTiempo"],input[name="ixManoTiempo"]').forEach(el=>{
+   el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;
+ });
+}
+function initHandInputMode(){
+ const el=document.getElementById("manoModo");if(!el)return;
+ el.addEventListener("change",()=>{updateHandModeUI();dirty=true;safeCalculate()});
+ updateHandModeUI();
+}
 function renderHandPosture(){
  ["dx","ix"].forEach(prefix=>{
-  const time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),pct=document.getElementById(prefix+"ManoPct"),score=document.getElementById(prefix+"ManoScore"),duration=kManualDuration(),seconds=Math.max(0,kNum(time?.value,0)),p=duration>0?seconds/duration*100:0;
+  const time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),pct=document.getElementById(prefix+"ManoPct"),score=document.getElementById(prefix+"ManoScore"),duration=kManualDuration(),seconds=handInputSeconds(prefix+"ManoTiempo",duration),p=duration>0?seconds/duration*100:0;
   if(pct)pct.textContent=fmt(p,2)+" %";
   if(score)score.textContent=fmt((grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,p),2);
  });
@@ -453,7 +471,7 @@ function renderHandPosture(){
 function postureScores(){
  const duration=kManualDuration()||0,result={};
  ["right","left"].forEach(side=>{
-  const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulderBase=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),shoulder=document.querySelector('[name="'+prefix+'HombroCabeza"]')?.checked?shoulderBase*2:shoulderBase,elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=Math.max(0,kNum(time?.value,0)),handPct=duration>0?handSeconds/duration*100:0,hand=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),stereoValue=stereo(prefix);
+  const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulderBase=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),shoulder=document.querySelector('[name="'+prefix+'HombroCabeza"]')?.checked?shoulderBase*2:shoulderBase,elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=handInputSeconds(prefix+"ManoTiempo",duration),handPct=duration>0?handSeconds/duration*100:0,hand=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),stereoValue=stereo(prefix);
   result[side]={shoulder,elbow,wrist,hand,stereo:stereoValue,base:Math.max(shoulder,elbow,wrist,hand),total:Math.max(shoulder,elbow,wrist,hand)+stereoValue};
  });
  return result;
@@ -563,6 +581,7 @@ if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileIn
 function initCore(){
 initRecoverySchedule();
 initForceInputMode();
+initHandInputMode();
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
 document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
