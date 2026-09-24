@@ -460,7 +460,7 @@ function kForcedSeconds(kind,side){
 }
 function kManualRows(kind,side){
  const p=ensureManualPosture()[kind][side],duration=kManualDuration(),seconds=postureInputSeconds(p.flex,duration,kind),pct=duration>0?seconds/duration*100:0,label=side==="right"?"Derecha":"Izquierda";
- const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
+ const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
  const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
  return '<tr><td>'+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>';
 }
@@ -471,7 +471,7 @@ function kAnalysisRows(kind){
   if(p.source==="manual"){rows.push(kManualRows(kind,side));return}
   if(total<=0)return;
   const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
-  const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
+  const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
   rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>');
  });
  return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación de la tabla de alta precisión del Excel/Word. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
@@ -497,8 +497,9 @@ function updatePostureModeUI(){
 }
 function kManualControls(kind,side,threshold){
  const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",canK=postureStudyMode()==="kinovea"&&kSideHasKinovea(kind,side);
- const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
- return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">segundos</span><input type="number" min="0" step="0.1" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
+ const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
+ const help=kind==="shoulder"?' <div class="notice"><strong>Ayuda: cómo identificar la postura del hombro</strong><br><strong>Flexión:</strong> levantar el brazo hacia delante. Ejemplos: alcanzar un objeto alto situado delante, colocar algo en una estantería frontal o levantar una caja delante del cuerpo.<br><strong>Abducción:</strong> separar el brazo hacia un lado del cuerpo. Ejemplos: alcanzar un objeto colocado lateralmente, tender ropa o levantar el brazo hacia el lado para coger algo de una estantería.<br><strong>Extensión:</strong> llevar el brazo hacia atrás del cuerpo. Ejemplos: alcanzar un objeto situado detrás, llevar la mano hacia un bolsillo trasero o coger algo que queda detrás del cuerpo.</div>' : "";
+ return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend>'+help;<label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">segundos</span><input type="number" min="0" step="0.1" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
 }
 function initPostureInputMode(){
  const el=document.getElementById("postureModo");if(!el)return;
