@@ -491,6 +491,13 @@ function updatePostureModeUI(){
    if(!box)return;
    box.querySelectorAll(".postura-unidad").forEach(el=>el.textContent=unidad);
    box.querySelectorAll("[data-manual-posture]").forEach(el=>{
+     const label=el.closest("label");
+     if(label){
+       const textNodes=[...label.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE);
+       textNodes.forEach(n=>{n.textContent=n.textContent.replace(/Tiempo en postura forzada(?:\s*)(?:segundos|% del tiempo)?/i,"Tiempo en postura forzada ");});
+     }
+   });
+   box.querySelectorAll("[data-manual-posture]").forEach(el=>{
      el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;
    });
  });
