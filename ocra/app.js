@@ -682,7 +682,7 @@ let simulationState={baseline:null,current:null,initialised:false};
 
 function simClone(v){return JSON.parse(JSON.stringify(v));}
 function simNum(id){const v=Number(document.getElementById(id)?.value);return Number.isFinite(v)?Math.max(0,v):0;}
-function simSet(id,value){const el=document.getElementById(id);if(el)el.value=value??"";}
+function simSet(id,value){const el=document.getElementById(id);if(!el)return;if(el.type==="checkbox")el.checked=!!value;else el.value=value??"";}
 function simText(id){return document.getElementById(id)?.textContent||"—";}
 function simControlIds(){
  return [
@@ -762,11 +762,13 @@ function simSetInitialComplementaryOptions(){
  const a=document.getElementById("simCompA"),b=document.getElementById("simCompB");
  if(!a||!b)return;
  if(!a.options.length){
+   const noneA=document.createElement("option");noneA.value="0";noneA.textContent="Ningún factor";noneA.dataset.score="0";a.appendChild(noneA);
    form.querySelectorAll('[name="compA"]').forEach((el,i)=>{
      const o=document.createElement("option");o.value=el.value;o.textContent=el.parentElement.textContent.trim();o.dataset.score=el.dataset.compA||el.value;a.appendChild(o);
    });
  }
  if(!b.options.length){
+   const noneB=document.createElement("option");noneB.value="0";noneB.textContent="Ningún factor";noneB.dataset.score="0";b.appendChild(noneB);
    form.querySelectorAll('[name="compB"]').forEach(el=>{
      const o=document.createElement("option");o.value=el.value;o.textContent=el.parentElement.textContent.trim();o.dataset.score=el.dataset.compB||el.value;b.appendChild(o);
    });
