@@ -267,31 +267,29 @@
   <div class="screen-title"><span>14</span><div><h2>Mano - dedo y estereotipia</h2><p>Complete el bloque D (mano-dedo) y el bloque E (estereotipia). El factor postura final utiliza el valor más alto de A, B, C o D y lo suma, una sola vez, al valor de E.</p></div></div>
   <div class="side-grid">
     <fieldset><legend>Derecha (DX) · D) Mano-dedo</legend>
-      <label>Tipo de toma / agarre
+      <label>Tipo de agarre
         <select name="dxManoAgarre">
-          <option value="none">Ninguna de las tomas puntuables</option>
-          <option value="pinch">Pinza (pinch)</option>
-          <option value="hook">Toma de gancho</option>
-          <option value="palmar">Presa palmar</option>
-          <option value="other">Otro agarre similar</option>
+          <option value="none">Ningún agarre puntuable</option>
+          <option value="pinch">Pinza</option>
+          <option value="hook">Agarre en gancho</option>
+          <option value="palmar">Agarre palmar</option>
           <option value="grip">Agarre de potencia (grip) · no puntúa</option>
         </select>
       </label>
-      <label>Tiempo en la toma seleccionada (s)<input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
+      <label>Tiempo en el agarre seleccionado (s)<input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
     </fieldset>
     <fieldset><legend>Izquierda (IX) · D) Mano-dedo</legend>
-      <label>Tipo de toma / agarre
+      <label>Tipo de agarre
         <select name="ixManoAgarre">
-          <option value="none">Ninguna de las tomas puntuables</option>
-          <option value="pinch">Pinza (pinch)</option>
-          <option value="hook">Toma de gancho</option>
-          <option value="palmar">Presa palmar</option>
-          <option value="other">Otro agarre similar</option>
+          <option value="none">Ningún agarre puntuable</option>
+          <option value="pinch">Pinza</option>
+          <option value="hook">Agarre en gancho</option>
+          <option value="palmar">Agarre palmar</option>
           <option value="grip">Agarre de potencia (grip) · no puntúa</option>
         </select>
       </label>
-      <label>Tiempo en la toma seleccionada (s)<input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
+      <label>Tiempo en el agarre seleccionado (s)<input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
     </fieldset>
   </div>
@@ -300,7 +298,17 @@
     <label class="check-row"><input type="checkbox" name="ixHombroCabeza"> Las manos trabajan por encima de la altura de la cabeza</label>
   </div>
   <div class="notice"><strong>Nota del hombro:</strong> si las manos operan sobre la altura de la cabeza, se duplica el valor del hombro.</div>
-  <div class="notice"><strong>Criterio mano-dedo:</strong> pinza, toma de gancho, presa palmar u otro agarre similar puntúan según el porcentaje de exposición de la tabla de alta precisión. El agarre de potencia (grip) no puntúa.</div>
+  <details class="help-panel">
+    <summary>ⓘ Ayuda: tipos de agarre</summary>
+    <div class="help-content">
+      <p><strong>Pinza:</strong> agarre realizado principalmente con las yemas de los dedos y el pulgar, normalmente para sujetar o manipular objetos pequeños.</p>
+      <p><strong>Agarre en gancho:</strong> agarre en el que los dedos permanecen flexionados y enganchan el objeto principalmente con los dedos, mientras que el pulgar tiene poca o ninguna participación. La mano actúa como un gancho alrededor del objeto.</p>
+      <p><strong>Agarre palmar:</strong> agarre realizado utilizando la palma de la mano junto con los dedos para envolver y sujetar el objeto. El objeto queda en contacto con una parte importante de la palma y los dedos.</p>
+      <p><strong>Agarre de potencia (grip):</strong> es un agarre en el que la mano envuelve firmemente el objeto utilizando la palma y los dedos. En este módulo se muestra como referencia, pero <strong>no puntúa</strong>.</p>
+      <p><strong>Cómo identificarlo:</strong> pinza = pulgar y yemas de los dedos; agarre en gancho = dedos flexionados con poca participación del pulgar; agarre palmar = palma y dedos rodeando el objeto.</p>
+      <p>Seleccione el tipo de agarre que corresponda a la forma en que se sujeta el objeto durante la actividad analizada.</p>
+    </div>
+  </details>
   <div class="side-grid">
     <fieldset><legend>Derecha (DX) · E) Estereotipia</legend>
       <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
