@@ -224,7 +224,19 @@
 </section>
 
 <section class="screen" data-screen="8">
-  <div class="screen-title"><span>9</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Cargue únicamente el JSON exportado por Kinovea y seleccione el periodo que se analizará.</p></div></div>
+  <div class="screen-title"><span>9</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Puede estudiar las posturas mediante los datos de Kinovea o introducirlas manualmente. Si utiliza Kinovea, puede completar manualmente cualquier postura o lado que no tenga todos los marcadores o cuyos datos no sean adecuados.</p></div></div>
+  <div class="calculation-box">
+    <strong>Método de estudio de las posturas</strong>
+    <div class="form-grid">
+      <label>Fuente principal
+        <select id="postureStudyMode" name="postureStudyMode">
+          <option value="manual" selected>Manual</option>
+          <option value="kinovea">Kinovea (JSON)</option>
+        </select>
+      </label>
+    </div>
+    <div class="notice">Si selecciona <strong>Manual</strong>, todas las posturas se introducirán manualmente. Si selecciona <strong>Kinovea</strong>, el programa utilizará Kinovea cuando disponga de todos los marcadores necesarios y permitirá pasar a MANUAL de forma independiente para cualquier lado o postura.</div>
+  </div>
   <div class="form-grid">
     <label>JSON de Kinovea (hasta 12 archivos)<small>Seleccione un JSON. Para cargar otro, pulse «Añadir otro JSON». Cada archivo puede estar en una carpeta o ubicación diferente.</small><div id="kinoveaFileInputs" class="form-grid"></div><button type="button" class="toolbar-btn" id="addKinoveaJsonBtn">Añadir otro JSON</button><div id="kinoveaFileList" class="notice">No hay JSON seleccionados.</div></label>
   </div>
@@ -248,17 +260,17 @@
 </section>
 
 <section class="screen" data-screen="10">
-  <div class="screen-title"><span>11</span><div><h2>Postura de hombro</h2><p>Puede utilizar Kinovea, introducir la observación manualmente o combinar ambas fuentes. El origen de cada dato queda identificado.</p></div></div>
+  <div class="screen-title"><span>11</span><div><h2>Postura de hombro</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
   <div id="ocraShoulderPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
 </section>
 
 <section class="screen" data-screen="11">
-  <div class="screen-title"><span>12</span><div><h2>Postura de codo</h2><p>Puede utilizar Kinovea, introducir la observación manualmente o combinar ambas fuentes. El origen de cada dato queda identificado.</p></div></div>
+  <div class="screen-title"><span>12</span><div><h2>Postura de codo</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
   <div id="ocraElbowPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
 </section>
 
 <section class="screen" data-screen="12">
-  <div class="screen-title"><span>13</span><div><h2>Postura de muñeca</h2><p>Puede utilizar Kinovea, introducir la observación manualmente o combinar ambas fuentes. El origen de cada dato queda identificado.</p></div></div>
+  <div class="screen-title"><span>13</span><div><h2>Postura de muñeca</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
   <div id="ocraWristPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
 </section>
 
