@@ -264,9 +264,40 @@
 </section>
 
 <section class="screen" data-screen="13">
-  <div class="screen-title"><span>14</span><div><h2>Estereotipia</h2><p>Seleccione las condiciones observadas. El programa calcula la puntuación correspondiente.</p></div></div>
+  <div class="screen-title"><span>14</span><div><h2>Mano - dedo y estereotipia</h2><p>Complete el bloque D (mano-dedo) y el bloque E (estereotipia). El factor postura final utiliza el valor más alto de A, B, C o D y lo suma, una sola vez, al valor de E.</p></div></div>
   <div class="side-grid">
-    <fieldset><legend>Derecha (DX)</legend>
+    <fieldset><legend>Derecha (DX) · D) Mano-dedo</legend>
+      <label>Tipo de toma / agarre
+        <select name="dxManoAgarre">
+          <option value="none">Ninguna de las tomas puntuables</option>
+          <option value="pinch">Pinza (pinch)</option>
+          <option value="hook">Toma de gancho</option>
+          <option value="palmar">Presa palmar</option>
+          <option value="other">Otro agarre similar</option>
+          <option value="grip">Agarre de potencia (grip) · no puntúa</option>
+        </select>
+      </label>
+      <label>Tiempo en la toma seleccionada (s)<input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
+    </fieldset>
+    <fieldset><legend>Izquierda (IX) · D) Mano-dedo</legend>
+      <label>Tipo de toma / agarre
+        <select name="ixManoAgarre">
+          <option value="none">Ninguna de las tomas puntuables</option>
+          <option value="pinch">Pinza (pinch)</option>
+          <option value="hook">Toma de gancho</option>
+          <option value="palmar">Presa palmar</option>
+          <option value="other">Otro agarre similar</option>
+          <option value="grip">Agarre de potencia (grip) · no puntúa</option>
+        </select>
+      </label>
+      <label>Tiempo en la toma seleccionada (s)<input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
+    </fieldset>
+  </div>
+  <div class="notice"><strong>Criterio mano-dedo:</strong> pinza, toma de gancho, presa palmar u otro agarre similar puntúan según el porcentaje de exposición de la tabla de alta precisión. El agarre de potencia (grip) no puntúa.</div>
+  <div class="side-grid">
+    <fieldset><legend>Derecha (DX) · E) Estereotipia</legend>
       <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
       <label class="check-row"><input type="checkbox" name="dxStereoCycle815"> Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior.</label>
       <label class="check-row"><input type="checkbox" name="dxStereoStatic"> Postura estática de la extremidad superior durante más del 50 % del ciclo.</label>
@@ -274,7 +305,7 @@
       <label class="check-row"><input type="checkbox" name="dxStereoCycle8"> Ciclo inferior a 8 s en el que predominan las acciones técnicas de la extremidad superior.</label>
       <div class="result-grid one-column"><div><span>Puntuación estereotipia DX</span><output id="dxStereoScore">0,00</output></div></div>
     </fieldset>
-    <fieldset><legend>Izquierda (IX)</legend>
+    <fieldset><legend>Izquierda (IX) · E) Estereotipia</legend>
       <label class="check-row"><input type="checkbox" name="ixStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
       <label class="check-row"><input type="checkbox" name="ixStereoCycle815"> Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior.</label>
       <label class="check-row"><input type="checkbox" name="ixStereoStatic"> Postura estática de la extremidad superior durante más del 50 % del ciclo.</label>
@@ -283,6 +314,7 @@
       <div class="result-grid one-column"><div><span>Puntuación estereotipia IX</span><output id="ixStereoScore">0,00</output></div></div>
     </fieldset>
   </div>
+  <div class="notice"><strong>Criterio de estereotipia:</strong> 1,5 puntos si las mismas acciones/posturas se repiten más de la mitad del tiempo o si el ciclo es de 8–15 s con predominio de acciones técnicas; 3 puntos si se repiten casi todo el tiempo o si el ciclo es inferior a 8 s con predominio de acciones técnicas.</div>
 </section>
 
 <section class="screen" data-screen="14">
@@ -330,10 +362,10 @@
       <div class="sub-result"><span>↳ Borg 8–10</span><output id="finalForce810Dx">—</output></div>
 
       <div class="main-result"><span>Postura + estereotipia</span><output id="finalPostureDx">—</output></div>
-      <div class="sub-result"><span>↳ Hombro</span><output>0,00</output></div>
-      <div class="sub-result"><span>↳ Codo</span><output>0,00</output></div>
-      <div class="sub-result"><span>↳ Muñeca</span><output>0,00</output></div>
-      <div class="sub-result"><span>↳ Mano</span><output>0,00</output></div>
+      <div class="sub-result"><span>↳ Hombro</span><output id="finalShoulderDx">—</output></div>
+      <div class="sub-result"><span>↳ Codo</span><output id="finalElbowDx">—</output></div>
+      <div class="sub-result"><span>↳ Muñeca</span><output id="finalWristDx">—</output></div>
+      <div class="sub-result"><span>↳ Mano</span><output id="finalHandDx">—</output></div>
       <div class="sub-result"><span>↳ Estereotipia</span><output id="finalStereoDx">—</output></div>
 
       <div class="main-result"><span>Complementarios</span><output id="finalCompDx">—</output></div>
@@ -358,10 +390,10 @@
       <div class="sub-result"><span>↳ Borg 8–10</span><output id="finalForce810Ix">—</output></div>
 
       <div class="main-result"><span>Postura + estereotipia</span><output id="finalPostureIx">—</output></div>
-      <div class="sub-result"><span>↳ Hombro</span><output>0,00</output></div>
-      <div class="sub-result"><span>↳ Codo</span><output>0,00</output></div>
-      <div class="sub-result"><span>↳ Muñeca</span><output>0,00</output></div>
-      <div class="sub-result"><span>↳ Mano</span><output>0,00</output></div>
+      <div class="sub-result"><span>↳ Hombro</span><output id="finalShoulderIx">—</output></div>
+      <div class="sub-result"><span>↳ Codo</span><output id="finalElbowIx">—</output></div>
+      <div class="sub-result"><span>↳ Muñeca</span><output id="finalWristIx">—</output></div>
+      <div class="sub-result"><span>↳ Mano</span><output id="finalHandIx">—</output></div>
       <div class="sub-result"><span>↳ Estereotipia</span><output id="finalStereoIx">—</output></div>
 
       <div class="main-result"><span>Complementarios</span><output id="finalCompIx">—</output></div>
@@ -375,7 +407,7 @@
       <div class="main-result"><span>Clasificación</span><output id="clasificacionIx">—</output></div>
     </div></section>
   </div>
-  <div class="notice">Los componentes de postura (hombro, codo, muñeca y mano) se muestran por separado, pero actualmente no aportan puntuación al cálculo final. La estereotipia sí se incorpora al resultado. La fuerza se desglosa exactamente según las tres opciones Borg existentes.</div>
+  <div class="notice">El factor postura se calcula como: <strong>máximo de A (hombro), B (codo), C (muñeca) y D (mano-dedo) + E (estereotipia)</strong>. El valor más alto entre A-D se utiliza una sola vez. Si las manos trabajan por encima de la cabeza, se duplica el valor de hombro.</div>
 </section>
 </section>
 <section class="screen" data-screen="16">
