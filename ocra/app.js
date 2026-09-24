@@ -387,108 +387,76 @@ function ensureManualPosture(){
 function kKinoveaFileId(kind,side){const required=kRequired(kind,side);return (kinoveaState.dataSets||[]).find(ds=>required.every(key=>!!ds.mapping?.[key]))?.id||null}
 function kSideHasKinovea(kind,side){return !!kKinoveaFileId(kind,side) && !!kinoveaState.data}
 function kSourceLabel(source){return source==="kinovea"?"KINOVEA":"MANUAL"}
-function kManualDuration(){
- const p=ensureManualPosture(),r=kRange();
- return r?.duration>0?r.duration:kNum(p.duration,0);
+const postureHandTable=[[0,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[44,3.5],[50,4],[54,4.5],[57,5],[61,5.5],[65,6],[69,6.5],[72,7],[76,7.5],[80,8],[100,8]];
+const postureWristTable=[[0,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[44,3.5],[50,4],[54,4.5],[57,5],[61,5.5],[65,6],[69,6.5],[72,7],[76,7.5],[80,8],[100,8]];
+const postureElbowTable=[[0,0],[5,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[44,3.5],[50,4],[54,4.5],[57,5],[61,5.5],[65,6],[69,6.5],[72,7],[76,7.5],[80,8],[100,8]];
+const postureShoulderTable=[[0,0],[3,.5],[5,1],[8,1.5],[10,2],[12,2.5],[14,3],[16,3.5],[18,4],[20,4.5],[22,5],[24,5.5],[28,6],[31,6.5],[34,7],[37,7.5],[40,8],[43,9],[46,11],[50,12],[54,13],[58,14],[62,15],[66,16],[70,17],[74,18],[78,19],[82,20],[86,21],[90,22],[94,23],[100,24]];
+function postureScore(table,pct){return lookup(table,Math.max(0,Math.min(100,pct)))}
+function kManualDuration(){const p=ensureManualPosture(),r=kRange();return r?.duration>0?r.duration:kNum(p.duration,0)}
+function kForcedSeconds(kind,side){
+ const p=ensureManualPosture()[kind][side],r=kRange();
+ if(p.source==="manual")return Math.max(0,p.flex)+Math.max(0,p.ext);
+ if(!r||!kinoveaState.data||kMissingMarkers(kind,side).length)return 0;
+ const frames=kinoveaState.data.frames;let total=0,base=null;
+ for(let i=0;i<frames.length-1;i++){
+  const a=frames[i],b=frames[i+1],dt=Math.max(0,Math.min(b.time,r.end)-Math.max(a.time,r.start));if(dt<=0)continue;
+  let va,vb;
+  if(kind==="shoulder"){va=kSigned(kPoint(a,side+"_hip"),kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),side==="right"?"right":"left");vb=kSigned(kPoint(b,side+"_hip"),kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),side==="right"?"right":"left")}
+  else if(kind==="elbow"){va=kAngle(kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"));vb=kAngle(kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"))}
+  else{va=kSigned(kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"),kPoint(a,side+"_index"),side==="right"?"right":"left");vb=kSigned(kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"),kPoint(b,side+"_index"),side==="right"?"right":"left")}
+  if(!Number.isFinite(va)||!Number.isFinite(vb))continue;
+  if(base===null)base=va;
+  const v=(va+vb)/2-base;
+  if(kind==="shoulder"){if(v>=80||v<-20)total+=dt}else if(Math.abs(v)>60)total+=dt;
+ }
+ return total;
 }
-function kManualRows(kind,side,threshold){
- const p=ensureManualPosture()[kind][side],duration=kManualDuration();
- const label=side==="right"?"derecha":"izquierda";
- if(duration<=0)return '<tr><td>—</td><td>Manual</td><td colspan="3">Indique la duración del periodo manual analizado.</td></tr>';
- const flex=Math.max(0,p.flex),ext=Math.max(0,p.ext);
- const n1=kind==="shoulder"?"Flexión":kind==="elbow"?"Flexión":"Flexión de muñeca";
- const n2=kind==="shoulder"?"Extensión":kind==="elbow"?"Extensión":"Extensión de muñeca";
- const criterion=kind==="shoulder"?"≥ 80°":"&gt; "+threshold+"°";
- return '<tr><td>'+n1+' '+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+fmt(flex,3)+' s</td><td>'+fmt(flex/duration*100,2)+' %</td></tr>'+
-        '<tr><td>'+n2+' '+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+fmt(ext,3)+' s</td><td>'+fmt(ext/duration*100,2)+' %</td></tr>';
+function kManualRows(kind,side){
+ const p=ensureManualPosture()[kind][side],duration=kManualDuration(),seconds=Math.max(0,p.flex)+Math.max(0,p.ext),pct=duration>0?seconds/duration*100:0,label=side==="right"?"Derecha":"Izquierda";
+ const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
+ const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
+ return '<tr><td>'+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>';
 }
-function kAnalysisRows(kind,threshold){
- const r=kRange(),manual=ensureManualPosture(),rows=[];
+function kAnalysisRows(kind){
+ const r=kRange(),rows=[];
  ["right","left"].forEach(side=>{
-   const p=manual[kind][side];
-   if(p.source==="manual"){
-     rows.push(kManualRows(kind,side,threshold));
-     return;
-   }
-   if(!r||!kinoveaState.data||kMissingMarkers(kind,side).length)return;
-   const frames=kinoveaState.data.frames;
-   let a1=0,a2=0,valid=0,base=null;
-   for(let i=0;i<frames.length-1;i++){
-     const a=frames[i],b=frames[i+1],dt=Math.max(0,Math.min(b.time,r.end)-Math.max(a.time,r.start));if(dt<=0)continue;
-     let va,vb;
-     if(kind==="shoulder"){
-       va=kSigned(kPoint(a,side+"_hip"),kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),side==="right"?"right":"left");
-       vb=kSigned(kPoint(b,side+"_hip"),kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),side==="right"?"right":"left");
-     }else if(kind==="elbow"){
-       va=kAngle(kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"));
-       vb=kAngle(kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"));
-     }else{
-       va=kSigned(kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"),kPoint(a,side+"_index"),side==="right"?"right":"left");
-       vb=kSigned(kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"),kPoint(b,side+"_index"),side==="right"?"right":"left");
-     }
-     if(!Number.isFinite(va)||!Number.isFinite(vb))continue;
-     if(base===null)base=va;
-     const v=(va+vb)/2-base;
-     valid+=dt;
-     if(kind==="shoulder"){if(v>=80)a1+=dt;if(v<-20)a2+=dt;}
-     else {if(v>threshold)a1+=dt;if(v<-threshold)a2+=dt;}
-   }
-   if(valid){
-     const label=side==="right"?"derecha":"izquierda",total=r.duration||1;
-     const n1=kind==="shoulder"?"Flexión":kind==="elbow"?"Flexión":"Flexión de muñeca";
-     const n2=kind==="shoulder"?"Extensión":kind==="elbow"?"Extensión":"Extensión de muñeca";
-     const criterion=kind==="shoulder"?"≥ 80°":"&gt; "+threshold+"°";
-     rows.push('<tr><td>'+n1+' '+label+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+fmt(a1,3)+' s</td><td>'+fmt(a1/total*100,2)+' %</td></tr>');
-     rows.push('<tr><td>'+n2+' '+label+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+fmt(a2,3)+' s</td><td>'+fmt(a2/total*100,2)+' %</td></tr>');
-   }
+  const p=ensureManualPosture()[kind][side],seconds=kForcedSeconds(kind,side),total=r?.duration||kManualDuration(),pct=total>0?seconds/total*100:0;
+  if(p.source==="manual"){rows.push(kManualRows(kind,side));return}
+  if(total<=0)return;
+  const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
+  const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
+  rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>');
  });
- const duration=kManualDuration();
- return '<div class="notice"><strong>Origen de cada dato:</strong> KINOVEA = calculado automáticamente desde el JSON; MANUAL = introducido por el evaluador. Puede usar KINOVEA para un lado y MANUAL para el otro.</div>'+
-   (kind==="shoulder"&&!kinoveaState.data?'<div class="form-grid"><label>Duración del periodo manual analizado (s)<input id="manualPostureDuration" type="number" min="0" step="0.01" value="'+kNum(manual.duration,0)+'"></label></div>':"")+
-   '<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Movimiento</th><th>Origen</th><th>Criterio</th><th>Tiempo</th><th>% del tiempo analizado</th></tr></thead><tbody>'+
-   (rows.length?rows.join(""):'<tr><td colspan="5">No hay datos de postura todavía.</td></tr>')+
-   '</tbody></table></div>'+
-   (duration>0?'<div class="notice">Periodo utilizado: '+fmt(duration,2)+' s.</div>':'');
+ return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación de la tabla de alta precisión del Excel/Word. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
 }
 function kManualControls(kind,side,threshold){
- const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda";
- const canK=kSideHasKinovea(kind,side);
- return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend>'+
-   '<label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'">'+
-   '<option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option>'+
-   '<option value="manual" '+(p.source==="manual"?"selected":"")+'>Manual</option></select></label>'+
-   '<div class="manual-posture-fields" data-manual-fields="'+kind+'-'+side+'" '+(p.source==="manual"?"":"hidden")+'>'+
-   '<label>Tiempo en '+(kind==="shoulder"?"flexión":kind==="elbow"?"flexión de codo":"flexión de muñeca")+' (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label>'+
-   '<label>Tiempo en '+(kind==="shoulder"?"extensión":kind==="elbow"?"extensión de codo":"extensión de muñeca")+' (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="ext" value="'+fmt(p.ext,2).replace(",",".")+'"></label>'+
-   '</div>'+
-   '<div class="notice">Este bloque está marcado como MANUAL y no procede de Kinovea.</div></fieldset>';
+ const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",canK=kSideHasKinovea(kind,side);
+ const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
+ return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"")+'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label><label>Tiempo adicional en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="ext" value="'+fmt(p.ext,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
 }
 function kPanel(kind,title,defaultThreshold){
  const id=kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel",box=document.getElementById(id);if(!box)return;
- const current=kinoveaState[kind]||{threshold:defaultThreshold};
- const threshold=kind==="wrist"?Math.max(1,current.threshold||defaultThreshold):defaultThreshold;
- ensureManualPosture();
- const missing=kMissingMessage(kind);
- const warning=missing
-  ?'<div class="notice">'+missing+' Puede seleccionar MANUAL para el lado que no pueda obtenerse mediante Kinovea.</div>'
-  :'<div class="notice">Cada lado puede utilizar una fuente distinta: KINOVEA o MANUAL.</div>';
- box.innerHTML='<strong>Datos de postura</strong>'+warning+
-   (kind==="wrist"?'<div class="form-grid"><label>Umbral angular (°)<input id="wristThreshold" type="number" min="1" max="180" value="'+threshold+'"></label></div>':'')+
-   '<div class="side-grid">'+kManualControls(kind,"right",threshold)+kManualControls(kind,"left",threshold)+'</div>'+
-   '<div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind,threshold)+'</div>';
- box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{
-   const side=sel.dataset.postureSide;const p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();
- });
- box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{
-   const p=ensureManualPosture()[kind][input.dataset.manualSide];
-   p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();
- });
- const durationInput=document.getElementById("manualPostureDuration");
- if(durationInput)durationInput.onchange=()=>{ensureManualPosture().duration=Math.max(0,kNum(durationInput.value,0));dirty=true;kRenderAnalyses();};
- const thresholdInput=document.getElementById("wristThreshold");
- if(thresholdInput)thresholdInput.oninput=()=>{kinoveaState.wrist={...(kinoveaState.wrist||{}),threshold:Math.max(1,kNum(thresholdInput.value,defaultThreshold))};dirty=true;kRenderAnalyses();};
+ ensureManualPosture();const missing=kMissingMessage(kind),warning=missing?'<div class="notice">'+missing+' Puede seleccionar MANUAL para el lado que no pueda obtenerse mediante Kinovea.</div>':'<div class="notice">Cada lado puede utilizar una fuente distinta: KINOVEA o MANUAL.</div>';
+ box.innerHTML='<strong>Datos de postura</strong>'+warning+'<div class="side-grid">'+kManualControls(kind,"right",defaultThreshold)+kManualControls(kind,"left",defaultThreshold)+'</div><div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind)+'</div>';
+ box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{const side=sel.dataset.postureSide,p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();safeCalculate()});
+ box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{const p=ensureManualPosture()[kind][input.dataset.manualSide];p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();safeCalculate()});
 }
 function kRenderAnalyses(){["shoulder","elbow","wrist"].forEach(kind=>kPanel(kind,kind==="shoulder"?"hombro":kind==="elbow"?"codo":"muñeca",kind==="shoulder"?80:60))}
+function renderHandPosture(){
+ ["dx","ix"].forEach(prefix=>{
+  const time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),pct=document.getElementById(prefix+"ManoPct"),score=document.getElementById(prefix+"ManoScore"),duration=kManualDuration(),seconds=Math.max(0,kNum(time?.value,0)),p=duration>0?seconds/duration*100:0;
+  if(pct)pct.textContent=fmt(p,2)+" %";
+  if(score)score.textContent=fmt((grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,p),2);
+ });
+}
+function postureScores(){
+ const duration=kManualDuration()||0,result={};
+ ["right","left"].forEach(side=>{
+  const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulder=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=Math.max(0,kNum(time?.value,0)),handPct=duration>0?handSeconds/duration*100:0,hand=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),stereoValue=stereo(prefix);
+  result[side]={shoulder,elbow,wrist,hand,stereo:stereoValue,base:Math.max(shoulder,elbow,wrist,hand),total:Math.max(shoulder,elbow,wrist,hand)+stereoValue};
+ });
+ return result;
+}
 function restoreKinoveaState(saved){
  kinoveaState={...kinoveaState,...saved,videoUrl:""};
  if(saved.range)kinoveaState.range={...{mode:"all",start:0,end:0,cycles:1},...saved.range};
@@ -558,12 +526,18 @@ function calculate(){
  document.getElementById("cicloNeto").textContent=cycle?fmt(cycle,2):"—";document.getElementById("criterioCicloNota")&&(document.getElementById("criterioCicloNota").innerHTML=cycles>0?"<strong>Criterio utilizado:</strong> se utiliza el <strong>ciclo calculado</strong> porque se han introducido ciclos efectivos.":"<strong>Criterio utilizado:</strong> no se han introducido ciclos efectivos, por lo que se utiliza el <strong>ciclo observado</strong>.");document.getElementById("diferenciaCiclo").textContent=diff===null?"—":fmt(diff,2);document.getElementById("minNoJustificados").textContent=diff===null?"—":fmt(Math.abs(cycle-obs)*cycles/60,2);document.getElementById("alertaCiclo").textContent=diff===null?"—":diff>5?"Revisar: > 5 %":"Concordante: ≤ 5 %";
  const actionCycle=cycles>0?cycle:obs,dxA=n("dxAcciones"),ixA=n("ixAcciones"),dxMin=actionCycle>0?dxA*60/actionCycle:0,ixMin=actionCycle>0?ixA*60/actionCycle:0,dxF=freq(dxMin,form.elements.dxInterrupciones.value==="si"),ixF=freq(ixMin,form.elements.ixInterrupciones.value==="si"),dxF34s=forceInputSeconds("dxFuerza34",actionCycle),dxF57s=forceInputSeconds("dxFuerza57",actionCycle),dxF810s=forceInputSeconds("dxFuerza810",actionCycle),ixF34s=forceInputSeconds("ixFuerza34",actionCycle),ixF57s=forceInputSeconds("ixFuerza57",actionCycle),ixF810s=forceInputSeconds("ixFuerza810",actionCycle),dxF34=actionCycle>0?lookup(force34,dxF34s/actionCycle):0,dxF57=actionCycle>0?lookup(force57,dxF57s/actionCycle):0,dxF810=actionCycle>0?lookup(force810,dxF810s/actionCycle):0,ixF34=actionCycle>0?lookup(force34,ixF34s/actionCycle):0,ixF57=actionCycle>0?lookup(force57,ixF57s/actionCycle):0,ixF810=actionCycle>0?lookup(force810,ixF810s/actionCycle):0,dxForce=forceScore(dxF34s,dxF57s,dxF810s,actionCycle),ixForce=forceScore(ixF34s,ixF57s,ixF810s,actionCycle),dxS=stereo("dx"),ixS=stereo("ix"),a=[...form.querySelectorAll("[data-comp-a]")].filter(x=>x.checked).reduce((s,x)=>s+(parseFloat(x.dataset.compA)||0),0),b=parseFloat(form.elements.complementarioB.value)||0,comp=a+b;
  document.getElementById("dxAccionesMin").textContent=fmt(dxMin,2);document.getElementById("ixAccionesMin").textContent=fmt(ixMin,2);document.getElementById("finalFreqDxSub").textContent=fmt(dxF,2);document.getElementById("finalFreqIxSub").textContent=fmt(ixF,2);document.getElementById("dxFrecuencia").textContent=fmt(dxF,2);document.getElementById("ixFrecuencia").textContent=fmt(ixF,2);document.getElementById("dxFuerzaScore").textContent=fmt(dxForce,2);document.getElementById("ixFuerzaScore").textContent=fmt(ixForce,2);document.getElementById("dxStereoScore").textContent=fmt(dxS,2);document.getElementById("ixStereoScore").textContent=fmt(ixS,2);document.getElementById("compA").textContent=fmt(a,2);document.getElementById("compB").textContent=fmt(b,2);document.getElementById("compTotal").textContent=fmt(comp,2);document.getElementById("finalFreqActionsDx").textContent=fmt(dxMin,2);document.getElementById("finalFreqActionsIx").textContent=fmt(ixMin,2);document.getElementById("finalForce34Dx").textContent=fmt(dxF34,2);document.getElementById("finalForce57Dx").textContent=fmt(dxF57,2);document.getElementById("finalForce810Dx").textContent=fmt(dxF810,2);document.getElementById("finalForce34Ix").textContent=fmt(ixF34,2);document.getElementById("finalForce57Ix").textContent=fmt(ixF57,2);document.getElementById("finalForce810Ix").textContent=fmt(ixF810,2);document.getElementById("finalStereoDx").textContent=fmt(dxS,2);document.getElementById("finalStereoIx").textContent=fmt(ixS,2);document.getElementById("finalCompADx").innerHTML=[...form.querySelectorAll("[data-comp-a]")].filter(x=>x.checked).map(x=>escK(x.parentElement.textContent.trim())+" · "+fmt(parseFloat(x.dataset.compA)||0,2)).join("<br>")||"Ninguno";document.getElementById("finalCompAIx").innerHTML=document.getElementById("finalCompADx").innerHTML;document.getElementById("finalCompBDx").textContent=fmt(b,2);document.getElementById("finalCompBIx").textContent=fmt(b,2);
- const dxBase=dxF+dxForce+dxS+comp,ixBase=ixF+ixForce+ixS+comp,dxFinal=dxBase*(rm??1)*md,ixFinal=ixBase*(rm??1)*md;
+ const ps=postureScores(),dxPosture=ps.right.total,ixPosture=ps.left.total;
+ document.getElementById("finalPostureDx").textContent=fmt(dxPosture,2);document.getElementById("finalPostureIx").textContent=fmt(ixPosture,2);
+ document.getElementById("finalShoulderDx")&&(document.getElementById("finalShoulderDx").textContent=fmt(ps.right.shoulder,2));document.getElementById("finalShoulderIx")&&(document.getElementById("finalShoulderIx").textContent=fmt(ps.left.shoulder,2));
+ document.getElementById("finalElbowDx")&&(document.getElementById("finalElbowDx").textContent=fmt(ps.right.elbow,2));document.getElementById("finalElbowIx")&&(document.getElementById("finalElbowIx").textContent=fmt(ps.left.elbow,2));
+ document.getElementById("finalWristDx")&&(document.getElementById("finalWristDx").textContent=fmt(ps.right.wrist,2));document.getElementById("finalWristIx")&&(document.getElementById("finalWristIx").textContent=fmt(ps.left.wrist,2));
+ document.getElementById("finalHandDx")&&(document.getElementById("finalHandDx").textContent=fmt(ps.right.hand,2));document.getElementById("finalHandIx")&&(document.getElementById("finalHandIx").textContent=fmt(ps.left.hand,2));
+ const dxBase=dxF+dxForce+dxPosture+comp,ixBase=ixF+ixForce+ixPosture+comp,dxFinal=dxBase*(rm??1)*md,ixFinal=ixBase*(rm??1)*md;
  const set=(id,v,d=2)=>document.getElementById(id).textContent=Number.isFinite(v)?fmt(v,d):"—";
- set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalPostureDx",dxS);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
- set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalPostureIx",ixS);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
+ set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
+ set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
 }
-function safeCalculate(){try{calculate();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
+function safeCalculate(){try{calculate();renderHandPosture();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
 function markDirty(){dirty=true;status.textContent="";safeCalculate()}
 function addKinoveaFileInput(){
  const container=document.getElementById("kinoveaFileInputs");if(!container)return;
