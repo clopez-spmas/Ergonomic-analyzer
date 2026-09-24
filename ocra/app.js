@@ -786,7 +786,7 @@ function simPostureSide(side,tntr){
  ["shoulder","elbow","wrist"].forEach(kind=>{
    const key=kind.charAt(0).toUpperCase()+kind.slice(1),angle=simNum("sim"+key+"Angle"+prefix),time=Math.min(duration,simNum("sim"+key+"Time"+prefix));
    const active=simAngleActive(kind,angle),actualPct=active?time*pct:0;
-   simSet("sim"+key+"Pct"+prefix,fmt(actualPct,2)+" %");
+   simSetText("sim"+key+"Pct"+prefix,fmt(actualPct,2)+" %");
    const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
    scores[kind]=postureScore(table,actualPct);
  });
