@@ -480,27 +480,29 @@ function kAnalysisRows(kind){
 }
 function postureModeForKind(kind){
  const el=document.getElementById("postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1));
- return el?.value||ensureManualPosture().modes?.[kind]||"segundos";
+ const state=ensureManualPosture().modes?.[kind];
+ const mode=el?.value||state||"segundos";
+ return mode==="porcentaje"?"porcentaje":"segundos";
 }
 function postureInputSeconds(input,duration,kind){
  const value=Math.max(0,kNum(input,0));
  return postureModeForKind(kind)==="porcentaje"?duration*value/100:value;
 }
 function updatePostureModeUI(){
+ const p=ensureManualPosture();
  ["shoulder","elbow","wrist"].forEach(kind=>{
    const mode=postureModeForKind(kind),unidad=mode==="porcentaje"?"% del tiempo":"segundos";
+   p.modes[kind]=mode;
    const box=document.getElementById(kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel");
    if(!box)return;
+   const selector=document.getElementById("postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1));
+   if(selector)selector.value=mode;
    box.querySelectorAll(".postura-unidad").forEach(el=>el.textContent=unidad);
    box.querySelectorAll("[data-manual-posture]").forEach(el=>{
-     const label=el.closest("label");
-     if(label){
-       const textNodes=[...label.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE);
-       textNodes.forEach(n=>{n.textContent=n.textContent.replace(/Tiempo en postura forzada(?:\s*)(?:segundos|% del tiempo)?/i,"Tiempo en postura forzada ");});
-     }
-   });
-   box.querySelectorAll("[data-manual-posture]").forEach(el=>{
-     el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;
+     el.step="0.1";
+     el.max=mode==="porcentaje"?"100":"";
+     el.placeholder=mode==="porcentaje"?"%":"s";
+     el.title=unidad;
    });
  });
 }
@@ -534,8 +536,23 @@ function kPanel(kind,title,defaultThreshold){
  const modeId="postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1);
  const modeSelector='<div class="form-grid"><label>Unidad para el tiempo manual<select id="'+modeId+'" name="'+modeId+'"><option value="segundos" '+(savedMode==="segundos"?"selected":"")+' >Segundos</option><option value="porcentaje" '+(savedMode==="porcentaje"?"selected":"")+' >% del tiempo</option></select></label></div>';
  box.innerHTML='<strong>Datos de postura</strong>'+warning+modeSelector+manualDuration+'<div class="side-grid">'+kManualControls(kind,"right",defaultThreshold)+kManualControls(kind,"left",defaultThreshold)+'</div><div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind)+'</div>'+kPostureHelp(kind);
- const modeEl=document.getElementById(modeId);if(modeEl)modeEl.onchange=()=>{ensureManualPosture().modes[kind]=modeEl.value==="porcentaje"?"porcentaje":"segundos";updatePostureModeUI();dirty=true;kRenderAnalyses();safeCalculate()};
- box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{const side=sel.dataset.postureSide,p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();safeCalculate()});
+ const modeEl=document.getElementById(modeId);if(modeEl)modeEl.onchange=()=>{
+   const mode=modeEl.value==="porcentaje"?"porcentaje":"segundos";
+   ensureManualPosture().modes[kind]=mode;
+   updatePostureModeUI();
+   dirty=true;
+   safeCalculate();
+ };
+ box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{
+   const side=sel.dataset.postureSide,p=ensureManualPosture()[kind][side];
+   p.source=sel.value;
+   p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;
+   const manualBox=sel.closest(".manual-posture-box")?.querySelector(".manual-posture-fields");
+   if(manualBox)manualBox.hidden=sel.value!=="manual";
+   dirty=true;
+   kRenderAnalyses();
+   safeCalculate();
+ });
  box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{const p=ensureManualPosture()[kind][input.dataset.manualSide];p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();safeCalculate()});
 
 }
