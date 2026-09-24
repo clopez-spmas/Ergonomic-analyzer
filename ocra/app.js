@@ -215,6 +215,7 @@ function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "
 let kinoveaState={jsonFiles:[],dataSets:[],data:null,mapping:{},range:{mode:"all",start:0,end:0,cycles:1},
  postureManual:{
    duration:0,
+   modes:{shoulder:"segundos",elbow:"segundos",wrist:"segundos"},
    shoulder:{right:{source:"manual",flex:0,ext:0},left:{source:"manual",flex:0,ext:0}},
    elbow:{right:{source:"manual",flex:0,ext:0},left:{source:"manual",flex:0,ext:0}},
    wrist:{right:{source:"manual",flex:0,ext:0},left:{source:"manual",flex:0,ext:0}}
@@ -367,6 +368,7 @@ function bindKinovea(){
 function ensureManualPosture(){
  const p=kinoveaState.postureManual||{};
  p.duration=kNum(p.duration,0);
+ p.modes={shoulder:p.modes?.shoulder==="porcentaje"?"porcentaje":"segundos",elbow:p.modes?.elbow==="porcentaje"?"porcentaje":"segundos",wrist:p.modes?.wrist==="porcentaje"?"porcentaje":"segundos"};
  ["shoulder","elbow","wrist"].forEach(kind=>{
    p[kind]=p[kind]||{};
    ["right","left"].forEach(side=>{
@@ -478,7 +480,7 @@ function kAnalysisRows(kind){
 }
 function postureModeForKind(kind){
  const el=document.getElementById("postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1));
- return el?.value||"segundos";
+ return el?.value||ensureManualPosture().modes?.[kind]||"segundos";
 }
 function postureInputSeconds(input,duration,kind){
  const value=Math.max(0,kNum(input,0));
@@ -515,6 +517,8 @@ function initPostureInputMode(){
 }
 function kPanel(kind,title,defaultThreshold){
  const id=kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel",box=document.getElementById(id);if(!box)return;
+ const postureState=ensureManualPosture();
+ const savedMode=postureState.modes?.[kind]==="porcentaje"?"porcentaje":"segundos";
  ensurePostureSourcesAvailable();
  const missing=kMissingMessage(kind);
  const warning=postureStudyMode()==="manual"
@@ -524,9 +528,9 @@ function kPanel(kind,title,defaultThreshold){
    :'<div class="notice">Los datos de Kinovea se utilizan por defecto cuando están disponibles. Puede cambiar cualquier lado a MANUAL si los datos no son adecuados para el análisis.</div>';
  const manualDuration="";
  const modeId="postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1);
- const modeSelector='<div class="form-grid"><label>Unidad para el tiempo manual<select id="'+modeId+'" name="'+modeId+'"><option value="segundos">Segundos</option><option value="porcentaje">% del tiempo</option></select></label></div>';
+ const modeSelector='<div class="form-grid"><label>Unidad para el tiempo manual<select id="'+modeId+'" name="'+modeId+'"><option value="segundos" '+(savedMode==="segundos"?"selected":"")+' >Segundos</option><option value="porcentaje" '+(savedMode==="porcentaje"?"selected":"")+' >% del tiempo</option></select></label></div>';
  box.innerHTML='<strong>Datos de postura</strong>'+warning+modeSelector+manualDuration+'<div class="side-grid">'+kManualControls(kind,"right",defaultThreshold)+kManualControls(kind,"left",defaultThreshold)+'</div><div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind)+'</div>';
- const modeEl=document.getElementById(modeId);if(modeEl)modeEl.onchange=()=>{updatePostureModeUI();dirty=true;kRenderAnalyses();safeCalculate()};
+ const modeEl=document.getElementById(modeId);if(modeEl)modeEl.onchange=()=>{ensureManualPosture().modes[kind]=modeEl.value==="porcentaje"?"porcentaje":"segundos";updatePostureModeUI();dirty=true;kRenderAnalyses();safeCalculate()};
  box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{const side=sel.dataset.postureSide,p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();safeCalculate()});
  box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{const p=ensureManualPosture()[kind][input.dataset.manualSide];p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();safeCalculate()});
 
