@@ -311,9 +311,9 @@ function renderKinoveaSelectedTable(){
  const sets=kinoveaState.dataSets||[];
  const rows=sets.map((ds,di)=>{
   const selected=KPOINTS.map(([key,label])=>({label,marker:ds.mapping?.[key]})).filter(x=>x.marker).map(x=>x.label+": "+x.marker);
-  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+escK(ds.producer||ds.data?.producer||"Kinovea")+'</td><td>'+escK(ds.kinoveaVersion||"—")+'</td><td>'+fmt(ds.data?.duration||0,2)+' s</td><td>'+escK((ds.sha256||"—").slice(0,16)+(ds.sha256?"…":""))+'</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
+  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+escK(ds.producer||ds.data?.producer||"Kinovea")+'</td><td>'+escK(ds.kinoveaVersion||"—")+'</td><td>'+fmt(ds.data?.duration||0,2)+' s</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
  }).join("");
- t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Origen</th><th>Versión</th><th>Duración</th><th>SHA-256</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="notice"><strong>Trazabilidad:</strong> el estudio guarda dentro de su propio JSON una copia del JSON original de cada archivo Kinovea importado, junto con su nombre, versión, fecha de importación e identificación SHA-256.</div>';
+ t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Origen</th><th>Versión</th><th>Duración</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="notice"><strong>Trazabilidad:</strong> el estudio conserva los datos originales de los archivos Kinovea importados para mantener la trazabilidad del análisis.</div>';
 }
 function renderKinovea(){
  const t=document.getElementById("kinoveaDataTable"),m=document.getElementById("kinoveaMapping");
@@ -490,7 +490,7 @@ function renderKinoveaFileList(){
  const el=document.getElementById("kinoveaFileList");if(!el)return;
  const files=kinoveaState.dataSets||[];
  el.innerHTML=files.length
-  ? "<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li><span>"+(i+1)+". "+escK(x.fileName)+"</span> <small>SHA-256: "+escK(x.sha256||"no disponible")+"</small> <button type=\"button\" class=\"toolbar-btn\" data-remove-kinovea=\""+i+"\">Eliminar</button></li>").join("")+"</ul>"
+  ? "<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li><span>"+(i+1)+". "+escK(x.fileName)+"</span> <button type=\"button\" class=\"toolbar-btn\" data-remove-kinovea=\""+i+"\">Eliminar</button></li>").join("")+"</ul>"
   : "No hay JSON seleccionados.";
  el.querySelectorAll("[data-remove-kinovea]").forEach(btn=>btn.addEventListener("click",()=>{
    const index=Number(btn.dataset.removeKinovea);
@@ -528,7 +528,7 @@ async function loadKinoveaJson(file){
  kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
  if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};
  dirty=true;renderKinovea();renderKRange();renderKinoveaFileList();
- kSetStatus("JSON de Kinovea cargado correctamente. El estudio conservará una copia del JSON original y su huella SHA-256.");
+ kSetStatus("JSON de Kinovea cargado correctamente. El estudio conservará una copia del JSON original.");
 }
 
 function calculate(){
