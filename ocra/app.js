@@ -384,6 +384,40 @@ function ensureManualPosture(){
  kinoveaState.postureManual=p;
  return p;
 }
+function postureStudyMode(){
+ return form.elements.postureStudyMode?.value==="kinovea"?"kinovea":"manual";
+}
+function syncPostureSources(){
+ const mode=postureStudyMode(),p=ensureManualPosture();
+ ["shoulder","elbow","wrist"].forEach(kind=>{
+   ["right","left"].forEach(side=>{
+     const row=p[kind][side],canK=kSideHasKinovea(kind,side);
+     if(mode==="manual"){
+       row.source="manual";
+       row.kinoveaFileId=null;
+     }else if(canK){
+       row.source="kinovea";
+       row.kinoveaFileId=kKinoveaFileId(kind,side);
+     }else{
+       row.source="manual";
+       row.kinoveaFileId=null;
+     }
+   });
+ });
+ return p;
+}
+function initPostureStudyMode(){
+ const el=form.elements.postureStudyMode;
+ if(!el)return;
+ el.addEventListener("change",()=>{
+   syncPostureSources();
+   dirty=true;
+   kRenderAnalyses();
+   safeCalculate();
+ });
+ if(el.value!=="manual"&&el.value!=="kinovea")el.value="manual";
+ syncPostureSources();
+}
 function kKinoveaFileId(kind,side){const required=kRequired(kind,side);return (kinoveaState.dataSets||[]).find(ds=>required.every(key=>!!ds.mapping?.[key]))?.id||null}
 function kSideHasKinovea(kind,side){return !!kKinoveaFileId(kind,side) && !!kinoveaState.data}
 function kSourceLabel(source){return source==="kinovea"?"KINOVEA":"MANUAL"}
@@ -392,7 +426,7 @@ const postureWristTable=[[0,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[4
 const postureElbowTable=[[0,0],[5,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[44,3.5],[50,4],[54,4.5],[57,5],[61,5.5],[65,6],[69,6.5],[72,7],[76,7.5],[80,8],[100,8]];
 const postureShoulderTable=[[0,0],[3,.5],[5,1],[8,1.5],[10,2],[12,2.5],[14,3],[16,3.5],[18,4],[20,4.5],[22,5],[24,5.5],[28,6],[31,6.5],[34,7],[37,7.5],[40,8],[43,9],[46,11],[50,12],[54,13],[58,14],[62,15],[66,16],[70,17],[74,18],[78,19],[82,20],[86,21],[90,22],[94,23],[100,24]];
 function postureScore(table,pct){return lookup(table,Math.max(0,Math.min(100,pct)))}
-function kManualDuration(){const p=ensureManualPosture(),r=kRange();return r?.duration>0?r.duration:kNum(p.duration,0)}
+function kManualDuration(){const p=ensureManualPosture(),r=kRange();return postureStudyMode()==="manual"||!r?p.duration:r.duration}
 function kForcedSeconds(kind,side){
  const p=ensureManualPosture()[kind][side],r=kRange();
  if(p.source==="manual")return Math.max(0,p.flex)+Math.max(0,p.ext);
@@ -436,8 +470,15 @@ function kManualControls(kind,side,threshold){
 }
 function kPanel(kind,title,defaultThreshold){
  const id=kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel",box=document.getElementById(id);if(!box)return;
- ensureManualPosture();const missing=kMissingMessage(kind),warning=missing?'<div class="notice">'+missing+' Puede seleccionar MANUAL para el lado que no pueda obtenerse mediante Kinovea.</div>':'<div class="notice">Cada lado puede utilizar una fuente distinta: KINOVEA o MANUAL.</div>';
- box.innerHTML='<strong>Datos de postura</strong>'+warning+(kind==="shoulder"&&!kinoveaState.data?'<div class="form-grid"><label>Duración del periodo analizado (s)<input id="manualPostureDuration" type="number" min="0" step="0.01" value="'+kNum(ensureManualPosture().duration,0)+'"></label></div>':"")+'<div class="side-grid">'+kManualControls(kind,"right",defaultThreshold)+kManualControls(kind,"left",defaultThreshold)+'</div><div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind)+'</div>';
+ syncPostureSources();
+ const missing=kMissingMessage(kind);
+ const warning=postureStudyMode()==="manual"
+  ?'<div class="notice"><strong>Modo manual:</strong> la postura se estudiará mediante los datos introducidos por el usuario. Los datos de Kinovea no se utilizarán para este cálculo.</div>'
+  :missing
+   ?'<div class="notice">'+missing+' El lado que no disponga de todos los marcadores se puede estudiar MANUALMENTE.</div>'
+   :'<div class="notice">Los datos de Kinovea se utilizan por defecto cuando están disponibles. Puede cambiar cualquier lado a MANUAL si los datos no son adecuados para el análisis.</div>';
+ const manualDuration=(postureStudyMode()==="manual"||!kinoveaState.data)?'<div class="form-grid"><label>Duración del periodo analizado (s)<input id="manualPostureDuration" type="number" min="0" step="0.01" value="'+kNum(ensureManualPosture().duration,0)+'"></label></div>':"";
+ box.innerHTML='<strong>Datos de postura</strong>'+warning+manualDuration+'<div class="side-grid">'+kManualControls(kind,"right",defaultThreshold)+kManualControls(kind,"left",defaultThreshold)+'</div><div id="'+kind+'Result" class="result-holder">'+kAnalysisRows(kind)+'</div>';
  box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{const side=sel.dataset.postureSide,p=ensureManualPosture()[kind][side];p.source=sel.value;p.kinoveaFileId=sel.value==="kinovea"?kKinoveaFileId(kind,side):null;dirty=true;kRenderAnalyses();safeCalculate()});
  box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{const p=ensureManualPosture()[kind][input.dataset.manualSide];p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();safeCalculate()});
  const durationInput=document.getElementById("manualPostureDuration");if(durationInput)durationInput.onchange=()=>{ensureManualPosture().duration=Math.max(0,kNum(durationInput.value,0));dirty=true;kRenderAnalyses();safeCalculate()};
@@ -483,6 +524,7 @@ function restoreKinoveaState(saved){
  if(saved.shoulder)kinoveaState.shoulder=saved.shoulder;if(saved.elbow)kinoveaState.elbow=saved.elbow;if(saved.wrist)kinoveaState.wrist=saved.wrist;
  if(saved.postureManual)kinoveaState.postureManual={...ensureManualPosture(),...saved.postureManual};
  ensureManualPosture();
+ syncPostureSources();
  renderKRange();renderKinovea();
 }
 
@@ -522,11 +564,12 @@ async function loadKinoveaJson(file){
  kinoveaState.dataSets=kinoveaState.dataSets||[];
  const hash=await sha256Hex(txt);
  if(kinoveaState.dataSets.some(x=>x.sha256===hash))return;
- const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{}};
+ const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{}};
  kinoveaState.dataSets.push(ds);
  kinoveaState.data=kinoveaState.data||data;
  kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
  if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};
+ syncPostureSources();
  dirty=true;renderKinovea();renderKRange();renderKinoveaFileList();
  kSetStatus("JSON de Kinovea cargado correctamente. El estudio conservará una copia del JSON original.");
 }
@@ -582,6 +625,7 @@ function initCore(){
 initRecoverySchedule();
 initForceInputMode();
 initHandInputMode();
+initPostureStudyMode();
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
 document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
