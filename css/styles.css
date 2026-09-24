@@ -25,6 +25,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid #0078d4;border-color:#
 .access-feature-icon{display:block;font-size:1.65rem;line-height:1;margin-bottom:12px}
 .access-feature strong{display:block;color:#1f2d3d;margin-bottom:7px}
 .access-feature span{display:block;color:#63758a;font-size:.9rem;line-height:1.4}
+.access-actions{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:300px;margin:0 auto 4px}
+.access-actions .method-button{min-height:44px;font-size:.92rem;box-shadow:0 3px 10px rgba(36,89,130,.16)}
+.access-actions .method-button:hover{box-shadow:0 5px 13px rgba(36,89,130,.21)}
 .method-actions{display:flex;flex-direction:column;align-items:center;gap:11px;max-width:360px;margin:0 auto}
 .method-button{width:100%;min-height:52px;background:#245982;color:#fff;border:0;border-radius:10px;font:inherit;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 5px 14px rgba(36,89,130,.22);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
 .method-button:hover{background:#1b4769;transform:translateY(-1px);box-shadow:0 7px 17px rgba(36,89,130,.27)}
