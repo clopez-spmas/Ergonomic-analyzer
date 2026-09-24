@@ -746,6 +746,7 @@ function initApp(){
   // La navegación se inicializa primero y no depende del cálculo ni de Kinovea.
   initNavigation();
   try{initCore()}catch(error){console.error("OCRA initCore:",error);status.textContent="El estudio está disponible, pero se ha producido un error al inicializar algunos controles."}
+  try{initWordTables()}catch(error){console.error("OCRA initWordTables:",error)}
   try{initKinovea()}catch(error){console.error("OCRA initKinovea:",error);kSetStatus("Los controles de Kinovea no se han podido inicializar correctamente.")}
 }
 
