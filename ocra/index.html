@@ -264,8 +264,19 @@
 
 <section class="screen" data-screen="13">
   <div class="screen-title"><span>14</span><div><h2>Mano - dedo y estereotipia</h2><p>Complete el bloque D (mano-dedo) y el bloque E (estereotipia). El factor postura final utiliza el valor más alto de A, B, C o D y lo suma, una sola vez, al valor de E.</p></div></div>
+  <div class="calculation-box">
+    <strong>Modo de introducción del tiempo de agarre</strong>
+    <div class="form-grid">
+      <label>Unidad de entrada
+        <select id="manoModo">
+          <option value="segundos">Segundos</option>
+          <option value="porcentaje">% del tiempo</option>
+        </select>
+      </label>
+    </div>
+    <div class="notice">Seleccione una sola unidad de entrada. El programa convertirá el valor al porcentaje de exposición necesario para calcular la puntuación del agarre.</div>
+  </div>
   <div class="side-grid">
-    <fieldset><legend>Derecha (DX) · D) Mano-dedo</legend>
       <label>Tipo de agarre
         <select name="dxManoAgarre">
           <option value="none">Ningún agarre puntuable</option>
@@ -275,7 +286,7 @@
           <option value="grip">Agarre de potencia (grip) · no puntúa</option>
         </select>
       </label>
-      <label>Tiempo en el agarre seleccionado (s)<input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
+      <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
     </fieldset>
     <fieldset><legend>Izquierda (IX) · D) Mano-dedo</legend>
@@ -288,7 +299,7 @@
           <option value="grip">Agarre de potencia (grip) · no puntúa</option>
         </select>
       </label>
-      <label>Tiempo en el agarre seleccionado (s)<input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
+      <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
     </fieldset>
   </div>
