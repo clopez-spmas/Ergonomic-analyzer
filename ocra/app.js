@@ -459,7 +459,7 @@ function kForcedSeconds(kind,side){
  return total;
 }
 function kManualRows(kind,side){
- const p=ensureManualPosture()[kind][side],duration=kManualDuration(),seconds=Math.max(0,p.flex)+Math.max(0,p.ext),pct=duration>0?seconds/duration*100:0,label=side==="right"?"Derecha":"Izquierda";
+ const p=ensureManualPosture()[kind][side],duration=kManualDuration(),seconds=postureInputSeconds(p.flex,duration),pct=duration>0?seconds/duration*100:0,label=side==="right"?"Derecha":"Izquierda";
  const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
  const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
  return '<tr><td>'+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>';
@@ -467,7 +467,7 @@ function kManualRows(kind,side){
 function kAnalysisRows(kind){
  const r=kRange(),rows=[];
  ["right","left"].forEach(side=>{
-  const p=ensureManualPosture()[kind][side],seconds=kForcedSeconds(kind,side),total=r?.duration||kManualDuration(),pct=total>0?seconds/total*100:0;
+  const p=ensureManualPosture()[kind][side],seconds=p.source==="manual"?postureInputSeconds(p.flex,kManualDuration()):kForcedSeconds(kind,side),total=r?.duration||kManualDuration(),pct=total>0?seconds/total*100:0;
   if(p.source==="manual"){rows.push(kManualRows(kind,side));return}
   if(total<=0)return;
   const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
@@ -476,10 +476,28 @@ function kAnalysisRows(kind){
  });
  return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación de la tabla de alta precisión del Excel/Word. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
 }
+function postureInputSeconds(input,duration){
+ const value=Math.max(0,kNum(input,0));
+ const mode=document.getElementById("postureModo")?.value||"segundos";
+ return mode==="porcentaje"?duration*value/100:value;
+}
+function updatePostureModeUI(){
+ const mode=document.getElementById("postureModo")?.value||"segundos";
+ const unidad=mode==="porcentaje"?"% del tiempo":"segundos";
+ document.querySelectorAll(".postura-unidad").forEach(el=>el.textContent=unidad);
+ document.querySelectorAll("[data-manual-posture]").forEach(el=>{
+   el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;
+ });
+}
 function kManualControls(kind,side,threshold){
  const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",canK=postureStudyMode()==="kinovea"&&kSideHasKinovea(kind,side);
  const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
- return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label><label>Tiempo adicional en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="ext" value="'+fmt(p.ext,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
+ return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">segundos</span><input type="number" min="0" step="0.1" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
+}
+function initPostureInputMode(){
+ const el=document.getElementById("postureModo");if(!el)return;
+ el.addEventListener("change",()=>{updatePostureModeUI();dirty=true;kRenderAnalyses();safeCalculate()});
+ updatePostureModeUI();
 }
 function kPanel(kind,title,defaultThreshold){
  const id=kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel",box=document.getElementById(id);if(!box)return;
@@ -639,6 +657,7 @@ initRecoverySchedule();
 initForceInputMode();
 initHandInputMode();
 initPostureStudyMode();
+initPostureInputMode();
 fields.forEach(f=>{f.addEventListener("input",markDirty);f.addEventListener("change",markDirty)});
 document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar."))location.href="../"});
 document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
