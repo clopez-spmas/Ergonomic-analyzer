@@ -406,6 +406,19 @@ function syncPostureSources(){
  });
  return p;
 }
+function ensurePostureSourcesAvailable(){
+ const p=ensureManualPosture();
+ ["shoulder","elbow","wrist"].forEach(kind=>{
+   ["right","left"].forEach(side=>{
+     const row=p[kind][side];
+     if(row.source==="kinovea"&&!kSideHasKinovea(kind,side)){
+       row.source="manual";
+       row.kinoveaFileId=null;
+     }
+   });
+ });
+ return p;
+}
 function initPostureStudyMode(){
  const el=form.elements.postureStudyMode;
  if(!el)return;
@@ -464,13 +477,13 @@ function kAnalysisRows(kind){
  return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación de la tabla de alta precisión del Excel/Word. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
 }
 function kManualControls(kind,side,threshold){
- const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",canK=kSideHasKinovea(kind,side);
+ const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",canK=postureStudyMode()==="kinovea"&&kSideHasKinovea(kind,side);
  const criterion=kind==="shoulder"?"Flexión ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
- return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"")+'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label><label>Tiempo adicional en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="ext" value="'+fmt(p.ext,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
+ return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label><label>Tiempo adicional en postura forzada (s)<input type="number" min="0" step="0.01" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="ext" value="'+fmt(p.ext,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div></fieldset>';
 }
 function kPanel(kind,title,defaultThreshold){
  const id=kind==="shoulder"?"ocraShoulderPanel":kind==="elbow"?"ocraElbowPanel":"ocraWristPanel",box=document.getElementById(id);if(!box)return;
- syncPostureSources();
+ ensurePostureSourcesAvailable();
  const missing=kMissingMessage(kind);
  const warning=postureStudyMode()==="manual"
   ?'<div class="notice"><strong>Modo manual:</strong> la postura se estudiará mediante los datos introducidos por el usuario. Los datos de Kinovea no se utilizarán para este cálculo.</div>'
@@ -524,7 +537,7 @@ function restoreKinoveaState(saved){
  if(saved.shoulder)kinoveaState.shoulder=saved.shoulder;if(saved.elbow)kinoveaState.elbow=saved.elbow;if(saved.wrist)kinoveaState.wrist=saved.wrist;
  if(saved.postureManual)kinoveaState.postureManual={...ensureManualPosture(),...saved.postureManual};
  ensureManualPosture();
- syncPostureSources();
+ ensurePostureSourcesAvailable();
  renderKRange();renderKinovea();
 }
 
@@ -569,7 +582,7 @@ async function loadKinoveaJson(file){
  kinoveaState.data=kinoveaState.data||data;
  kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
  if(kinoveaState.dataSets.length===1)kinoveaState.range={mode:"all",start:0,end:data.duration,cycles:1};
- syncPostureSources();
+ ensurePostureSourcesAvailable();
  dirty=true;renderKinovea();renderKRange();renderKinoveaFileList();
  kSetStatus("JSON de Kinovea cargado correctamente. El estudio conservará una copia del JSON original.");
 }
