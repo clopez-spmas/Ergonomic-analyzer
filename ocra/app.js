@@ -758,8 +758,17 @@ let simulationState={baseline:null,current:null,initialised:false};
 let simRecoveryState={start:"",end:"",minPause:8,pauses:[],lastResult:null};
 
 function simClone(v){return JSON.parse(JSON.stringify(v));}
-function simNum(id){const v=Number(document.getElementById(id)?.value);return Number.isFinite(v)?Math.max(0,v):0;}
-function simSet(id,value){const el=document.getElementById(id);if(!el)return;if(el.type==="checkbox")el.checked=!!value;else el.value=value??"";}
+function simNum(id){
+ const el=document.getElementById(id);
+ const raw=el?.tagName==="OUTPUT"?el.textContent:el?.value;
+ const v=Number(String(raw??"").replace(",","."));return Number.isFinite(v)?Math.max(0,v):0;
+}
+function simSet(id,value){
+ const el=document.getElementById(id);if(!el)return;
+ if(el.type==="checkbox")el.checked=!!value;
+ else if(el.tagName==="OUTPUT")el.textContent=value??"";
+ else el.value=value??"";
+}
 function simText(id){return document.getElementById(id)?.textContent||"—";}
 function simControlIds(){
  return [
@@ -821,7 +830,11 @@ function simRestoreSaved(saved){
 }
 function simSetInitialFromStudy(){
  const baseline={};
- simSet("simTNTR",simActualTNTR());
+ const official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo");
+ const tntr=Math.max(0,eff-pauses-meal-nonRep);
+ simSet("simTNTR",tntr);
+ simSetText("simShiftDuration",eff);
+ simSetText("simNonRep",nonRep);
  simSet("simCycles",n("ciclosEfectivos"));
  simSet("simObservedCycle",n("cicloObservado"));
  simSet("simActionsDx",n("dxAcciones"));
@@ -915,6 +928,7 @@ function simInitialisePosturePercentages(){
 function simCalculate(){
  if(!simulationState.initialised)return;
  const tntr=Math.max(0,simNum("simTNTR")),cycles=simNum("simCycles"),observed=simNum("simObservedCycle"),cycle=cycles>0?60*tntr/cycles:observed;
+ simSet("simTNTR",tntr);
  const dxMin=cycle>0?simNum("simActionsDx")*60/cycle:0,ixMin=cycle>0?simNum("simActionsIx")*60/cycle:0;
  const dxF=freq(dxMin,document.getElementById("simInterruptionsDx")?.value==="si"),ixF=freq(ixMin,document.getElementById("simInterruptionsIx")?.value==="si");
  const forceMode=document.getElementById("simForceMode")?.value||"segundos";
