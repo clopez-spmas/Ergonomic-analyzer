@@ -435,7 +435,60 @@
   
 </section>
 </section>
+<section class="screen" data-screen="16">
+  <div class="screen-title"><span>17</span><div><h2>Simulación</h2><p>Modifique temporalmente los factores estudiados para comprobar cómo cambia el índice OCRA. El estudio original no se modifica.</p></div></div>
+  <div class="calculation-box">
+    <strong>Control de la simulación</strong>
+    <div class="form-grid">
+      <label>TNTR (min)<input id="simTNTR" type="number" min="0" step="0.1"></label>
+      <label>Horas sin recuperación adecuada<input id="simRecoveryHours" type="number" min="0" max="9" step="0.5"></label>
+      <label>Ciclos efectivos<input id="simCycles" type="number" min="0" step="1"></label>
+      <label>Ciclo observado (s)<input id="simObservedCycle" type="number" min="0" step="0.1"></label>
+    </div>
+    <div class="notice">Los cambios son temporales. «Restablecer datos iniciales» devuelve la simulación al estado con el que se abrió esta pantalla.</div>
+    <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simLoadCurrentBtn">Cargar datos del estudio</button><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button><button type="button" class="toolbar-btn" id="simChangesBtn">Ver cambios</button></div>
+  </div>
+
+  <div class="calculation-box"><strong>Frecuencia</strong><div class="side-grid">
+    <fieldset><legend>Derecha (DX)</legend><label>Acciones por ciclo<input id="simActionsDx" type="number" min="0" step="0.01"></label><label>Breves interrupciones<select id="simInterruptionsDx"><option value="no">No</option><option value="si">Sí</option></select></label><div class="result-grid one-column"><div><span>Frecuencia</span><output id="simFreqDx">—</output></div></div></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><label>Acciones por ciclo<input id="simActionsIx" type="number" min="0" step="0.01"></label><label>Breves interrupciones<select id="simInterruptionsIx"><option value="no">No</option><option value="si">Sí</option></select></label><div class="result-grid one-column"><div><span>Frecuencia</span><output id="simFreqIx">—</output></div></div></fieldset>
+  </div></div>
+
+  <div class="calculation-box"><strong>Fuerza</strong><div class="form-grid"><label>Unidad de entrada<select id="simForceMode"><option value="segundos">Segundos por ciclo</option><option value="porcentaje">% del tiempo de ciclo</option></select></label></div>
+    <div class="side-grid">
+      <fieldset><legend>Derecha (DX)</legend><label>Borg 3–4<input id="simForceDx34" type="number" min="0" step="0.1"></label><label>Borg 5–7<input id="simForceDx57" type="number" min="0" step="0.1"></label><label>Borg 8–10<input id="simForceDx810" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación fuerza</span><output id="simForceResultDx">—</output></div></div></fieldset>
+      <fieldset><legend>Izquierda (IX)</legend><label>Borg 3–4<input id="simForceIx34" type="number" min="0" step="0.1"></label><label>Borg 5–7<input id="simForceIx57" type="number" min="0" step="0.1"></label><label>Borg 8–10<input id="simForceIx810" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación fuerza</span><output id="simForceResultIx">—</output></div></div></fieldset>
+    </div>
+  </div>
+
+  <div class="calculation-box"><strong>Posturas</strong><div class="notice">El ángulo es un parámetro de simulación. Si alcanza el criterio de postura forzada, el tiempo indicado se convierte en porcentaje del TNTR y se recalcula la puntuación.</div>
+    <div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Articulación</th><th>Ángulo (°)</th><th>Tiempo (s)</th><th>% TNTR</th></tr></thead><tbody>
+      <tr><td>Derecha</td><td>Hombro</td><td><input id="simShoulderAngleDx" type="number" step="0.1"></td><td><input id="simShoulderTimeDx" type="number" min="0" step="0.1"></td><td><output id="simShoulderPctDx">—</output></td></tr>
+      <tr><td>Izquierda</td><td>Hombro</td><td><input id="simShoulderAngleIx" type="number" step="0.1"></td><td><input id="simShoulderTimeIx" type="number" min="0" step="0.1"></td><td><output id="simShoulderPctIx">—</output></td></tr>
+      <tr><td>Derecha</td><td>Codo</td><td><input id="simElbowAngleDx" type="number" step="0.1"></td><td><input id="simElbowTimeDx" type="number" min="0" step="0.1"></td><td><output id="simElbowPctDx">—</output></td></tr>
+      <tr><td>Izquierda</td><td>Codo</td><td><input id="simElbowAngleIx" type="number" step="0.1"></td><td><input id="simElbowTimeIx" type="number" min="0" step="0.1"></td><td><output id="simElbowPctIx">—</output></td></tr>
+      <tr><td>Derecha</td><td>Muñeca</td><td><input id="simWristAngleDx" type="number" step="0.1"></td><td><input id="simWristTimeDx" type="number" min="0" step="0.1"></td><td><output id="simWristPctDx">—</output></td></tr>
+      <tr><td>Izquierda</td><td>Muñeca</td><td><input id="simWristAngleIx" type="number" step="0.1"></td><td><input id="simWristTimeIx" type="number" min="0" step="0.1"></td><td><output id="simWristPctIx">—</output></td></tr>
+    </tbody></table></div>
+    <div class="side-grid"><fieldset><legend>Derecha (DX)</legend><label class="check-row"><input id="simHeadDx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureDx">—</output></div></div></fieldset>
+      <fieldset><legend>Izquierda (IX)</legend><label class="check-row"><input id="simHeadIx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureIx">—</output></div></div></fieldset></div>
+  </div>
+
+  <div class="calculation-box"><strong>Mano-dedo y estereotipia</strong><div class="side-grid">
+    <fieldset><legend>Derecha (DX)</legend><label>Tipo de agarre<select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeDx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoDx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Dx" type="checkbox"> Estereotipia 3</label></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><label>Tipo de agarre<select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeIx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoIx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Ix" type="checkbox"> Estereotipia 3</label></fieldset>
+  </div></div>
+
+  <div class="calculation-box"><strong>Factores complementarios</strong><div class="side-grid"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
+
+  <div class="calculation-box selected-box"><strong>Resultado de la simulación</strong><div class="side-grid">
+    <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
+  </div><div class="result-grid"><div><span>Factor de recuperación</span><output id="simRecoveryFactor">—</output></div><div><span>Factor de duración</span><output id="simDurationFactor">—</output></div></div><div id="simStatus" class="notice"></div></div>
+
+  <div class="calculation-box"><strong>Seguimiento de cambios</strong><div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div></div>
+</section>
 </form>
-<script src="app.js?v=20260925-mano-unidad"></script>
+<script src="app.js?v=20260925-simulacion"></script>
 </body>
 </html>
