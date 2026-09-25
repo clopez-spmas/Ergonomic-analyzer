@@ -766,7 +766,7 @@ function simSetInitialFromStudy(){
    simSet("simForce"+side+"57",n(p+"Fuerza57"));
    simSet("simForce"+side+"810",n(p+"Fuerza810"));
    simSet("simGrip"+side,form.elements[p+"ManoAgarre"]?.value||"none");
-   simSet("simGripTime"+side,handInputSeconds(p+"ManoTiempo",simActualTNTR()));
+   simSet("simGripTime"+side,handInputSeconds(p+"ManoTiempo",simActualTNTR()*60));
    simSet("simHead"+side,!!form.elements[p+"HombroCabeza"]?.checked);
    const st=stereo(p);
    simSet("simStereo"+side,st===1.5);
@@ -807,7 +807,7 @@ function simAngleActive(kind,angle){
  return kind==="shoulder"?a>=80:kind==="elbow"?a>60:a>45;
 }
 function simPostureSide(side,tntr){
- const prefix=side==="right"?"Dx":"Ix",duration=Math.max(0,tntr),pct=duration>0?100/duration:0;
+ const prefix=side==="right"?"Dx":"Ix",duration=Math.max(0,tntr)*60,pct=duration>0?100/duration:0;
  const scores={};
  ["shoulder","elbow","wrist"].forEach(kind=>{
    const key=kind.charAt(0).toUpperCase()+kind.slice(1),angle=simNum("sim"+key+"Angle"+prefix),time=Math.min(duration,simNum("sim"+key+"Time"+prefix));
