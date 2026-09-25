@@ -937,9 +937,15 @@ function initSimulation(){
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
  events.forEach(el=>el.addEventListener("input",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
  events.forEach(el=>el.addEventListener("change",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
- document.getElementById("simLoadCurrentBtn")?.addEventListener("click",()=>{simSetInitialFromStudy();dirty=true;});
- document.getElementById("simResetBtn")?.addEventListener("click",()=>{if(simulationState.baseline){simWriteState(simulationState.baseline);dirty=true;}});
- document.getElementById("simChangesBtn")?.addEventListener("click",()=>{simRenderChanged();document.getElementById("simChangesList")?.scrollIntoView({behavior:"smooth",block:"center"})});
+ document.getElementById("simResetBtn")?.addEventListener("click",()=>{
+   if(simulationState.baseline){
+     simWriteState(simulationState.baseline);
+     simulationState.current=simClone(simulationState.baseline);
+     dirty=true;
+     simRenderChanged();
+     simCalculate();
+   }
+ });
  simSetInitialComplementaryOptions();
  simSetInitialFromStudy();
  simInitialisePosturePercentages();
