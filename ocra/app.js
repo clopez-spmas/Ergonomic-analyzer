@@ -38,8 +38,17 @@ function initNavigation(){
 }
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""},recovery:{...recoveryState,pauses:(recoveryState.pauses||[]).map(p=>({...p}))}};fields.forEach(f=>{if(f.type==="checkbox")o.values[f.name]=f.checked;else if(f.type==="radio"){if(f.checked)o.values[f.name]=f.value;else if(!(f.name in o.values))o.values[f.name]="";}else o.values[f.name]=f.value});if(typeof simulationState!=="undefined"&&simulationState.initialised){o.simulation={version:1,baseline:simClone(simulationState.baseline||{}),current:simClone(simulationState.current||simReadState())};}return o};
-function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else if(f.type==="radio")f.checked=String(o.values[f.name]??"")===String(f.value);else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised){if(o.simulation?.current||o.simulation?.baseline)simRestoreSaved(o.simulation);else simSetInitialFromStudy();}status.textContent="Estudio cargado correctamente."}
+const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""},recovery:{...recoveryState,pauses:(recoveryState.pauses||[]).map(p=>({...p}))}};fields.forEach(f=>{if(f.type==="checkbox")o.values[f.name]=f.checked;else if(f.type==="radio"){if(f.checked)o.values[f.name]=f.value;else if(!(f.name in o.values))o.values[f.name]="";}else o.values[f.name]=f.value});
+["compA","compB"].forEach(name=>{
+ const selected=form.querySelector('[name="'+name+'"]:checked');
+ o.values[name]=selected?selected.value:"";
+});if(typeof simulationState!=="undefined"&&simulationState.initialised){o.simulation={version:1,baseline:simClone(simulationState.baseline||{}),current:simClone(simulationState.current||simReadState())};}return o};
+function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else if(f.type==="radio")f.checked=String(o.values[f.name]??"")===String(f.value);else f.value=o.values[f.name]??""});
+["compA","compB"].forEach(name=>{
+ const value=o.values[name];
+ if(value===undefined)return;
+ form.querySelectorAll('[name="'+name+'"]').forEach(el=>{el.checked=String(el.value)===String(value)});
+});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised){if(o.simulation?.current||o.simulation?.baseline)simRestoreSaved(o.simulation);else simSetInitialFromStudy();}status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
 const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5,9:3};
