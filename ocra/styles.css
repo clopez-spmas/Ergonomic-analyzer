@@ -79,3 +79,8 @@
  .simulation-posture-grid>strong:first-child{display:none}
  .simulation-check-grid{grid-template-columns:1fr}
 }
+
+/* Ajuste de formato de los factores complementarios en simulación */
+.simulation-complementary-stack{width:100%;max-width:100%;box-sizing:border-box}
+.simulation-complementary-stack label{min-width:0;width:100%;box-sizing:border-box}
+.simulation-complementary-stack select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
