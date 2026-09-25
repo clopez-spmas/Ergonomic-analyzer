@@ -239,6 +239,12 @@ function kMissingMarkers(kind,side){
  const available=kAvailableMarkers();
  return kRequired(kind,side).filter(x=>!available[x]);
 }
+function kKinoveaAvailability(kind,side){
+ const missing=kMissingMarkers(kind,side);
+ if(!kinoveaState.data)return {state:"none",missing};
+ if(missing.length)return {state:"partial",missing};
+ return {state:"ready",missing:[]};
+}
 function kMissingMessage(kind){
  const parts=[];
  ["right","left"].forEach(side=>{
@@ -507,9 +513,9 @@ function updatePostureModeUI(){
  });
 }
 function kManualControls(kind,side,threshold){
- const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",canK=postureStudyMode()==="kinovea"&&kSideHasKinovea(kind,side);
+ const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",availability=kKinoveaAvailability(kind,side),canK=postureStudyMode()==="kinovea"&&availability.state==="ready";
  const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
- return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(!canK?" · no disponible":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">segundos</span><input type="number" min="0" step="0.1" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div>'+'</fieldset>';
+ return '<fieldset class="manual-posture-box"><legend>'+label+' · origen del dato</legend><label>Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(availability.state==="none"?" · no disponible":availability.state==="partial"?" · faltan marcadores":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">segundos</span><input type="number" min="0" step="0.1" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice">'+criterion+'</div>'+'</fieldset>';
 }
 function initPostureInputMode(){
  const el=document.getElementById("postureModo");if(!el)return;
@@ -529,9 +535,11 @@ function kPanel(kind,title,defaultThreshold){
  const missing=kMissingMessage(kind);
  const warning=postureStudyMode()==="manual"
   ?'<div class="notice"><strong>Modo manual:</strong> la postura se estudiará mediante los datos introducidos por el usuario. Los datos de Kinovea no se utilizarán para este cálculo.</div>'
-  :missing
-   ?'<div class="notice">'+missing+' El lado que no disponga de todos los marcadores se puede estudiar MANUALMENTE.</div>'
-   :'<div class="notice">Los datos de Kinovea se utilizan por defecto cuando están disponibles. Puede cambiar cualquier lado a MANUAL si los datos no son adecuados para el análisis.</div>';
+  :!kinoveaState.data
+   ?'<div class="notice"><strong>Kinovea:</strong> no hay ningún JSON cargado. Puede introducir los datos MANUALMENTE.</div>'
+   :missing
+    ?'<div class="notice"><strong>JSON de Kinovea cargado.</strong> '+missing+' El lado que no disponga de todos los marcadores se puede estudiar MANUALMENTE.</div>'
+    :'<div class="notice"><strong>Kinovea disponible.</strong> Los datos se utilizan por defecto cuando están disponibles. Puede cambiar cualquier lado a MANUAL si los datos no son adecuados para el análisis.</div>';
  const manualDuration="";
  const modeId="postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1);
  const modeSelector='<div class="form-grid"><label>Unidad para el tiempo manual<select id="'+modeId+'" name="'+modeId+'"><option value="segundos" '+(savedMode==="segundos"?"selected":"")+' >Segundos</option><option value="porcentaje" '+(savedMode==="porcentaje"?"selected":"")+' >% del tiempo</option></select></label></div>';
