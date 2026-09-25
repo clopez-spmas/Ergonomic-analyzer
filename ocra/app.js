@@ -476,7 +476,7 @@ function kAnalysisRows(kind){
   const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
   rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>');
  });
- return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación de la tabla de alta precisión del Excel/Word. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
+ return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación correspondiente. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
 }
 function postureModeForKind(kind){
  const el=document.getElementById("postureModo"+kind.charAt(0).toUpperCase()+kind.slice(1));
