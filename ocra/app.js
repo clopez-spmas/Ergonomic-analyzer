@@ -197,7 +197,7 @@ function freq(actionsPerMin,interruptions){
  if(!Number.isFinite(x)||x<22.5)return 0;
  if(x<27.5)return 0.5;
  if(x<32.5)return 1;
- if(x<37.5)return interruptions?3:2;
+ if(x<37.5)return 2;
  if(x<42.5)return interruptions?3:4;
  if(x<47.5)return interruptions?4:5;
  if(x<52.5)return interruptions?5:6;
