@@ -446,7 +446,7 @@
       <label>Ciclo observado (s)<input id="simObservedCycle" type="number" min="0" step="0.1"></label>
     </div>
     <div class="notice">Los cambios son temporales. «Restablecer datos iniciales» devuelve la simulación al estado con el que se abrió esta pantalla.</div>
-    <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simLoadCurrentBtn">Cargar datos del estudio</button><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button><button type="button" class="toolbar-btn" id="simChangesBtn">Ver cambios</button></div>
+    <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button></div>
   </div>
 
   <div class="calculation-box"><strong>Frecuencia</strong><div class="side-grid">
@@ -490,11 +490,9 @@
   <div class="calculation-box selected-box"><strong>Resultado de la simulación</strong><div class="side-grid">
     <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
     <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
-  </div><div class="result-grid"><div><span>Factor de recuperación</span><output id="simRecoveryFactor">—</output></div><div><span>Factor de duración</span><output id="simDurationFactor">—</output></div></div><div id="simStatus" class="notice"></div></div>
-
-  <div class="calculation-box"><strong>Seguimiento de cambios</strong><div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div></div>
+  </div><div class="result-grid"><div><span>Factor de recuperación</span><output id="simRecoveryFactor">—</output></div><div><span>Factor de duración</span><output id="simDurationFactor">—</output></div></div><div id="simStatus" class="notice"></div></div>  <div class="calculation-box"><strong>Cambios realizados en la simulación</strong><div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div></div>
 </section>
 </form>
-<script src="app.js?v=20260925-comp-ab-save"></script>
+<script src="app.js?v=20260925-simulacion-controles"></script>
 </body>
 </html>
