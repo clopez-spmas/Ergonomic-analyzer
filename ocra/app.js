@@ -42,7 +42,7 @@ const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{.
 ["compA","compB"].forEach(name=>{
  const selected=form.querySelector('[name="'+name+'"]:checked');
  o.values[name]=selected?selected.value:"";
-});if(typeof simulationState!=="undefined"&&simulationState.initialised){o.simulation={version:1,baseline:simClone(simulationState.baseline||{}),current:simClone(simulationState.current||simReadState())};}return o};
+});if(typeof simulationState!=="undefined"&&simulationState.initialised){o.simulation={version:1,baseline:simClone(simulationState.baseline||{}),current:simClone(simulationState.current||simReadState()),recovery:simClone(simRecoveryState)};}return o};
 function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else if(f.type==="radio")f.checked=String(o.values[f.name]??"")===String(f.value);else f.value=o.values[f.name]??""});
 ["compA","compB"].forEach(name=>{
  const value=o.values[name];
@@ -785,6 +785,15 @@ function simRestoreSaved(saved){
  const baseline=saved?.baseline&&typeof saved.baseline==="object"?saved.baseline:current;
  if(!current)return simSetInitialFromStudy();
  simulationState={baseline:simClone(baseline||{}),current:simClone(current),initialised:true};
+ if(saved?.recovery&&typeof saved.recovery==="object"){
+   simRecoveryState=simClone(saved.recovery);
+   simSet("simRecoveryStart",simRecoveryState.start||"");
+   simSet("simRecoveryEnd",simRecoveryState.end||"");
+   simRecoveryRenderInputs();
+   simRecoveryCalculate();
+ }
+ simulationState.recoveryBaseline=simClone(simRecoveryState);
+ simulationState.recoveryCurrent=simClone(simRecoveryState);
  simWriteState(current);
  simulationState.current=simReadState();
  simRenderChanged();
