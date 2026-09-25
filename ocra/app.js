@@ -38,8 +38,8 @@ function initNavigation(){
 }
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
-const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""},recovery:{...recoveryState,pauses:(recoveryState.pauses||[]).map(p=>({...p}))}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
-function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised)simSetInitialFromStudy();status.textContent="Estudio cargado correctamente."}
+const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""},recovery:{...recoveryState,pauses:(recoveryState.pauses||[]).map(p=>({...p}))}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);if(typeof simulationState!=="undefined"&&simulationState.initialised){o.simulation={version:1,baseline:simClone(simulationState.baseline||{}),current:simClone(simulationState.current||simReadState())};}return o};
+function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised){if(o.simulation?.current||o.simulation?.baseline)simRestoreSaved(o.simulation);else simSetInitialFromStudy();}status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
 const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5,9:3};
@@ -770,6 +770,16 @@ function simActualRecoveryHours(){
 function simPostureTime(kind,side){
  try{return Math.max(0,kForcedSeconds(kind,side));}catch(e){return 0}
 }
+function simRestoreSaved(saved){
+ const current=saved?.current&&typeof saved.current==="object"?saved.current:null;
+ const baseline=saved?.baseline&&typeof saved.baseline==="object"?saved.baseline:current;
+ if(!current)return simSetInitialFromStudy();
+ simulationState={baseline:simClone(baseline||{}),current:simClone(current),initialised:true};
+ simWriteState(current);
+ simulationState.current=simReadState();
+ simRenderChanged();
+ simCalculate();
+}
 function simSetInitialFromStudy(){
  const baseline={};
  simSet("simTNTR",simActualTNTR());
@@ -916,10 +926,10 @@ function simRenderChanged(){
 function initSimulation(){
  const root=document.querySelector('[data-screen="16"]');if(!root)return;
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
- events.forEach(el=>el.addEventListener("input",e=>{simSyncPostureField(e.target.id);simCalculate();}));
- events.forEach(el=>el.addEventListener("change",e=>{simSyncPostureField(e.target.id);simCalculate();}));
- document.getElementById("simLoadCurrentBtn")?.addEventListener("click",simSetInitialFromStudy);
- document.getElementById("simResetBtn")?.addEventListener("click",()=>{if(simulationState.baseline)simWriteState(simulationState.baseline)});
+ events.forEach(el=>el.addEventListener("input",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ events.forEach(el=>el.addEventListener("change",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ document.getElementById("simLoadCurrentBtn")?.addEventListener("click",()=>{simSetInitialFromStudy();dirty=true;});
+ document.getElementById("simResetBtn")?.addEventListener("click",()=>{if(simulationState.baseline){simWriteState(simulationState.baseline);dirty=true;}});
  document.getElementById("simChangesBtn")?.addEventListener("click",()=>{simRenderChanged();document.getElementById("simChangesList")?.scrollIntoView({behavior:"smooth",block:"center"})});
  simSetInitialComplementaryOptions();
  simSetInitialFromStudy();
