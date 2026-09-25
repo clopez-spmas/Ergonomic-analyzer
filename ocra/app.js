@@ -39,7 +39,7 @@ function initNavigation(){
 const n=name=>{const v=parseFloat(form.elements[name]?.value);return Number.isFinite(v)?v:0};
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toFixed(d).replace(".",","):"—";
 const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{...kinoveaState,videoUrl:""},recovery:{...recoveryState,pauses:(recoveryState.pauses||[]).map(p=>({...p}))}};fields.forEach(f=>o.values[f.name]=f.type==="checkbox"?f.checked:f.value);return o};
-function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();status.textContent="Estudio cargado correctamente."}
+function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else f.value=o.values[f.name]??""});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised)simSetInitialFromStudy();status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
 const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5,9:3};
@@ -860,7 +860,7 @@ function simCalculate(){
  const compA=Number(document.getElementById("simCompA")?.selectedOptions[0]?.dataset.score)||0,compB=Number(document.getElementById("simCompB")?.selectedOptions[0]?.dataset.score)||0,comp=compA+compB;
  const recoveryHours=Math.min(9,Math.max(0,simNum("simRecoveryHours"))),rm=recoveryMultiplier(recoveryHours),md=lookup(duration,tntr);
  const dxBase=dxF+dxForce+dxPost.total+comp,ixBase=ixF+ixForce+ixPost.total+comp,dxFinal=dxBase*rm*md,ixFinal=ixBase*rm*md;
- simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));
+ simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));simSetText("simClassificationDx",classification(dxFinal));simSetText("simClassificationIx",classification(ixFinal));
  simSetText("simFreqDx",fmt(dxF,2));simSetText("simFreqIx",fmt(ixF,2));
  simSetText("simPostureDx",fmt(dxPost.total,2));simSetText("simPostureIx",fmt(ixPost.total,2));
  simSetText("simForceResultDx",fmt(dxForce,2));simSetText("simForceResultIx",fmt(ixForce,2));
@@ -919,7 +919,7 @@ document.getElementById("homeBtn").addEventListener("click",()=>{if(confirm("¿V
 document.getElementById("saveBtn").addEventListener("click",async()=>{const d=values(),json=JSON.stringify(d,null,2),blob=new Blob([json],{type:"application/json"});try{if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:"estudio-ocra.json",types:[{description:"Estudio OCRA",accept:{"application/json":[".json"]}}]});const writable=await handle.createWritable();await writable.write(blob);await writable.close();dirty=false;status.textContent="Estudio guardado correctamente en la ubicación seleccionada.";}else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="estudio-ocra.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);dirty=false;status.textContent="Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.";}}catch(error){if(error?.name==="AbortError"){status.textContent="Guardado cancelado. El estudio no se ha modificado.";return}console.error("OCRA save:",error);status.textContent="No se ha podido guardar el estudio.";}});
 document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
 fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
-document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);});
+document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);if(simulationState?.initialised)simSetInitialFromStudy();});
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
 
 
