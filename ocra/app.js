@@ -466,11 +466,20 @@ function kForcedSeconds(kind,side){
  }
  return total;
 }
+function postureTimeLabel(seconds){
+ const value=Math.max(0,Number(seconds)||0);
+ if(value<60)return fmt(value,2)+" s";
+ const totalMinutes=value/60;
+ if(totalMinutes<60)return fmt(totalMinutes,2)+" min";
+ const hours=Math.floor(totalMinutes/60),minutes=Math.round(totalMinutes-hours*60);
+ if(minutes===60)return (hours+1)+" h";
+ return minutes>0?hours+" h "+minutes+" min":hours+" h";
+}
 function kManualRows(kind,side){
  const p=ensureManualPosture()[kind][side],duration=kManualDuration(),seconds=postureInputSeconds(p.flex,duration,kind),pct=duration>0?seconds/duration*100:0,label=side==="right"?"Derecha":"Izquierda";
  const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
  const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
- return '<tr><td>'+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>';
+ return '<tr><td>'+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+postureTimeLabel(seconds)+'</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>';
 }
 function kAnalysisRows(kind){
  const r=kRange(),rows=[];
@@ -480,7 +489,7 @@ function kAnalysisRows(kind){
   if(total<=0)return;
   const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
   const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
-  rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+fmt(seconds,2)+' s</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>');
+  rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+postureTimeLabel(seconds)+'</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>');
  });
  return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación correspondiente. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
 }
