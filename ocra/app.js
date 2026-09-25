@@ -447,7 +447,7 @@ const postureWristTable=[[0,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[4
 const postureElbowTable=[[0,0],[5,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[44,3.5],[50,4],[54,4.5],[57,5],[61,5.5],[65,6],[69,6.5],[72,7],[76,7.5],[80,8],[100,8]];
 const postureShoulderTable=[[0,0],[3,.5],[5,1],[8,1.5],[10,2],[12,2.5],[14,3],[16,3.5],[18,4],[20,4.5],[22,5],[24,5.5],[28,6],[31,6.5],[34,7],[37,7.5],[40,8],[43,9],[46,11],[50,12],[54,13],[58,14],[62,15],[66,16],[70,17],[74,18],[78,19],[82,20],[86,21],[90,22],[94,23],[100,24]];
 function postureScore(table,pct){return lookup(table,Math.max(0,Math.min(100,pct)))}
-function kManualDuration(){const p=ensureManualPosture(),r=kRange();if(postureStudyMode()==="manual"||!r){const tntr=n("turnoEfectivoManual")||n("turnoOficial"),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),net=Math.max(0,tntr-pauses-meal-nonRep);return net>0?net:p.duration}return r.duration}
+function kManualDuration(){const p=ensureManualPosture(),r=kRange();if(postureStudyMode()==="manual"||!r){const tntr=n("turnoEfectivoManual")||n("turnoOficial"),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),net=Math.max(0,tntr-pauses-meal-nonRep);return net>0?net*60:p.duration}return r.duration}
 function kForcedSeconds(kind,side){
  const p=ensureManualPosture()[kind][side],r=kRange();
  if(p.source==="manual")return Math.max(0,p.flex)+Math.max(0,p.ext);
