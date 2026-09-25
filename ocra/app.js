@@ -4,7 +4,8 @@ let dirty=false;
 const fields=[...form.querySelectorAll("input,select,textarea")];
 
 function initNavigation(){
- const screens=[...document.querySelectorAll(".screen")];
+ const screens=[...document.querySelectorAll(".screen:not(.simulation-recovery-screen)")];
+ const recoveryScreen=document.querySelector(".simulation-recovery-screen");
  const counter=document.getElementById("screenCounter");
  const prev=document.getElementById("prevBtn");
  const next=document.getElementById("nextBtn");
@@ -13,6 +14,10 @@ function initNavigation(){
  function renderNavigation(){
    current=Math.max(0,Math.min(screens.length-1,current));
    screens.forEach((screen,index)=>screen.classList.toggle("active",index===current));
+   if(recoveryScreen){
+     recoveryScreen.hidden=true;
+     recoveryScreen.classList.remove("active");
+   }
    counter.textContent="Pantalla "+(current+1)+" de "+screens.length;
    prev.disabled=current===0;
    next.disabled=current===screens.length-1;
@@ -28,10 +33,25 @@ function initNavigation(){
    show(current+delta);
  }
 
+ function showSimulationRecovery(){
+   if(!recoveryScreen)return;
+   screens.forEach(screen=>screen.classList.remove("active"));
+   recoveryScreen.hidden=false;
+   recoveryScreen.classList.add("active");
+   counter.textContent="Pausas y recuperación";
+   prev.disabled=true;
+   next.disabled=true;
+   window.scrollTo({top:0,behavior:"smooth"});
+ }
+
+ function closeSimulationRecovery(){
+   renderNavigation();
+ }
+
  prev.addEventListener("click",()=>navigate(-1));
  next.addEventListener("click",()=>navigate(1));
 
- const controller={show,navigate,get current(){return current}};
+ const controller={show,navigate,showSimulationRecovery,closeSimulationRecovery,get current(){return current}};
  window.OCRA_Navigation=controller;
  renderNavigation();
  return controller;
@@ -1010,10 +1030,12 @@ function simRecoveryInit(){
  document.getElementById("simRecoveryStart")?.addEventListener("change",()=>{simRecoveryState.start=document.getElementById("simRecoveryStart").value;dirty=true;simRecoveryCalculate();});
  document.getElementById("simRecoveryEnd")?.addEventListener("change",()=>{simRecoveryState.end=document.getElementById("simRecoveryEnd").value;dirty=true;simRecoveryCalculate();});
  add?.addEventListener("click",()=>{simRecoveryState.pauses.push({id:"sim_pause_"+Date.now().toString(36),type:"pause",start:"",end:"",habitual:true,label:""});dirty=true;simRecoveryRenderInputs();simRecoveryCalculate();});
+ document.getElementById("simCloseRecoveryBtn")?.addEventListener("click",()=>window.OCRA_Navigation?.closeSimulationRecovery?.());
  simRecoveryInitFromStudy();
 }
 function initSimulation(){
  const root=document.querySelector('[data-screen="16"]');if(!root)return;
+ document.getElementById("simOpenRecoveryBtn")?.addEventListener("click",()=>window.OCRA_Navigation?.showSimulationRecovery?.());
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
  events.forEach(el=>el.addEventListener("input",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
  events.forEach(el=>el.addEventListener("change",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
