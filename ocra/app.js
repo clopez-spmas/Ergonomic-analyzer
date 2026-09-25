@@ -945,7 +945,7 @@ function simRenderChanged(){
  const box=document.getElementById("simChangesList");if(!box||!simulationState.baseline)return;
  const current=simulationState.current||simReadState(),rows=[];
  const labels={
-  simTNTR:"TNTR",simRecoveryHours:"Horas sin recuperación",simCycles:"Ciclos efectivos",simObservedCycle:"Ciclo observado",simActionsDx:"Acciones DX",simActionsIx:"Acciones IX",
+  simCycles:"Ciclos efectivos",simObservedCycle:"Ciclo observado",simActionsDx:"Acciones DX",simActionsIx:"Acciones IX",
   simInterruptionsDx:"Interrupciones DX",simInterruptionsIx:"Interrupciones IX",simForceMode:"Unidad de fuerza",
   simForceDx34:"Fuerza DX Borg 3–4",simForceDx57:"Fuerza DX Borg 5–7",simForceDx810:"Fuerza DX Borg 8–10",
   simForceIx34:"Fuerza IX Borg 3–4",simForceIx57:"Fuerza IX Borg 5–7",simForceIx810:"Fuerza IX Borg 8–10",
@@ -958,6 +958,7 @@ function simRenderChanged(){
  };
  Object.keys(labels).forEach(id=>{
    const a=simulationState.baseline[id],b=current[id];
+   if(a===undefined||b===undefined)return;
    if(String(a)!==String(b)){
      const el=document.getElementById(id),format=v=>el?.type==="checkbox"?(v?"Sí":"No"):String(v);
      rows.push("<div><strong>"+labels[id]+"</strong><span>"+escK(format(a))+" → "+escK(format(b))+"</span></div>");
