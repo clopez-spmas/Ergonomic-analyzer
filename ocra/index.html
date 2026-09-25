@@ -17,7 +17,7 @@
 
 <nav class="screen-nav" aria-label="Navegación del estudio">
   <button type="button" id="homeBtn" class="nav-secondary">Inicio</button>
-  <div class="screen-counter" id="screenCounter">Pantalla 1 de 16</div>
+  <div class="screen-counter" id="screenCounter">Pantalla 1 de 17</div>
   <button type="button" id="prevBtn" class="nav-secondary">Anterior</button>
   <button type="button" id="nextBtn" class="nav-primary">Siguiente</button>
 </nav>
@@ -442,6 +442,11 @@
     <div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div>
   </div>
   <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button></div>
+  <div class="calculation-box simulation-recovery-link">
+    <strong>Pausas y recuperación</strong>
+    <p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p>
+    <button type="button" class="toolbar-btn" id="simOpenRecoveryBtn">Abrir pausas y recuperación</button>
+  </div>
   <div class="calculation-box">
     <strong>Control de la simulación</strong>
     <div class="form-grid">
@@ -498,8 +503,9 @@
     <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
     <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
   </div><div id="simStatus" class="notice"></div></div></section>
-<section class="screen" data-screen="17">
-  <div class="screen-title"><span>18</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
+<section class="screen simulation-recovery-screen" data-screen="17" hidden>
+  <div class="screen-title"><span>17</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
+  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simCloseRecoveryBtn">Volver a la simulación</button></div>
   <div class="calculation-box">
     <strong>Horario simulado</strong>
     <div class="form-grid">
