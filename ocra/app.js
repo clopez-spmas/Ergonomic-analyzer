@@ -743,7 +743,7 @@ function simSet(id,value){const el=document.getElementById(id);if(!el)return;if(
 function simText(id){return document.getElementById(id)?.textContent||"—";}
 function simControlIds(){
  return [
-  "simTNTR","simCycles","simObservedCycle","simActionsDx","simActionsIx",
+  "simCycles","simObservedCycle","simActionsDx","simActionsIx",
   "simInterruptionsDx","simInterruptionsIx","simForceMode","simForceDx34","simForceDx57","simForceDx810",
   "simForceIx34","simForceIx57","simForceIx810",
   "simShoulderAngleDx","simShoulderTimeDx","simShoulderPctInputDx","simShoulderAngleIx","simShoulderTimeIx","simShoulderPctInputIx",
@@ -968,10 +968,25 @@ function simRecoveryCalculate(){
  const result=calculateRecoverySchedule(simRecoveryState);
  simRecoveryState.lastResult=result;
  simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
+ let tntr=simActualTNTR();
+ if(result.valid){
+   const primary=result.meal;
+   const validPauses=(result.pauses||[]).filter(p=>p.habitual&&p.duration>=8&&p.start>=0&&p.end<=result.duration);
+   const pauseMinutes=validPauses.filter(p=>!primary||p.id!==primary.id).reduce((s,p)=>s+p.duration,0);
+   const mealMinutes=primary?primary.duration:0;
+   const nonRep=n("noRepetitivo");
+   tntr=Math.max(0,result.duration-pauseMinutes-mealMinutes-nonRep);
+   simSet("simTNTR",fmt(tntr,1));
+   simSetText("simShiftDuration",fmt(result.duration,1));
+   simSetText("simNonRep",fmt(nonRep,1));
+ }else{
+   simSet("simTNTR",fmt(simActualTNTR(),1));
+   simSetText("simShiftDuration","—");
+   simSetText("simNonRep",fmt(n("noRepetitivo"),1));
+ }
  const hours=result.valid?result.hours:null;
  simSetText("simRecoveryScheduleHours",result.valid?fmt(hours,1):"—");
  simSetText("simRecoveryScheduleFactor",result.valid?fmt(recoveryMultiplier(hours),3):"—");
- const tntr=simNum("simTNTR");
  simSetText("simDurationScheduleFactor",fmt(lookup(duration,tntr),3));
  const detail=document.getElementById("simRecoveryScheduleDetail");
  if(detail)detail.innerHTML=result.valid?'<div class="notice">El factor de recuperación se actualiza con las pausas del escenario. El factor de duración se calcula con el TNTR simulado.</div>':'<div class="placeholder">'+escK(result.reason||"Indique inicio y fin del turno.")+'</div>';
