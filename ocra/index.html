@@ -437,13 +437,20 @@
 </section>
 <section class="screen" data-screen="16">
   <div class="screen-title"><span>17</span><div><h2>Simulación</h2><p>Modifique temporalmente los factores estudiados para comprobar cómo cambia el índice OCRA. El estudio original no se modifica.</p></div></div>
+  <div class="calculation-box simulation-summary-top">
+    <strong>Resumen de cambios</strong>
+    <div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div>
+  </div>
   <div class="calculation-box">
     <strong>Control de la simulación</strong>
     <div class="form-grid">
       <label>TNTR (min)<input id="simTNTR" type="number" min="0" step="0.1"></label>
-      <label>Horas sin recuperación adecuada<input id="simRecoveryHours" type="number" min="0" max="9" step="0.5"></label>
+      <label>Horas sin recuperación adecuada<output id="simRecoveryHours" class="simulation-inline-output">—</output></label>
       <label>Ciclos efectivos<input id="simCycles" type="number" min="0" step="1"></label>
       <label>Ciclo observado (s)<input id="simObservedCycle" type="number" min="0" step="0.1"></label>
+      <label>Ciclo calculado (s)<output id="simCycleDuration" class="simulation-inline-output">—</output></label>
+      <label>Factor de recuperación<output id="simRecoveryFactor" class="simulation-inline-output">—</output></label>
+      <label>Factor de duración<output id="simDurationFactor" class="simulation-inline-output">—</output></label>
     </div>
     <div class="notice">Los cambios son temporales. «Restablecer datos iniciales» devuelve la simulación al estado con el que se abrió esta pantalla.</div>
     <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button></div>
@@ -485,14 +492,38 @@
     <fieldset><legend>Izquierda (IX)</legend><label>Tipo de agarre<select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeIx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoIx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Ix" type="checkbox"> Estereotipia 3</label></fieldset>
   </div></div>
 
-  <div class="calculation-box"><strong>Factores complementarios</strong><div class="side-grid"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
+  <div class="calculation-box"><strong>Factores complementarios</strong><div class="simulation-complementary-stack"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
 
   <div class="calculation-box selected-box"><strong>Resultado de la simulación</strong><div class="side-grid">
     <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
     <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
-  </div><div class="result-grid"><div><span>Factor de recuperación</span><output id="simRecoveryFactor">—</output></div><div><span>Factor de duración</span><output id="simDurationFactor">—</output></div></div><div id="simStatus" class="notice"></div></div>  <div class="calculation-box"><strong>Cambios realizados en la simulación</strong><div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div></div>
+  </div><div class="result-grid"><div><span>Factor de recuperación</span><output id="simRecoveryFactor">—</output></div><div><span>Factor de duración</span><output id="simDurationFactor">—</output></div></div><div id="simStatus" class="notice"></div></div></section>
+<section class="screen" data-screen="17">
+  <div class="screen-title"><span>18</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
+  <div class="calculation-box">
+    <strong>Horario simulado</strong>
+    <div class="form-grid">
+      <label>Inicio del turno<input id="simRecoveryStart" type="time"></label>
+      <label>Fin del turno<input id="simRecoveryEnd" type="time"></label>
+    </div>
+    <div class="notice">Las pausas habituales de <strong>8 minutos</strong> o más se consideran para la recuperación. Una comida solo se considera comida si dura al menos 30 minutos.</div>
+  </div>
+  <div class="calculation-box">
+    <strong>Pausas del escenario</strong>
+    <div class="result-table-wrap"><table class="compact-table"><thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Habitual</th><th></th></tr></thead><tbody id="simRecoveryPausesBody"><tr><td colspan="6">No hay pausas añadidas.</td></tr></tbody></table></div>
+    <button type="button" class="toolbar-btn" id="simAddRecoveryPauseBtn">Añadir pausa</button>
+  </div>
+  <div class="calculation-box selected-box">
+    <strong>Resultado de recuperación</strong>
+    <div class="result-grid">
+      <div><span>Horas sin recuperación adecuada</span><output id="simRecoveryScheduleHours">—</output></div>
+      <div><span>Factor de recuperación</span><output id="simRecoveryScheduleFactor">—</output></div>
+      <div><span>Factor de duración</span><output id="simDurationScheduleFactor">—</output></div>
+    </div>
+    <div id="simRecoveryScheduleDetail" class="simulation-recovery-detail"></div>
+  </div>
 </section>
 </form>
-<script src="app.js?v=20260925-simulacion-controles"></script>
+<script src="app.js?v=20260925-simulacion-pausas"></script>
 </body>
 </html>
