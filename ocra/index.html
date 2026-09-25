@@ -461,14 +461,20 @@
     </div>
   </div>
 
-  <div class="calculation-box"><strong>Posturas</strong><div class="notice">El ángulo es un parámetro de simulación. Si alcanza el criterio de postura forzada, el tiempo indicado se convierte en porcentaje del TNTR y se recalcula la puntuación.</div>
-    <div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Articulación</th><th>Ángulo (°)</th><th>Tiempo (s)</th><th>% TNTR</th></tr></thead><tbody>
-      <tr><td>Derecha</td><td>Hombro</td><td><input id="simShoulderAngleDx" type="number" step="0.1"></td><td><div class="sim-posture-time-inputs"><input id="simShoulderTimeDx" type="number" min="0" step="0.1" title="Tiempo en segundos"><input id="simShoulderPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></div></td><td><output id="simShoulderPctDx">—</output></td></tr>
-      <tr><td>Izquierda</td><td>Hombro</td><td><input id="simShoulderAngleIx" type="number" step="0.1"></td><td><div class="sim-posture-time-inputs"><input id="simShoulderTimeIx" type="number" min="0" step="0.1" title="Tiempo en segundos"><input id="simShoulderPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></div></td><td><output id="simShoulderPctIx">—</output></td></tr>
-      <tr><td>Derecha</td><td>Codo</td><td><input id="simElbowAngleDx" type="number" step="0.1"></td><td><div class="sim-posture-time-inputs"><input id="simElbowTimeDx" type="number" min="0" step="0.1" title="Tiempo en segundos"><input id="simElbowPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></div></td><td><output id="simElbowPctDx">—</output></td></tr>
-      <tr><td>Izquierda</td><td>Codo</td><td><input id="simElbowAngleIx" type="number" step="0.1"></td><td><div class="sim-posture-time-inputs"><input id="simElbowTimeIx" type="number" min="0" step="0.1" title="Tiempo en segundos"><input id="simElbowPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></div></td><td><output id="simElbowPctIx">—</output></td></tr>
-      <tr><td>Derecha</td><td>Muñeca</td><td><input id="simWristAngleDx" type="number" step="0.1"></td><td><div class="sim-posture-time-inputs"><input id="simWristTimeDx" type="number" min="0" step="0.1" title="Tiempo en segundos"><input id="simWristPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></div></td><td><output id="simWristPctDx">—</output></td></tr>
-      <tr><td>Izquierda</td><td>Muñeca</td><td><input id="simWristAngleIx" type="number" step="0.1"></td><td><div class="sim-posture-time-inputs"><input id="simWristTimeIx" type="number" min="0" step="0.1" title="Tiempo en segundos"><input id="simWristPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></div></td><td><output id="simWristPctIx">—</output></td></tr>
+  <div class="calculation-box"><strong>Posturas</strong>
+    <div class="notice">
+      <strong>Cómo introducir los datos:</strong> indique el ángulo y modifique <strong>uno de los dos campos</strong> de tiempo. 
+      <strong>Tiempo de postura (s)</strong> = segundos durante los que se mantiene la postura forzada. 
+      <strong>% del TNTR</strong> = qué porcentaje representa ese tiempo respecto al tiempo neto de trabajo repetitivo. 
+      Ambos campos están vinculados: al cambiar uno, el otro se recalcula automáticamente. El último campo muestra el porcentaje calculado como comprobación.
+    </div>
+    <div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Articulación</th><th>Ángulo (°)</th><th>Tiempo de postura (s)<br><small>EDITABLE</small></th><th>% del TNTR<br><small>EDITABLE</small></th><th>% calculado<br><small>COMPROBACIÓN</small></th></tr></thead><tbody>
+      <tr><td>Derecha</td><td>Hombro</td><td><input id="simShoulderAngleDx" type="number" step="0.1"></td><td><input id="simShoulderTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simShoulderPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td><td><output id="simShoulderPctDx">—</output></td></tr>
+      <tr><td>Izquierda</td><td>Hombro</td><td><input id="simShoulderAngleIx" type="number" step="0.1"></td><td><input id="simShoulderTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simShoulderPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td><td><output id="simShoulderPctIx">—</output></td></tr>
+      <tr><td>Derecha</td><td>Codo</td><td><input id="simElbowAngleDx" type="number" step="0.1"></td><td><input id="simElbowTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simElbowPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td><td><output id="simElbowPctDx">—</output></td></tr>
+      <tr><td>Izquierda</td><td>Codo</td><td><input id="simElbowAngleIx" type="number" step="0.1"></td><td><input id="simElbowTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simElbowPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td><td><output id="simElbowPctIx">—</output></td></tr>
+      <tr><td>Derecha</td><td>Muñeca</td><td><input id="simWristAngleDx" type="number" step="0.1"></td><td><input id="simWristTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simWristPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td><td><output id="simWristPctDx">—</output></td></tr>
+      <tr><td>Izquierda</td><td>Muñeca</td><td><input id="simWristAngleIx" type="number" step="0.1"></td><td><input id="simWristTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simWristPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td><td><output id="simWristPctIx">—</output></td></tr>
     </tbody></table></div>
     <div class="side-grid"><fieldset><legend>Derecha (DX)</legend><label class="check-row"><input id="simHeadDx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureDx">—</output></div></div></fieldset>
       <fieldset><legend>Izquierda (IX)</legend><label class="check-row"><input id="simHeadIx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureIx">—</output></div></div></fieldset></div>
@@ -489,6 +495,6 @@
   <div class="calculation-box"><strong>Seguimiento de cambios</strong><div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div></div>
 </section>
 </form>
-<script src="app.js?v=20260925-comp-json"></script>
+<script src="app.js?v=20260925-simulacion-posturas"></script>
 </body>
 </html>
