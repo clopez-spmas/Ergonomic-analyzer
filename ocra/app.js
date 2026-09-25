@@ -735,6 +735,7 @@ if(addKinoveaJsonBtn)addKinoveaJsonBtn.addEventListener("click",addKinoveaFileIn
 
 
 let simulationState={baseline:null,current:null,initialised:false};
+let simRecoveryState={start:"",end:"",minPause:8,pauses:[],lastResult:null};
 
 function simClone(v){return JSON.parse(JSON.stringify(v));}
 function simNum(id){const v=Number(document.getElementById(id)?.value);return Number.isFinite(v)?Math.max(0,v):0;}
@@ -742,7 +743,7 @@ function simSet(id,value){const el=document.getElementById(id);if(!el)return;if(
 function simText(id){return document.getElementById(id)?.textContent||"—";}
 function simControlIds(){
  return [
-  "simTNTR","simRecoveryHours","simCycles","simObservedCycle","simActionsDx","simActionsIx",
+  "simTNTR","simCycles","simObservedCycle","simActionsDx","simActionsIx",
   "simInterruptionsDx","simInterruptionsIx","simForceMode","simForceDx34","simForceDx57","simForceDx810",
   "simForceIx34","simForceIx57","simForceIx810",
   "simShoulderAngleDx","simShoulderTimeDx","simShoulderPctInputDx","simShoulderAngleIx","simShoulderTimeIx","simShoulderPctInputIx",
@@ -792,7 +793,6 @@ function simRestoreSaved(saved){
 function simSetInitialFromStudy(){
  const baseline={};
  simSet("simTNTR",simActualTNTR());
- simSet("simRecoveryHours",simActualRecoveryHours());
  simSet("simCycles",n("ciclosEfectivos"));
  simSet("simObservedCycle",n("cicloObservado"));
  simSet("simActionsDx",n("dxAcciones"));
@@ -895,12 +895,16 @@ function simCalculate(){
  const dxForce=forceScore(dxF34s,dxF57s,dxF810s,cycle),ixForce=forceScore(ixF34s,ixF57s,ixF810s,cycle);
  const dxPost=simPostureSide("right",tntr),ixPost=simPostureSide("left",tntr);
  const compA=Number(document.getElementById("simCompA")?.selectedOptions[0]?.dataset.score)||0,compB=Number(document.getElementById("simCompB")?.selectedOptions[0]?.dataset.score)||0,comp=compA+compB;
- const recoveryHours=Math.min(9,Math.max(0,simNum("simRecoveryHours"))),rm=recoveryMultiplier(recoveryHours),md=lookup(duration,tntr);
+ const recoveryHours=simRecoveryState.lastResult?.valid&&Number.isFinite(simRecoveryState.lastResult.hours)
+   ?Math.min(9,Math.max(0,simRecoveryState.lastResult.hours))
+   :simActualRecoveryHours(),rm=recoveryMultiplier(recoveryHours),md=lookup(duration,tntr);
  const dxBase=dxF+dxForce+dxPost.total+comp,ixBase=ixF+ixForce+ixPost.total+comp,dxFinal=dxBase*rm*md,ixFinal=ixBase*rm*md;
  simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));simSetText("simClassificationDx",classification(dxFinal));simSetText("simClassificationIx",classification(ixFinal));
  simSetText("simFreqDx",fmt(dxF,2));simSetText("simFreqIx",fmt(ixF,2));
  simSetText("simPostureDx",fmt(dxPost.total,2));simSetText("simPostureIx",fmt(ixPost.total,2));
  simSetText("simForceResultDx",fmt(dxForce,2));simSetText("simForceResultIx",fmt(ixForce,2));
+ simSetText("simRecoveryHours",fmt(recoveryHours,1));
+ simSetText("simCycleDuration",fmt(cycle,2));
  simSetText("simRecoveryFactor",fmt(rm,3));simSetText("simDurationFactor",fmt(md,3));
  const st=document.getElementById("simStatus");
  if(st)st.innerHTML="<strong>Simulación activa.</strong> Índices calculados sobre una copia temporal. El estudio original no se modifica.";
@@ -932,6 +936,51 @@ function simRenderChanged(){
  });
  box.innerHTML=rows.length?rows.join(""):'<div class="placeholder">No se han realizado cambios.</div>';
 }
+function simRecoveryRenderInputs(){
+ const tbody=document.getElementById("simRecoveryPausesBody");if(!tbody)return;
+ const rows=simRecoveryState.pauses||[];
+ tbody.innerHTML=rows.map((p,i)=>'<tr><td>'+(i+1)+'</td><td><select data-sim-recovery-type="'+i+'"><option value="pause" '+(p.type==="pause"?"selected":"")+'>Pausa habitual</option><option value="meal" '+(p.type==="meal"?"selected":"")+'>Comida</option></select></td><td><input type="time" data-sim-recovery-start="'+i+'" value="'+escK(p.start||"")+'"></td><td><input type="time" data-sim-recovery-end="'+i+'" value="'+escK(p.end||"")+'"></td><td><input type="checkbox" data-sim-recovery-habitual="'+i+'" '+(p.habitual!==false?"checked":"")+'></td><td><button type="button" class="toolbar-btn" data-sim-recovery-remove="'+i+'">Eliminar</button></td></tr>').join("")||'<tr><td colspan="6">No hay pausas añadidas.</td></tr>';
+ tbody.querySelectorAll("[data-sim-recovery-type]").forEach(x=>x.onchange=()=>{simRecoveryState.pauses[Number(x.dataset.simRecoveryType)].type=x.value;dirty=true;simRecoveryCalculate();});
+ tbody.querySelectorAll("[data-sim-recovery-start]").forEach(x=>x.onchange=()=>{simRecoveryState.pauses[Number(x.dataset.simRecoveryStart)].start=x.value;dirty=true;simRecoveryCalculate();});
+ tbody.querySelectorAll("[data-sim-recovery-end]").forEach(x=>x.onchange=()=>{simRecoveryState.pauses[Number(x.dataset.simRecoveryEnd)].end=x.value;dirty=true;simRecoveryCalculate();});
+ tbody.querySelectorAll("[data-sim-recovery-habitual]").forEach(x=>x.onchange=()=>{simRecoveryState.pauses[Number(x.dataset.simRecoveryHabitual)].habitual=x.checked;dirty=true;simRecoveryCalculate();});
+ tbody.querySelectorAll("[data-sim-recovery-remove]").forEach(x=>x.onclick=()=>{simRecoveryState.pauses.splice(Number(x.dataset.simRecoveryRemove),1);dirty=true;simRecoveryRenderInputs();simRecoveryCalculate();});
+}
+function simRecoveryCalculate(){
+ simRecoveryState.start=document.getElementById("simRecoveryStart")?.value||"";
+ simRecoveryState.end=document.getElementById("simRecoveryEnd")?.value||"";
+ simRecoveryState.minPause=8;
+ const result=calculateRecoverySchedule(simRecoveryState);
+ simRecoveryState.lastResult=result;
+ const hours=result.valid?result.hours:null;
+ simSetText("simRecoveryScheduleHours",result.valid?fmt(hours,1):"—");
+ simSetText("simRecoveryScheduleFactor",result.valid?fmt(recoveryMultiplier(hours),3):"—");
+ const tntr=simNum("simTNTR");
+ simSetText("simDurationScheduleFactor",fmt(lookup(duration,tntr),3));
+ const detail=document.getElementById("simRecoveryScheduleDetail");
+ if(detail)detail.innerHTML=result.valid?'<div class="notice">El factor de recuperación se actualiza con las pausas del escenario. El factor de duración se calcula con el TNTR simulado.</div>':'<div class="placeholder">'+escK(result.reason||"Indique inicio y fin del turno.")+'</div>';
+ simCalculate();
+}
+function simRecoveryInitFromStudy(){
+ simRecoveryState={
+   start:recoveryState.start||form.elements.horaInicio?.value||"",
+   end:recoveryState.end||form.elements.horaFin?.value||"",
+   minPause:8,
+   pauses:(recoveryState.pauses||[]).map(p=>({...p})),
+   lastResult:null
+ };
+ simSet("simRecoveryStart",simRecoveryState.start);
+ simSet("simRecoveryEnd",simRecoveryState.end);
+ simRecoveryRenderInputs();
+ simRecoveryCalculate();
+}
+function simRecoveryInit(){
+ const add=document.getElementById("simAddRecoveryPauseBtn");
+ document.getElementById("simRecoveryStart")?.addEventListener("change",()=>{simRecoveryState.start=document.getElementById("simRecoveryStart").value;dirty=true;simRecoveryCalculate();});
+ document.getElementById("simRecoveryEnd")?.addEventListener("change",()=>{simRecoveryState.end=document.getElementById("simRecoveryEnd").value;dirty=true;simRecoveryCalculate();});
+ add?.addEventListener("click",()=>{simRecoveryState.pauses.push({id:"sim_pause_"+Date.now().toString(36),type:"pause",start:"",end:"",habitual:true,label:""});dirty=true;simRecoveryRenderInputs();simRecoveryCalculate();});
+ simRecoveryInitFromStudy();
+}
 function initSimulation(){
  const root=document.querySelector('[data-screen="16"]');if(!root)return;
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
@@ -949,6 +998,7 @@ function initSimulation(){
  simSetInitialComplementaryOptions();
  simSetInitialFromStudy();
  simInitialisePosturePercentages();
+ simRecoveryInit();
  simulationState.baseline=simClone(simReadState());simulationState.current=simClone(simulationState.baseline);simRenderChanged();simCalculate();
 }
 
