@@ -736,9 +736,9 @@ function simControlIds(){
   "simTNTR","simRecoveryHours","simCycles","simObservedCycle","simActionsDx","simActionsIx",
   "simInterruptionsDx","simInterruptionsIx","simForceMode","simForceDx34","simForceDx57","simForceDx810",
   "simForceIx34","simForceIx57","simForceIx810",
-  "simShoulderAngleDx","simShoulderTimeDx","simShoulderAngleIx","simShoulderTimeIx",
-  "simElbowAngleDx","simElbowTimeDx","simElbowAngleIx","simElbowTimeIx",
-  "simWristAngleDx","simWristTimeDx","simWristAngleIx","simWristTimeIx",
+  "simShoulderAngleDx","simShoulderTimeDx","simShoulderPctInputDx","simShoulderAngleIx","simShoulderTimeIx","simShoulderPctInputIx",
+  "simElbowAngleDx","simElbowTimeDx","simElbowPctInputDx","simElbowAngleIx","simElbowTimeIx","simElbowPctInputIx",
+  "simWristAngleDx","simWristTimeDx","simWristPctInputDx","simWristAngleIx","simWristTimeIx","simWristPctInputIx",
   "simHeadDx","simHeadIx","simStereoDx","simStereoIx","simStereo3Dx","simStereo3Ix",
   "simGripDx","simGripIx","simGripTimeDx","simGripTimeIx","simCompA","simCompB"
  ];
@@ -846,6 +846,24 @@ function simPostureSide(side,tntr){
  scores.shoulder=shoulder;
  return {shoulder,elbow:scores.elbow,wrist:scores.wrist,hand:scores.hand,stereo:scores.stereo,total:Math.max(shoulder,scores.elbow,scores.wrist,scores.hand)+scores.stereo};
 }
+function simSyncPostureField(id){
+ const m=id.match(/^sim(Shoulder|Elbow|Wrist)(Time|PctInput)(Dx|Ix)$/);if(!m)return;
+ const kind=m[1],mode=m[2],side=m[3],duration=Math.max(0,simNum("simTNTR"))*60;
+ const timeId="sim"+kind+"Time"+side,pctId="sim"+kind+"PctInput"+side;
+ if(mode==="Time"){
+   const seconds=Math.min(duration,simNum(timeId));
+   simSet(pctId,duration>0?seconds/duration*100:0);
+ }else{
+   const pct=Math.min(100,simNum(pctId));
+   simSet(timeId,duration*pct/100);
+ }
+}
+function simInitialisePosturePercentages(){
+ ["Shoulder","Elbow","Wrist"].forEach(kind=>["Dx","Ix"].forEach(side=>{
+   const duration=Math.max(0,simNum("simTNTR"))*60,seconds=Math.min(duration,simNum("sim"+kind+"Time"+side));
+   simSet("sim"+kind+"PctInput"+side,duration>0?seconds/duration*100:0);
+ }));
+}
 function simCalculate(){
  if(!simulationState.initialised)return;
  const tntr=Math.max(0,simNum("simTNTR")),cycles=simNum("simCycles"),observed=simNum("simObservedCycle"),cycle=cycles>0?60*tntr/cycles:observed;
@@ -879,9 +897,9 @@ function simRenderChanged(){
   simInterruptionsDx:"Interrupciones DX",simInterruptionsIx:"Interrupciones IX",simForceMode:"Unidad de fuerza",
   simForceDx34:"Fuerza DX Borg 3–4",simForceDx57:"Fuerza DX Borg 5–7",simForceDx810:"Fuerza DX Borg 8–10",
   simForceIx34:"Fuerza IX Borg 3–4",simForceIx57:"Fuerza IX Borg 5–7",simForceIx810:"Fuerza IX Borg 8–10",
-  simShoulderAngleDx:"Ángulo hombro DX",simShoulderTimeDx:"Tiempo hombro DX",simShoulderAngleIx:"Ángulo hombro IX",simShoulderTimeIx:"Tiempo hombro IX",
-  simElbowAngleDx:"Ángulo codo DX",simElbowTimeDx:"Tiempo codo DX",simElbowAngleIx:"Ángulo codo IX",simElbowTimeIx:"Tiempo codo IX",
-  simWristAngleDx:"Ángulo muñeca DX",simWristTimeDx:"Tiempo muñeca DX",simWristAngleIx:"Ángulo muñeca IX",simWristTimeIx:"Tiempo muñeca IX",
+  simShoulderAngleDx:"Ángulo hombro DX",simShoulderTimeDx:"Tiempo hombro DX",simShoulderPctInputDx:"% hombro DX",simShoulderAngleIx:"Ángulo hombro IX",simShoulderTimeIx:"Tiempo hombro IX",simShoulderPctInputIx:"% hombro IX",
+  simElbowAngleDx:"Ángulo codo DX",simElbowTimeDx:"Tiempo codo DX",simElbowPctInputDx:"% codo DX",simElbowAngleIx:"Ángulo codo IX",simElbowTimeIx:"Tiempo codo IX",simElbowPctInputIx:"% codo IX",
+  simWristAngleDx:"Ángulo muñeca DX",simWristTimeDx:"Tiempo muñeca DX",simWristPctInputDx:"% muñeca DX",simWristAngleIx:"Ángulo muñeca IX",simWristTimeIx:"Tiempo muñeca IX",simWristPctInputIx:"% muñeca IX",
   simHeadDx:"Manos sobre cabeza DX",simHeadIx:"Manos sobre cabeza IX",simStereoDx:"Estereotipia 1,5 DX",simStereoIx:"Estereotipia 1,5 IX",
   simStereo3Dx:"Estereotipia 3 DX",simStereo3Ix:"Estereotipia 3 IX",simGripDx:"Agarre DX",simGripIx:"Agarre IX",simGripTimeDx:"Tiempo agarre DX",simGripTimeIx:"Tiempo agarre IX",
   simCompA:"Complementarios A",simCompB:"Complementarios B"
@@ -898,13 +916,15 @@ function simRenderChanged(){
 function initSimulation(){
  const root=document.querySelector('[data-screen="16"]');if(!root)return;
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
- events.forEach(el=>el.addEventListener("input",simCalculate));
- events.forEach(el=>el.addEventListener("change",simCalculate));
+ events.forEach(el=>el.addEventListener("input",e=>{simSyncPostureField(e.target.id);simCalculate();}));
+ events.forEach(el=>el.addEventListener("change",e=>{simSyncPostureField(e.target.id);simCalculate();}));
  document.getElementById("simLoadCurrentBtn")?.addEventListener("click",simSetInitialFromStudy);
  document.getElementById("simResetBtn")?.addEventListener("click",()=>{if(simulationState.baseline)simWriteState(simulationState.baseline)});
  document.getElementById("simChangesBtn")?.addEventListener("click",()=>{simRenderChanged();document.getElementById("simChangesList")?.scrollIntoView({behavior:"smooth",block:"center"})});
  simSetInitialComplementaryOptions();
  simSetInitialFromStudy();
+ simInitialisePosturePercentages();
+ simulationState.baseline=simClone(simReadState());simulationState.current=simClone(simulationState.baseline);simRenderChanged();simCalculate();
 }
 
 function initCore(){
