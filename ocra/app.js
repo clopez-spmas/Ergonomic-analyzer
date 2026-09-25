@@ -450,7 +450,7 @@ function postureScore(table,pct){return lookup(table,Math.max(0,Math.min(100,pct
 function kManualDuration(){const p=ensureManualPosture(),r=kRange();if(postureStudyMode()==="manual"||!r){const tntr=n("turnoEfectivoManual")||n("turnoOficial"),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),net=Math.max(0,tntr-pauses-meal-nonRep);return net>0?net*60:p.duration}return r.duration}
 function kForcedSeconds(kind,side){
  const p=ensureManualPosture()[kind][side],r=kRange();
- if(p.source==="manual")return Math.max(0,p.flex)+Math.max(0,p.ext);
+ if(p.source==="manual")return postureInputSeconds(p.flex,kManualDuration(),kind);
  if(!r||!kinoveaState.data||kMissingMarkers(kind,side).length)return 0;
  const frames=kinoveaState.data.frames;let total=0,base=null;
  for(let i=0;i<frames.length-1;i++){
@@ -562,7 +562,18 @@ function kPanel(kind,title,defaultThreshold){
    kRenderAnalyses();
    safeCalculate();
  });
- box.querySelectorAll("[data-manual-posture]").forEach(input=>input.onchange=()=>{const p=ensureManualPosture()[kind][input.dataset.manualSide];p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));dirty=true;kRenderAnalyses();safeCalculate()});
+ box.querySelectorAll("[data-manual-posture]").forEach(input=>{
+ const updateManualPosture=()=>{
+   const p=ensureManualPosture()[kind][input.dataset.manualSide];
+   p[input.dataset.manualField]=Math.max(0,kNum(input.value,0));
+   dirty=true;
+   const result=document.getElementById(kind+"Result");
+   if(result)result.innerHTML=kAnalysisRows(kind);
+   safeCalculate();
+ };
+ input.oninput=updateManualPosture;
+ input.onchange=updateManualPosture;
+});
 
 }
 function kRenderAnalyses(){["shoulder","elbow","wrist"].forEach(kind=>kPanel(kind,kind==="shoulder"?"hombro":kind==="elbow"?"codo":"muñeca",kind==="shoulder"?80:60))}
