@@ -934,6 +934,12 @@ function simRenderChanged(){
      rows.push("<div><strong>"+labels[id]+"</strong><span>"+escK(format(a))+" → "+escK(format(b))+"</span></div>");
    }
  });
+ const recoveryBaseline=simulationState.recoveryBaseline, recoveryCurrent=simulationState.recoveryCurrent||simRecoveryState;
+ if(recoveryBaseline){
+   const a=JSON.stringify({start:recoveryBaseline.start,end:recoveryBaseline.end,pauses:recoveryBaseline.pauses||[]});
+   const b=JSON.stringify({start:recoveryCurrent.start,end:recoveryCurrent.end,pauses:recoveryCurrent.pauses||[]});
+   if(a!==b)rows.push("<div><strong>Pausas y recuperación</strong><span>Se han modificado el horario o las pausas del escenario</span></div>");
+ }
  box.innerHTML=rows.length?rows.join(""):'<div class="placeholder">No se han realizado cambios.</div>';
 }
 function simRecoveryRenderInputs(){
@@ -952,6 +958,7 @@ function simRecoveryCalculate(){
  simRecoveryState.minPause=8;
  const result=calculateRecoverySchedule(simRecoveryState);
  simRecoveryState.lastResult=result;
+ simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
  const hours=result.valid?result.hours:null;
  simSetText("simRecoveryScheduleHours",result.valid?fmt(hours,1):"—");
  simSetText("simRecoveryScheduleFactor",result.valid?fmt(recoveryMultiplier(hours),3):"—");
@@ -989,7 +996,15 @@ function initSimulation(){
  document.getElementById("simResetBtn")?.addEventListener("click",()=>{
    if(simulationState.baseline){
      simWriteState(simulationState.baseline);
+     if(simulationState.recoveryBaseline){
+       simRecoveryState=JSON.parse(JSON.stringify(simulationState.recoveryBaseline));
+       simSet("simRecoveryStart",simRecoveryState.start||"");
+       simSet("simRecoveryEnd",simRecoveryState.end||"");
+       simRecoveryRenderInputs();
+       simRecoveryCalculate();
+     }
      simulationState.current=simClone(simulationState.baseline);
+     simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
      dirty=true;
      simRenderChanged();
      simCalculate();
@@ -999,7 +1014,12 @@ function initSimulation(){
  simSetInitialFromStudy();
  simInitialisePosturePercentages();
  simRecoveryInit();
- simulationState.baseline=simClone(simReadState());simulationState.current=simClone(simulationState.baseline);simRenderChanged();simCalculate();
+ simulationState.baseline=simClone(simReadState());
+ simulationState.current=simClone(simulationState.baseline);
+ simulationState.recoveryBaseline=JSON.parse(JSON.stringify(simRecoveryState));
+ simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
+ simRenderChanged();
+ simCalculate();
 }
 
 function initCore(){
