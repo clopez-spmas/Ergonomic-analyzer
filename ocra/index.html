@@ -445,11 +445,11 @@
   <div class="calculation-box">
     <strong>Control de la simulación</strong>
     <div class="form-grid">
-      <label>TNTR (min)<input id="simTNTR" type="number" min="0" step="0.1"></label>
+      <label>TNTR (min)<output id="simTNTR" class="simulation-inline-output">—</output></label>
       <label>Horas sin recuperación adecuada<output id="simRecoveryHours" class="simulation-inline-output">—</output></label>
       <label>Ciclos efectivos<input id="simCycles" type="number" min="0" step="1"></label>
       <label>Ciclo observado (s)<input id="simObservedCycle" type="number" min="0" step="0.1"></label>
-      <label>Ciclo calculado (s)<output id="simCycleDuration" class="simulation-inline-output">—</output></label>
+      <label>Duración del turno simulado (min)<output id="simShiftDuration" class="simulation-inline-output">—</output></label><label>Trabajo no repetitivo (min)<output id="simNonRep" class="simulation-inline-output">—</output></label><label>Ciclo calculado (s)<output id="simCycleDuration" class="simulation-inline-output">—</output></label>
       <label>Factor de recuperación<output id="simRecoveryFactor" class="simulation-inline-output">—</output></label>
       <label>Factor de duración<output id="simDurationFactor" class="simulation-inline-output">—</output></label>
     </div>
