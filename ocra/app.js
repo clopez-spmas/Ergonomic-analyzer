@@ -68,7 +68,21 @@ function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forE
  const value=o.values[name];
  if(value===undefined)return;
  form.querySelectorAll('[name="'+name+'"]').forEach(el=>{el.checked=String(el.value)===String(value)});
-});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised){if(o.simulation?.current||o.simulation?.baseline)simRestoreSaved(o.simulation);else simSetInitialFromStudy();}status.textContent="Estudio cargado correctamente."}
+});if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised){
+ const hasSavedSimulation=!!(o.simulation?.current||o.simulation?.baseline);
+ if(hasSavedSimulation){
+   simRestoreSaved(o.simulation);
+ }else{
+   simSetInitialFromStudy();
+   simRecoveryInitFromStudy();
+   simulationState.baseline=simClone(simReadState());
+   simulationState.current=simClone(simulationState.baseline);
+   simulationState.recoveryBaseline=JSON.parse(JSON.stringify(simRecoveryState));
+   simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
+   simRenderChanged();
+   simCalculate();
+ }
+}status.textContent="Estudio cargado correctamente."}
 function lookup(table,x){let r=table[0][1];for(const [k,v] of table){if(x>=k)r=v;else break}return r}
 const duration=[[0,.50],[121,.65],[181,.75],[241,.85],[301,.925],[361,.95],[421,1],[481,1.5]];
 const recTable={0:1,0.5:1.025,1:1.05,1.5:1.086,2:1.12,2.5:1.16,3:1.20,3.5:1.265,4:1.33,4.5:1.40,5:1.48,5.5:1.58,6:1.70,6.5:1.83,7:2,7.5:2.25,8:2.5,9:3};
