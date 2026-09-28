@@ -65,7 +65,7 @@ const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{.
 });if(typeof simulationState!=="undefined"&&simulationState.initialised){
  const baseline=simulationState.baseline||{},current=simulationState.current||simReadState();
  const changed=simStateHasChanges(baseline,current)||simRecoveryHasChanges(simulationState.recoveryBaseline,simRecoveryState);
- if(changed)o.simulation={version:2,baseline:simClone(baseline),current:simClone(current),recovery:simClone(simRecoveryState)};
+ if(changed)o.simulation={version:2,baseline:simClone(baseline),current:simClone(current),recoveryBaseline:simClone(simulationState.recoveryBaseline||{}),recovery:simClone(simRecoveryState)};
 }return o};
 function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else if(f.type==="radio")f.checked=String(o.values[f.name]??"")===String(f.value);else f.value=o.values[f.name]??""});
 ["compA","compB"].forEach(name=>{
