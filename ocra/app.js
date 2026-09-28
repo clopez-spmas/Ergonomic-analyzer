@@ -812,7 +812,14 @@ function simReadState(){
 function simWriteState(o){
  simControlIds().forEach(id=>{
    const el=document.getElementById(id),v=o?.[id];if(!el||v===undefined)return;
-   if(el.type==="checkbox")el.checked=!!v;else el.value=String(v);
+   if(el.type==="checkbox"){el.checked=!!v;return}
+   if(id==="simCompA"||id==="simCompB"){
+     const exact=[...el.options].find(opt=>String(opt.value)===String(v));
+     const fallback=[...el.options].find(opt=>String(opt.dataset.score||"")===String(v));
+     el.value=(exact||fallback)?.value||"none";
+     return;
+   }
+   el.value=String(v);
  });
  simRenderChanged();
  simCalculate();
