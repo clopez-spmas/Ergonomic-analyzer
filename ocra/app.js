@@ -62,15 +62,20 @@ const values=()=>{const o={savedAt:new Date().toISOString(),values:{},kinovea:{.
 ["compA","compB"].forEach(name=>{
  const selected=form.querySelector('[name="'+name+'"]:checked');
  o.values[name]=selected?selected.value:"";
-});if(typeof simulationState!=="undefined"&&simulationState.initialised){o.simulation={version:1,baseline:simClone(simulationState.baseline||{}),current:simClone(simulationState.current||simReadState()),recovery:simClone(simRecoveryState)};}return o};
+});if(typeof simulationState!=="undefined"&&simulationState.initialised){
+ const baseline=simulationState.baseline||{},current=simulationState.current||simReadState();
+ const changed=simStateHasChanges(baseline,current)||simRecoveryHasChanges(simulationState.recoveryBaseline,simRecoveryState);
+ if(changed)o.simulation={version:2,baseline:simClone(baseline),current:simClone(current),recovery:simClone(simRecoveryState)};
+}return o};
 function apply(o){if(!o||!o.values)throw Error("Formato no válido");fields.forEach(f=>{if(!(f.name in o.values))return;if(f.type==="checkbox")f.checked=!!o.values[f.name];else if(f.type==="radio")f.checked=String(o.values[f.name]??"")===String(f.value);else f.value=o.values[f.name]??""});
 ["compA","compB"].forEach(name=>{
  const value=o.values[name];
  if(value===undefined)return;
  form.querySelectorAll('[name="'+name+'"]').forEach(el=>{el.checked=String(el.value)===String(value)});
 });if(o.kinovea)restoreKinoveaState(o.kinovea);if(o.recovery)recoveryState={...recoveryState,...o.recovery,pauses:Array.isArray(o.recovery.pauses)?o.recovery.pauses:[]};dirty=false;recoveryRenderInputs();updatePostureModeUI();updateForceModeUI();kRenderAnalyses();safeCalculate();if(simulationState?.initialised){
- const hasSavedSimulation=!!(o.simulation?.current||o.simulation?.baseline);
+ const hasSavedSimulation=simSavedHasChanges(o.simulation);
  if(hasSavedSimulation){
+   simSetInitialFromStudy();
    simRestoreSaved(o.simulation);
  }else{
    simSetInitialFromStudy();
@@ -969,6 +974,21 @@ function simCalculate(){
  simRenderChanged();
 }
 function simSetText(id,value){const el=document.getElementById(id);if(el)el.textContent=value;}
+function simStateHasChanges(baseline,current){
+ const ids=simControlIds();
+ return ids.some(id=>String(baseline?.[id]??"")!==String(current?.[id]??""));
+}
+function simRecoveryHasChanges(a,b){
+ if(!a||!b)return false;
+ const normal=x=>JSON.stringify({start:x.start||"",end:x.end||"",pauses:x.pauses||[]});
+ return normal(a)!==normal(b);
+}
+function simSavedHasChanges(saved){
+ if(!saved||typeof saved!=="object")return false;
+ const baseline=saved.baseline,current=saved.current;
+ if(!baseline||!current)return false;
+ return simStateHasChanges(baseline,current)||simRecoveryHasChanges(saved.recoveryBaseline||saved.recoveryBaselineState,saved.recovery);
+}
 function simRenderChanged(){
  const box=document.getElementById("simChangesList");if(!box||!simulationState.baseline)return;
  const current=simulationState.current||simReadState(),rows=[];
