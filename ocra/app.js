@@ -648,9 +648,27 @@ function updateHandModeUI(){
    el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;
  });
 }
+function validateHandExposure(prefix,changedName){
+ const mode=document.getElementById("manoModo")?.value||"segundos",duration=kManualDuration();
+ const finger=document.querySelector('[name="'+prefix+'ManoDedoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoTiempo"]'),warning=document.getElementById(prefix+"ManoAviso");
+ if(!finger||!grip)return;
+ const limit=mode==="porcentaje"?100:Math.max(0,duration);
+ const changed=changedName===prefix+"ManoDedoTiempo"?finger:grip,other=changed===finger?grip:finger;
+ const otherValue=Math.max(0,kNum(other.value,0)),current=Math.max(0,kNum(changed.value,0)),maxAllowed=Math.max(0,limit-otherValue);
+ const exceeded=current>maxAllowed+1e-9;
+ if(exceeded)changed.value=String(Number(maxAllowed.toFixed(2)));
+ if(warning)warning.hidden=!exceeded;
+}
 function initHandInputMode(){
  const el=document.getElementById("manoModo");if(!el)return;
- el.addEventListener("change",()=>{updateHandModeUI();dirty=true;safeCalculate()});
+ el.addEventListener("change",()=>{updateHandModeUI();["dx","ix"].forEach(prefix=>validateHandExposure(prefix,prefix+"ManoTiempo"));dirty=true;safeCalculate()});
+ ["dx","ix"].forEach(prefix=>{
+   [prefix+"ManoDedoTiempo",prefix+"ManoTiempo"].forEach(name=>{
+     const input=document.querySelector('[name="'+name+'"]');
+     input?.addEventListener("input",()=>{validateHandExposure(prefix,name)});
+     input?.addEventListener("change",()=>{validateHandExposure(prefix,name);dirty=true;safeCalculate()});
+   });
+ });
  updateHandModeUI();
 }
 function renderHandPosture(){
@@ -890,6 +908,15 @@ function simAngleActive(kind,angle){
  const a=Number(angle)||0;
  return kind==="shoulder"?a>=80:kind==="elbow"?a>60:a>45;
 }
+function validateSimHandExposure(prefix,changedId,tntr){
+ const duration=Math.max(0,tntr)*60,finger=document.getElementById("simFingerTime"+prefix),grip=document.getElementById("simGripTime"+prefix),warning=document.getElementById("simHandWarning"+prefix);
+ if(!finger||!grip)return;
+ const changed=changedId==="simFingerTime"+prefix?finger:grip,other=changed===finger?grip:finger;
+ const otherValue=Math.max(0,Number(other.value)||0),current=Math.max(0,Number(changed.value)||0),maxAllowed=Math.max(0,duration-otherValue);
+ const exceeded=current>maxAllowed+1e-9;
+ if(exceeded)changed.value=String(Number(maxAllowed.toFixed(2)));
+ if(warning)warning.hidden=!exceeded;
+}
 function simPostureSide(side,tntr){
  const prefix=side==="right"?"Dx":"Ix",duration=Math.max(0,tntr)*60,pct=duration>0?100/duration:0;
  const scores={};
@@ -1070,8 +1097,8 @@ function initSimulation(){
  const root=document.querySelector('[data-screen="16"]');if(!root)return;
  document.getElementById("simOpenRecoveryBtn")?.addEventListener("click",()=>window.OCRA_Navigation?.showSimulationRecovery?.());
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
- events.forEach(el=>el.addEventListener("input",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
- events.forEach(el=>el.addEventListener("change",e=>{simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ events.forEach(el=>el.addEventListener("input",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ events.forEach(el=>el.addEventListener("change",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
  document.getElementById("simResetBtn")?.addEventListener("click",()=>{
    if(simulationState.baseline){
      simWriteState(simulationState.baseline);
