@@ -299,9 +299,10 @@
         </select>
       </label>
       <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
-      <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
+      <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación agarre DX</span><output id="dxManoAgarreScore">0,00</output></div></div>
       <label>Tiempo utilizando un solo dedo (con o sin agarre de potencia) <span class="mano-unidad">segundos</span><input name="dxManoDedoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% un solo dedo</span><output id="dxManoDedoPct">0,00 %</output></div><div><span>Puntuación un solo dedo</span><output id="dxManoDedoScore">0,00</output></div></div>
+      <div class="result-grid one-column"><div><span>Puntuación total mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
       <div id="dxManoAviso" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del tiempo analizado para la mano derecha.</div>
     </fieldset>
     <fieldset><legend>Izquierda (IX) · D) Mano-dedo</legend>
@@ -315,9 +316,10 @@
         </select>
       </label>
       <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
-      <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
+      <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación agarre IX</span><output id="ixManoAgarreScore">0,00</output></div></div>
       <label>Tiempo utilizando un solo dedo (con o sin agarre de potencia) <span class="mano-unidad">segundos</span><input name="ixManoDedoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% un solo dedo</span><output id="ixManoDedoPct">0,00 %</output></div><div><span>Puntuación un solo dedo</span><output id="ixManoDedoScore">0,00</output></div></div>
+      <div class="result-grid one-column"><div><span>Puntuación total mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
       <div id="ixManoAviso" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del tiempo analizado para la mano izquierda.</div>
     </fieldset>
   </div>
@@ -405,6 +407,8 @@
       <div class="sub-result"><span>Codo</span><output id="finalElbowDx">—</output></div>
       <div class="sub-result"><span>Muñeca</span><output id="finalWristDx">—</output></div>
       <div class="sub-result"><span>Mano-dedo</span><output id="finalHandDx">—</output></div>
+      <div class="sub-result"><span>· Agarre</span><output id="finalHandGripDx">—</output></div>
+      <div class="sub-result"><span>· Un solo dedo</span><output id="finalHandFingerDx">—</output></div>
       <div class="sub-result"><span>Estereotipia</span><output id="finalStereoDx">—</output></div>
       <div class="main-result"><span>Complementarios</span><output id="finalCompDx">—</output></div>
       <div class="sub-result"><span>Bloque A</span><output id="finalCompADx">—</output></div>
@@ -428,6 +432,8 @@
       <div class="sub-result"><span>Codo</span><output id="finalElbowIx">—</output></div>
       <div class="sub-result"><span>Muñeca</span><output id="finalWristIx">—</output></div>
       <div class="sub-result"><span>Mano-dedo</span><output id="finalHandIx">—</output></div>
+      <div class="sub-result"><span>· Agarre</span><output id="finalHandGripIx">—</output></div>
+      <div class="sub-result"><span>· Un solo dedo</span><output id="finalHandFingerIx">—</output></div>
       <div class="sub-result"><span>Estereotipia</span><output id="finalStereoIx">—</output></div>
       <div class="main-result"><span>Complementarios</span><output id="finalCompIx">—</output></div>
       <div class="sub-result"><span>Bloque A</span><output id="finalCompAIx">—</output></div>
@@ -500,8 +506,8 @@
   </div>
 
   <div class="calculation-box"><strong>Mano-dedo y estereotipia</strong><div class="side-grid">
-    <fieldset><legend>Derecha (DX)</legend><label>Tiempo utilizando un solo dedo (s)<input id="simFingerTimeDx" type="number" min="0" step="0.1"></label><label>Tipo de agarre<select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeDx" type="number" min="0" step="0.1"></label><div id="simHandWarningDx" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del TNTR simulado para la mano derecha.</div><label class="check-row"><input id="simStereoDx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Dx" type="checkbox"> Estereotipia 3</label></fieldset>
-    <fieldset><legend>Izquierda (IX)</legend><label>Tiempo utilizando un solo dedo (s)<input id="simFingerTimeIx" type="number" min="0" step="0.1"></label><label>Tipo de agarre<select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeIx" type="number" min="0" step="0.1"></label><div id="simHandWarningIx" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del TNTR simulado para la mano izquierda.</div><label class="check-row"><input id="simStereoIx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Ix" type="checkbox"> Estereotipia 3</label></fieldset>
+    <fieldset><legend>Derecha (DX)</legend><label>Tiempo utilizando un solo dedo (s)<input id="simFingerTimeDx" type="number" min="0" step="0.1"></label><label>Tipo de agarre<select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeDx" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación agarre</span><output id="simGripScoreDx">—</output></div><div><span>Puntuación un solo dedo</span><output id="simFingerScoreDx">—</output></div><div><span>Total mano-dedo</span><output id="simHandScoreDx">—</output></div></div><div id="simHandWarningDx" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del TNTR simulado para la mano derecha.</div><label class="check-row"><input id="simStereoDx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Dx" type="checkbox"> Estereotipia 3</label></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><label>Tiempo utilizando un solo dedo (s)<input id="simFingerTimeIx" type="number" min="0" step="0.1"></label><label>Tipo de agarre<select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeIx" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación agarre</span><output id="simGripScoreIx">—</output></div><div><span>Puntuación un solo dedo</span><output id="simFingerScoreIx">—</output></div><div><span>Total mano-dedo</span><output id="simHandScoreIx">—</output></div></div><div id="simHandWarningIx" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del TNTR simulado para la mano izquierda.</div><label class="check-row"><input id="simStereoIx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Ix" type="checkbox"> Estereotipia 3</label></fieldset>
   </div></div>
 
   <div class="calculation-box"><strong>Factores complementarios</strong><div class="simulation-complementary-stack"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
