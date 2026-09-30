@@ -673,9 +673,10 @@ function initHandInputMode(){
 }
 function renderHandPosture(){
  ["dx","ix"].forEach(prefix=>{
-  const grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),pct=document.getElementById(prefix+"ManoPct"),score=document.getElementById(prefix+"ManoScore"),fingerPctEl=document.getElementById(prefix+"ManoDedoPct"),fingerScoreEl=document.getElementById(prefix+"ManoDedoScore"),duration=kManualDuration(),seconds=handInputSeconds(prefix+"ManoTiempo",duration),p=duration>0?seconds/duration*100:0,fingerSeconds=handInputSeconds(prefix+"ManoDedoTiempo",duration),fingerPct=duration>0?fingerSeconds/duration*100:0,fingerScore=postureScore(postureFingerTable,fingerPct),gripScore=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,p);
+  const grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),pct=document.getElementById(prefix+"ManoPct"),score=document.getElementById(prefix+"ManoScore"),gripScoreEl=document.getElementById(prefix+"ManoAgarreScore"),fingerPctEl=document.getElementById(prefix+"ManoDedoPct"),fingerScoreEl=document.getElementById(prefix+"ManoDedoScore"),duration=kManualDuration(),seconds=handInputSeconds(prefix+"ManoTiempo",duration),p=duration>0?seconds/duration*100:0,fingerSeconds=handInputSeconds(prefix+"ManoDedoTiempo",duration),fingerPct=duration>0?fingerSeconds/duration*100:0,fingerScore=postureScore(postureFingerTable,fingerPct),gripScore=(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,p);
   if(pct)pct.textContent=fmt(p,2)+" %";
   if(fingerPctEl)fingerPctEl.textContent=fmt(fingerPct,2)+" %";
+  if(gripScoreEl)gripScoreEl.textContent=fmt(gripScore,2);
   if(fingerScoreEl)fingerScoreEl.textContent=fmt(fingerScore,2);
   if(score)score.textContent=fmt(fingerScore+gripScore,2);
  });
@@ -684,7 +685,7 @@ function postureScores(){
  const duration=kManualDuration()||0,result={};
  ["right","left"].forEach(side=>{
   const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulderBase=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),shoulder=document.querySelector('[name="'+prefix+'HombroCabeza"]')?.checked?shoulderBase*2:shoulderBase,elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=handInputSeconds(prefix+"ManoTiempo",duration),handPct=duration>0?handSeconds/duration*100:0,fingerSeconds=handInputSeconds(prefix+"ManoDedoTiempo",duration),fingerPct=duration>0?fingerSeconds/duration*100:0,hand=postureScore(postureFingerTable,fingerPct)+((grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct)),stereoValue=stereo(prefix);
-  result[side]={shoulder,elbow,wrist,hand,stereo:stereoValue,base:Math.max(shoulder,elbow,wrist,hand),total:Math.max(shoulder,elbow,wrist,hand)+stereoValue};
+  result[side]={shoulder,elbow,wrist,hand,handGrip:(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),handFinger:postureScore(postureFingerTable,fingerPct),stereo:stereoValue,base:Math.max(shoulder,elbow,wrist,hand),total:Math.max(shoulder,elbow,wrist,hand)+stereoValue};
  });
  return result;
 }
@@ -765,7 +766,7 @@ function calculate(){
  document.getElementById("finalShoulderDx")&&(document.getElementById("finalShoulderDx").textContent=fmt(ps.right.shoulder,2));document.getElementById("finalShoulderIx")&&(document.getElementById("finalShoulderIx").textContent=fmt(ps.left.shoulder,2));
  document.getElementById("finalElbowDx")&&(document.getElementById("finalElbowDx").textContent=fmt(ps.right.elbow,2));document.getElementById("finalElbowIx")&&(document.getElementById("finalElbowIx").textContent=fmt(ps.left.elbow,2));
  document.getElementById("finalWristDx")&&(document.getElementById("finalWristDx").textContent=fmt(ps.right.wrist,2));document.getElementById("finalWristIx")&&(document.getElementById("finalWristIx").textContent=fmt(ps.left.wrist,2));
- document.getElementById("finalHandDx")&&(document.getElementById("finalHandDx").textContent=fmt(ps.right.hand,2));document.getElementById("finalHandIx")&&(document.getElementById("finalHandIx").textContent=fmt(ps.left.hand,2));
+ document.getElementById("finalHandDx")&&(document.getElementById("finalHandDx").textContent=fmt(ps.right.hand,2));document.getElementById("finalHandIx")&&(document.getElementById("finalHandIx").textContent=fmt(ps.left.hand,2));document.getElementById("finalHandGripDx")&&(document.getElementById("finalHandGripDx").textContent=fmt(ps.right.handGrip,2));document.getElementById("finalHandGripIx")&&(document.getElementById("finalHandGripIx").textContent=fmt(ps.left.handGrip,2));document.getElementById("finalHandFingerDx")&&(document.getElementById("finalHandFingerDx").textContent=fmt(ps.right.handFinger,2));document.getElementById("finalHandFingerIx")&&(document.getElementById("finalHandFingerIx").textContent=fmt(ps.left.handFinger,2));
  const dxBase=dxF+dxForce+dxPosture+comp,ixBase=ixF+ixForce+ixPosture+comp,dxFinal=dxBase*(rm??1)*md,ixFinal=ixBase*(rm??1)*md;
  const set=(id,v,d=2)=>document.getElementById(id).textContent=Number.isFinite(v)?fmt(v,d):"—";
  set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
@@ -935,7 +936,7 @@ function simPostureSide(side,tntr){
  scores.stereo=stereo3?3:(stereo15?1.5:0);
  const shoulder=document.getElementById("simHead"+prefix)?.checked?scores.shoulder*2:scores.shoulder;
  scores.shoulder=shoulder;
- return {shoulder,elbow:scores.elbow,wrist:scores.wrist,hand:scores.hand,stereo:scores.stereo,total:Math.max(shoulder,scores.elbow,scores.wrist,scores.hand)+scores.stereo};
+ return {shoulder,elbow:scores.elbow,wrist:scores.wrist,hand:scores.hand,handGrip:(grip==="none"||grip==="grip")?0:postureScore(postureHandTable,gripPct),handFinger:postureScore(postureFingerTable,fingerPct),stereo:scores.stereo,total:Math.max(shoulder,scores.elbow,scores.wrist,scores.hand)+scores.stereo};
 }
 function simSyncPostureField(id){
  const m=id.match(/^sim(Shoulder|Elbow|Wrist)(Time|PctInput)(Dx|Ix)$/);if(!m)return;
@@ -975,6 +976,7 @@ function simCalculate(){
  simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));simSetText("simClassificationDx",classification(dxFinal));simSetText("simClassificationIx",classification(ixFinal));
  simSetText("simFreqDx",fmt(dxF,2));simSetText("simFreqIx",fmt(ixF,2));
  simSetText("simPostureDx",fmt(dxPost.total,2));simSetText("simPostureIx",fmt(ixPost.total,2));
+ simSetText("simGripScoreDx",fmt(dxPost.handGrip,2));simSetText("simGripScoreIx",fmt(ixPost.handGrip,2));simSetText("simFingerScoreDx",fmt(dxPost.handFinger,2));simSetText("simFingerScoreIx",fmt(ixPost.handFinger,2));simSetText("simHandScoreDx",fmt(dxPost.hand,2));simSetText("simHandScoreIx",fmt(ixPost.hand,2));
  simSetText("simForceResultDx",fmt(dxForce,2));simSetText("simForceResultIx",fmt(ixForce,2));
  simSetText("simRecoveryHours",fmt(recoveryHours,1));
  simSetText("simCycleDuration",fmt(cycle,2));
