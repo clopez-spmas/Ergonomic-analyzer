@@ -976,7 +976,7 @@ function simCalculate(){
  simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));simSetText("simClassificationDx",classification(dxFinal));simSetText("simClassificationIx",classification(ixFinal));
  simSetText("simFreqDx",fmt(dxF,2));simSetText("simFreqIx",fmt(ixF,2));
  simSetText("simPostureDx",fmt(dxPost.total,2));simSetText("simPostureIx",fmt(ixPost.total,2));
- simSetText("simGripScoreDx",fmt(dxPost.handGrip,2));simSetText("simGripScoreIx",fmt(ixPost.handGrip,2));simSetText("simFingerScoreDx",fmt(dxPost.handFinger,2));simSetText("simFingerScoreIx",fmt(ixPost.handFinger,2));simSetText("simHandScoreDx",fmt(dxPost.hand,2));simSetText("simHandScoreIx",fmt(ixPost.hand,2));
+ simSetText("simGripScoreDx",fmt(dxPost.handGrip,2));simSetText("simGripScoreIx",fmt(ixPost.handGrip,2));simSetText("simFingerScoreDx",fmt(dxPost.handFinger,2));simSetText("simFingerScoreIx",fmt(ixPost.handFinger,2));simSetText("simHandScoreDx",fmt(dxPost.hand,2));simSetText("simHandScoreIx",fmt(ixPost.hand,2));simSetText("simStereoScoreDx",fmt(dxPost.stereo,2));simSetText("simStereoScoreIx",fmt(ixPost.stereo,2));
  simSetText("simForceResultDx",fmt(dxForce,2));simSetText("simForceResultIx",fmt(ixForce,2));
  simSetText("simRecoveryHours",fmt(recoveryHours,1));
  simSetText("simCycleDuration",fmt(cycle,2));
@@ -1100,7 +1100,7 @@ function initSimulation(){
  document.getElementById("simOpenRecoveryBtn")?.addEventListener("click",()=>window.OCRA_Navigation?.showSimulationRecovery?.());
  const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
  events.forEach(el=>el.addEventListener("input",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
- events.forEach(el=>el.addEventListener("change",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ events.forEach(el=>el.addEventListener("change",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}const sm=e.target.id.match(/^simStereo(3)?(Dx|Ix)$/);if(sm&&e.target.checked){const side=sm[2],other=document.getElementById(sm[1]?"simStereo"+side:"simStereo3"+side);if(other)other.checked=false}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
  document.getElementById("simResetBtn")?.addEventListener("click",()=>{
    if(simulationState.baseline){
      simWriteState(simulationState.baseline);
