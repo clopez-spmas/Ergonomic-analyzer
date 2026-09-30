@@ -811,6 +811,20 @@ function simSet(id,value){
  else el.value=value??"";
 }
 function simText(id){return document.getElementById(id)?.textContent||"—";}
+const simStereoDefs=[
+ {key:"Half",form:"StereoHalf",score:1.5,label:"Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo."},
+ {key:"Cycle815",form:"StereoCycle815",score:1.5,label:"Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior."},
+ {key:"Static",form:"StereoStatic",score:1.5,label:"Postura estática de la extremidad superior durante más del 50 % del ciclo."},
+ {key:"Almost",form:"StereoAlmost",score:3,label:"Movimiento idéntico/repetitivo prácticamente durante todo el tiempo."},
+ {key:"Cycle8",form:"StereoCycle8",score:3,label:"Ciclo inferior a 8 s en el que predominan las acciones técnicas de la extremidad superior."}
+];
+function simStereoReasonIds(){return simStereoDefs.flatMap(d=>["simStereo"+d.key+"Dx","simStereo"+d.key+"Ix"])}
+function simRenderStereoReasons(side,prefix){
+ const box=document.getElementById("simStereoReasons"+side);if(!box)return;
+ const active=simStereoDefs.filter(d=>!!form.elements[prefix+d.form]?.checked);
+ if(!active.length){box.innerHTML='<div class="placeholder">No se aplicó ningún criterio de estereotipia en el estudio original.</div>';return}
+ box.innerHTML=active.map(d=>'<label class="check-row"><input id="simStereo'+d.key+side+'" data-sim-stereo-reason type="checkbox" checked> '+d.label+' · '+String(d.score).replace(".",",")+' puntos</label>').join("");
+}
 function simControlIds(){
  return [
   "simCycles","simObservedCycle","simActionsDx","simActionsIx",
@@ -819,7 +833,8 @@ function simControlIds(){
   "simShoulderAngleDx","simShoulderTimeDx","simShoulderPctInputDx","simShoulderAngleIx","simShoulderTimeIx","simShoulderPctInputIx",
   "simElbowAngleDx","simElbowTimeDx","simElbowPctInputDx","simElbowAngleIx","simElbowTimeIx","simElbowPctInputIx",
   "simWristAngleDx","simWristTimeDx","simWristPctInputDx","simWristAngleIx","simWristTimeIx","simWristPctInputIx",
-  "simHeadDx","simHeadIx","simStereoDx","simStereoIx","simStereo3Dx","simStereo3Ix",
+  "simHeadDx","simHeadIx",
+  ...simStereoReasonIds(),
   "simFingerTimeDx","simFingerTimeIx","simGripDx","simGripIx","simGripTimeDx","simGripTimeIx","simCompA","simCompB"
  ];
 }
@@ -893,9 +908,10 @@ function simPostureRepresentativeAngle(kind,side){
  return kind==="shoulder"?(maxPositive>0?maxPositive:(minNegative<0?minNegative:0)):maxAbs;
 }
 function simSetInitialFromStudy(){
+ simRenderStereoReasons("Dx","dx");simRenderStereoReasons("Ix","ix");
  const baseline={},official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  simSet("simTNTR",tntr);simSetText("simShiftDuration",eff);simSetText("simNonRep",nonRep);simSet("simCycles",n("ciclosEfectivos"));simSet("simObservedCycle",n("cicloObservado"));simSet("simActionsDx",n("dxAcciones"));simSet("simActionsIx",n("ixAcciones"));simSet("simInterruptionsDx",form.elements.dxInterrupciones?.value||"si");simSet("simInterruptionsIx",form.elements.ixInterrupciones?.value||"si");simSet("simForceMode",document.getElementById("fuerzaModo")?.value||"segundos");
- ["Dx","Ix"].forEach(side=>{const p=side.toLowerCase();simSet("simForce"+side+"34",n(p+"Fuerza34"));simSet("simForce"+side+"57",n(p+"Fuerza57"));simSet("simForce"+side+"810",n(p+"Fuerza810"));simSet("simFingerTime"+side,handInputSeconds(p+"ManoDedoTiempo",tntr*60));simSet("simGrip"+side,form.elements[p+"ManoAgarre"]?.value||"none");simSet("simGripTime"+side,handInputSeconds(p+"ManoTiempo",tntr*60));simSet("simHead"+side,!!form.elements[p+"HombroCabeza"]?.checked);const st=stereo(p);simSet("simStereo"+side,st===1.5);simSet("simStereo3"+side,st===3);const bodySide=p==="dx"?"right":"left";["shoulder","elbow","wrist"].forEach(kind=>{const key=kind.charAt(0).toUpperCase()+kind.slice(1),t=simPostureTime(kind,bodySide);simSet("sim"+key+"Time"+side,t);simSet("sim"+key+"Angle"+side,t>0?simPostureRepresentativeAngle(kind,bodySide):0)})});
+ ["Dx","Ix"].forEach(side=>{const p=side.toLowerCase();simSet("simForce"+side+"34",n(p+"Fuerza34"));simSet("simForce"+side+"57",n(p+"Fuerza57"));simSet("simForce"+side+"810",n(p+"Fuerza810"));simSet("simFingerTime"+side,handInputSeconds(p+"ManoDedoTiempo",tntr*60));simSet("simGrip"+side,form.elements[p+"ManoAgarre"]?.value||"none");simSet("simGripTime"+side,handInputSeconds(p+"ManoTiempo",tntr*60));simSet("simHead"+side,!!form.elements[p+"HombroCabeza"]?.checked);const bodySide=p==="dx"?"right":"left";["shoulder","elbow","wrist"].forEach(kind=>{const key=kind.charAt(0).toUpperCase()+kind.slice(1),t=simPostureTime(kind,bodySide);simSet("sim"+key+"Time"+side,t);simSet("sim"+key+"Angle"+side,t>0?simPostureRepresentativeAngle(kind,bodySide):0)})});
  simSetInitialComplementaryOptions();Object.assign(baseline,simReadState());simulationState={baseline:simClone(baseline),current:simClone(baseline),initialised:true};simRenderChanged();simCalculate();
 }
 function simSetInitialComplementaryOptions(){
@@ -932,8 +948,9 @@ function simPostureSide(side,tntr){
  const grip=document.getElementById("simGrip"+prefix)?.value||"none";
  const gripTime=Math.min(duration,simNum("simGripTime"+prefix)),gripPct=duration>0?100*gripTime/duration:0;
  scores.hand=postureScore(postureFingerTable,fingerPct)+((grip==="none"||grip==="grip")?0:postureScore(postureHandTable,gripPct));
- const stereo3=document.getElementById("simStereo3"+prefix)?.checked,stereo15=document.getElementById("simStereo"+prefix)?.checked;
- scores.stereo=stereo3?3:(stereo15?1.5:0);
+ const checkedStereo=[...document.querySelectorAll("#simStereoReasons"+prefix+" [data-sim-stereo-reason]:checked")];
+ const stereoScores=checkedStereo.map(el=>{const def=simStereoDefs.find(d=>el.id==="simStereo"+d.key+prefix);return def?.score||0});
+ scores.stereo=stereoScores.includes(3)?3:(stereoScores.includes(1.5)?1.5:0);
  const shoulder=document.getElementById("simHead"+prefix)?.checked?scores.shoulder*2:scores.shoulder;
  scores.shoulder=shoulder;
  return {shoulder,elbow:scores.elbow,wrist:scores.wrist,hand:scores.hand,handGrip:(grip==="none"||grip==="grip")?0:postureScore(postureHandTable,gripPct),handFinger:postureScore(postureFingerTable,fingerPct),stereo:scores.stereo,total:Math.max(shoulder,scores.elbow,scores.wrist,scores.hand)+scores.stereo};
@@ -1013,8 +1030,13 @@ function simRenderChanged(){
   simShoulderAngleDx:"Ángulo hombro DX",simShoulderTimeDx:"Tiempo hombro DX",simShoulderPctInputDx:"% hombro DX",simShoulderAngleIx:"Ángulo hombro IX",simShoulderTimeIx:"Tiempo hombro IX",simShoulderPctInputIx:"% hombro IX",
   simElbowAngleDx:"Ángulo codo DX",simElbowTimeDx:"Tiempo codo DX",simElbowPctInputDx:"% codo DX",simElbowAngleIx:"Ángulo codo IX",simElbowTimeIx:"Tiempo codo IX",simElbowPctInputIx:"% codo IX",
   simWristAngleDx:"Ángulo muñeca DX",simWristTimeDx:"Tiempo muñeca DX",simWristPctInputDx:"% muñeca DX",simWristAngleIx:"Ángulo muñeca IX",simWristTimeIx:"Tiempo muñeca IX",simWristPctInputIx:"% muñeca IX",
-  simHeadDx:"Manos sobre cabeza DX",simHeadIx:"Manos sobre cabeza IX",simStereoDx:"Estereotipia 1,5 DX",simStereoIx:"Estereotipia 1,5 IX",
-  simStereo3Dx:"Estereotipia 3 DX",simStereo3Ix:"Estereotipia 3 IX",simFingerTimeDx:"Tiempo un solo dedo DX",simFingerTimeIx:"Tiempo un solo dedo IX",simGripDx:"Agarre DX",simGripIx:"Agarre IX",simGripTimeDx:"Tiempo agarre DX",simGripTimeIx:"Tiempo agarre IX",
+  simHeadDx:"Manos sobre cabeza DX",simHeadIx:"Manos sobre cabeza IX",
+  simStereoHalfDx:"Movimientos repetitivos > mitad DX",simStereoHalfIx:"Movimientos repetitivos > mitad IX",
+  simStereoCycle815Dx:"Ciclo 8–15 s DX",simStereoCycle815Ix:"Ciclo 8–15 s IX",
+  simStereoStaticDx:"Postura estática >50 % DX",simStereoStaticIx:"Postura estática >50 % IX",
+  simStereoAlmostDx:"Movimiento repetitivo casi todo el tiempo DX",simStereoAlmostIx:"Movimiento repetitivo casi todo el tiempo IX",
+  simStereoCycle8Dx:"Ciclo <8 s DX",simStereoCycle8Ix:"Ciclo <8 s IX",
+  simFingerTimeDx:"Tiempo un solo dedo DX",simFingerTimeIx:"Tiempo un solo dedo IX",simGripDx:"Agarre DX",simGripIx:"Agarre IX",simGripTimeDx:"Tiempo agarre DX",simGripTimeIx:"Tiempo agarre IX",
   simCompA:"Complementarios A",simCompB:"Complementarios B"
  };
  Object.keys(labels).forEach(id=>{
@@ -1098,9 +1120,11 @@ function simRecoveryInit(){
 function initSimulation(){
  const root=document.querySelector('[data-screen="16"]');if(!root)return;
  document.getElementById("simOpenRecoveryBtn")?.addEventListener("click",()=>window.OCRA_Navigation?.showSimulationRecovery?.());
- const events=simControlIds().map(id=>document.getElementById(id)).filter(Boolean);
+ simRenderStereoReasons("Dx","dx");simRenderStereoReasons("Ix","ix");
+ const events=simControlIds().map(id=>document.getElementById(id)).filter(el=>el&&!el.matches("[data-sim-stereo-reason]"));
  events.forEach(el=>el.addEventListener("input",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
- events.forEach(el=>el.addEventListener("change",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}const sm=e.target.id.match(/^simStereo(3)?(Dx|Ix)$/);if(sm&&e.target.checked){const side=sm[2],other=document.getElementById(sm[1]?"simStereo"+side:"simStereo3"+side);if(other)other.checked=false}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ events.forEach(el=>el.addEventListener("change",e=>{const tntr=Math.max(0,simNum("simTNTR"));if(/^sim(FingerTime|GripTime)(Dx|Ix)$/.test(e.target.id)){const m=e.target.id.match(/(Dx|Ix)$/);validateSimHandExposure(m[1],e.target.id,tntr)}simSyncPostureField(e.target.id);dirty=true;simCalculate();}));
+ root.addEventListener("change",e=>{if(!e.target.matches("[data-sim-stereo-reason]"))return;dirty=true;simCalculate();simRenderChanged();});
  document.getElementById("simResetBtn")?.addEventListener("click",()=>{
    if(simulationState.baseline){
      simWriteState(simulationState.baseline);
