@@ -297,7 +297,9 @@
           <option value="palmar">Agarre palmar</option>
           <option value="grip">Agarre de potencia (grip) · no puntúa</option>
         </select>
-      </label>
+      </label>      <label>Tiempo utilizando un solo dedo (con o sin agarre de potencia) <span class="mano-unidad">segundos</span><input name="dxManoDedoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% un solo dedo</span><output id="dxManoDedoPct">0,00 %</output></div><div><span>Puntuación un solo dedo</span><output id="dxManoDedoScore">0,00</output></div></div>
+
       <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
     </fieldset>
@@ -310,7 +312,9 @@
           <option value="palmar">Agarre palmar</option>
           <option value="grip">Agarre de potencia (grip) · no puntúa</option>
         </select>
-      </label>
+      </label>      <label>Tiempo utilizando un solo dedo (con o sin agarre de potencia) <span class="mano-unidad">segundos</span><input name="ixManoDedoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% un solo dedo</span><output id="ixManoDedoPct">0,00 %</output></div><div><span>Puntuación un solo dedo</span><output id="ixManoDedoScore">0,00</output></div></div>
+
       <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
       <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
     </fieldset>
@@ -322,7 +326,8 @@
   <div class="notice"><strong>Nota del hombro:</strong> si las manos operan sobre la altura de la cabeza, se duplica el valor del hombro.</div>
   <details class="help-panel">
     <summary>ⓘ Ayuda: tipos de agarre</summary>
-    <div class="help-content">
+    <div class="help-content">      <p><strong>Uso de un solo dedo:</strong> situación en la que una acción se realiza principalmente con un único dedo, con o sin agarre de potencia de la mano, por ejemplo al accionar repetidamente un pulsador, gatillo, tecla o elemento similar. Su tiempo de exposición se valora de forma independiente y su puntuación se suma, cuando corresponda, a la del tipo de agarre.</p>
+
       <p><strong>Pinza:</strong> agarre realizado principalmente con las yemas de los dedos y el pulgar, normalmente para sujetar o manipular objetos pequeños.</p>
       <p><strong>Agarre en gancho:</strong> agarre en el que los dedos permanecen flexionados y enganchan el objeto principalmente con los dedos, mientras que el pulgar tiene poca o ninguna participación. La mano actúa como un gancho alrededor del objeto.</p>
       <p><strong>Agarre palmar:</strong> agarre realizado utilizando la palma de la mano junto con los dedos para envolver y sujetar el objeto. El objeto queda en contacto con una parte importante de la palma y los dedos.</p>
@@ -493,8 +498,8 @@
   </div>
 
   <div class="calculation-box"><strong>Mano-dedo y estereotipia</strong><div class="side-grid">
-    <fieldset><legend>Derecha (DX)</legend><label>Tipo de agarre<select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeDx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoDx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Dx" type="checkbox"> Estereotipia 3</label></fieldset>
-    <fieldset><legend>Izquierda (IX)</legend><label>Tipo de agarre<select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeIx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoIx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Ix" type="checkbox"> Estereotipia 3</label></fieldset>
+    <fieldset><legend>Derecha (DX)</legend><label>Tiempo utilizando un solo dedo (s)<input id="simFingerTimeDx" type="number" min="0" step="0.1"></label><label>Tipo de agarre<select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeDx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoDx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Dx" type="checkbox"> Estereotipia 3</label></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><label>Tiempo utilizando un solo dedo (s)<input id="simFingerTimeIx" type="number" min="0" step="0.1"></label><label>Tipo de agarre<select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label><label>Tiempo de agarre (s)<input id="simGripTimeIx" type="number" min="0" step="0.1"></label><label class="check-row"><input id="simStereoIx" type="checkbox"> Estereotipia 1,5</label><label class="check-row"><input id="simStereo3Ix" type="checkbox"> Estereotipia 3</label></fieldset>
   </div></div>
 
   <div class="calculation-box"><strong>Factores complementarios</strong><div class="simulation-complementary-stack"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
