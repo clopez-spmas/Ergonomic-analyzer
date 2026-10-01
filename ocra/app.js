@@ -1416,7 +1416,24 @@ function ocraTableToWordHtml(table){
  clone.querySelectorAll("tbody td:first-child").forEach(cell=>{
    cell.setAttribute("bgcolor","#FFFFFF");cell.style.backgroundColor="#FFFFFF";cell.style.color="#759CBF";cell.style.fontWeight="700";
  });
- clone.querySelectorAll("td.risk-fill").forEach(cell=>{cell.style.textAlign="center";cell.style.fontWeight="700"});
+ clone.querySelectorAll("td.risk-fill").forEach(cell=>{
+   let bg="#FFFFFF",fg="#000000";
+   if(cell.classList.contains("green")){bg="#00B050";fg="#FFFFFF"}
+   else if(cell.classList.contains("yellow")){bg="#FFFF00";fg="#000000"}
+   else if(cell.classList.contains("light-red")){bg="#F4CCCC";fg="#000000"}
+   else if(cell.classList.contains("red")){bg="#FF0000";fg="#FFFFFF"}
+   else if(cell.classList.contains("purple")){bg="#7030A0";fg="#FFFFFF"}
+   cell.setAttribute("bgcolor",bg);
+   cell.style.backgroundColor=bg;
+   cell.style.color=fg;
+   cell.style.fontFamily="Arial, sans-serif";
+   cell.style.fontSize="10pt";
+   cell.style.fontWeight="700";
+   cell.style.textAlign="center";
+   cell.style.setProperty("mso-pattern",bg+" auto");
+   cell.style.setProperty("mso-ansi-font-size","10pt");
+   cell.style.setProperty("mso-bidi-font-size","10pt");
+ });
  return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--@page{size:A4;margin:1.5cm;}body,table,thead,tbody,tr,th,td,p,span{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}body{margin:0;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{padding:1.5pt 4pt!important;line-height:10.5pt!important;mso-line-height-rule:exactly;}p{margin:0!important;mso-margin-top-alt:0;mso-margin-bottom-alt:0;line-height:10.5pt!important;mso-line-height-rule:exactly;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;background:#fff;margin:0;">'+clone.outerHTML+'</body></html>';
 }
 async function copyOCRAReportTable(button){
