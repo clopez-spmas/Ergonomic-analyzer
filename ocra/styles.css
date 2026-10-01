@@ -84,3 +84,22 @@
 .simulation-complementary-stack{width:100%;max-width:100%;box-sizing:border-box}
 .simulation-complementary-stack label{min-width:0;width:100%;box-sizing:border-box}
 .simulation-complementary-stack select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+
+/* Simulación · Mano-dedo y estereotipia */
+.simulation-hand-mode{margin-top:12px;margin-bottom:18px}
+.simulation-hand-mode label{max-width:420px}
+.simulation-hand-grid{align-items:stretch}
+.simulation-hand-side{display:grid!important;grid-template-rows:auto auto auto auto auto 1fr;align-content:start;gap:15px!important}
+.simulation-hand-side>label{min-width:0}
+.simulation-field-label{display:inline!important;margin:0!important;color:#2d3748!important;font-size:14px!important;font-weight:600!important;white-space:nowrap}
+.simulation-field-label .sim-hand-unit{display:inline!important;color:inherit!important;font-size:inherit!important;font-weight:inherit!important;margin:0!important}
+.simulation-hand-results,.simulation-stereo-score{margin-top:0}
+.simulation-hand-results>div,.simulation-stereo-score>div{min-height:62px;box-sizing:border-box}
+.simulation-hand-warning{margin-top:0}
+.simulation-stereo-reasons{min-height:72px;display:flex;align-items:flex-start}
+.simulation-stereo-reasons .placeholder{min-height:72px;width:100%;box-sizing:border-box;padding:18px}
+.simulation-stereo-reasons .check-row{width:100%;box-sizing:border-box;margin:0}
+@media(max-width:760px){
+ .simulation-field-label{white-space:normal}
+ .simulation-stereo-reasons{min-height:0}
+}
