@@ -18,7 +18,7 @@
 
   <div class="access-content">
     <h2>Bienvenido</h2>
-    <p class="access-intro">Antes de comenzar la evaluación, puede consultar las instrucciones de uso o acceder directamente al programa.</p>
+    <p class="access-intro">Seleccione el programa de evaluación que desea utilizar.</p>
 
     <div class="access-features">
       <article class="access-feature">
@@ -40,18 +40,7 @@
 
     <div class="access-actions">
       <button id="enterProgram" type="button" class="method-button">Acceder al programa&nbsp; →</button>
-      <button id="instructionsButton" type="button" class="method-button secondary">📖&nbsp; Instrucciones de uso</button>
-    </div>
-
-    <div id="instructionsPanel" class="instructions-panel" hidden>
-      <h3>Instrucciones de uso</h3>
-      <p>Seleccione <strong>Acceder al programa</strong> para elegir el programa independiente que desea utilizar.</p>
-      <p>Los programas OCRA y Posturas Forzadas funcionan de forma independiente directamente desde el navegador, sin necesidad de instalación.</p>
-      <p>Los estudios de cada usuario son independientes y pueden utilizarse en entornos corporativos como SharePoint.</p>
-      <button id="closeInstructions" type="button" class="secondary">Cerrar instrucciones</button>
-    </div>
-
-    <div class="access-footer">
+    </div><div class="access-footer">
       <strong>Antes de comenzar</strong><br>
       Tenga preparados los datos necesarios para la evaluación. El programa se ejecuta directamente en el navegador y no requiere instalación.
     </div>
@@ -88,9 +77,6 @@ document.addEventListener("DOMContentLoaded",function(){
   const welcomeScreen=document.getElementById("welcomeScreen");
   const methodScreen=document.getElementById("methodScreen");
   const enter=document.getElementById("enterProgram");
-  const instructions=document.getElementById("instructionsButton");
-  const panel=document.getElementById("instructionsPanel");
-  const close=document.getElementById("closeInstructions");
   const back=document.getElementById("backToWelcome");
 
   if(enter&&welcomeScreen&&methodScreen){
@@ -99,17 +85,7 @@ document.addEventListener("DOMContentLoaded",function(){
       methodScreen.hidden=false;
       window.scrollTo({top:0,behavior:"smooth"});
     });
-  }
-
-  if(instructions&&panel){
-    instructions.addEventListener("click",function(){
-      panel.hidden=!panel.hidden;
-      if(!panel.hidden) panel.scrollIntoView({behavior:"smooth",block:"center"});
-    });
-  }
-
-  if(close&&panel){
-    close.addEventListener("click",function(){panel.hidden=true;});
+  });
   }
 
   if(back&&welcomeScreen&&methodScreen){
