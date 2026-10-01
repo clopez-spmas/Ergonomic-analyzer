@@ -27,3 +27,6 @@
 .summary-risk-row.risk-yellow{background:#fff2cc}
 .summary-risk-row.risk-red{background:#ea9999}
 .summary-risk-row.risk-na{background:#edf2f7;color:#718096}
+
+#simulationPicker .et-section-title{margin-bottom:14px}
+#simulationPicker select{width:100%}
