@@ -187,3 +187,18 @@
 .classification-output.red,.ocra-report-table td.risk-fill.red{background:#FF0000!important;color:#fff!important}
 .classification-output.purple,.ocra-report-table td.risk-fill.purple{background:#7030A0!important;color:#fff!important}
 .ocra-report-table td.risk-fill{font-weight:700;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+/* Relleno completo del resultado OCRA según nivel de riesgo */
+.risk-fill-block{border-color:transparent!important}
+.risk-fill-block span,.risk-fill-block output{font-weight:800!important}
+.risk-fill-block.green{background:#00B050!important}
+.risk-fill-block.green span,.risk-fill-block.green output{color:#fff!important}
+.risk-fill-block.yellow{background:#FFFF00!important}
+.risk-fill-block.yellow span,.risk-fill-block.yellow output{color:#000!important}
+.risk-fill-block.light-red{background:#f4cccc!important}
+.risk-fill-block.light-red span,.risk-fill-block.light-red output{color:#000!important}
+.risk-fill-block.red{background:#FF0000!important}
+.risk-fill-block.red span,.risk-fill-block.red output{color:#fff!important}
+.risk-fill-block.purple{background:#7030A0!important}
+.risk-fill-block.purple span,.risk-fill-block.purple output{color:#fff!important}
+.classification-output{display:block;min-width:0;padding:0;border-radius:0;background:transparent!important;text-align:right}
