@@ -1,0 +1,25 @@
+DOCUMENTACION OCRA
+=================
+
+DOCUMENTACION VISIBLE PARA TECNICOS
+- Instrucciones_OCRA_Una_Tarea.docx
+  Documento maestro editable.
+- Instrucciones_OCRA_Una_Tarea.pdf
+  Documento publicado y enlazado desde el programa.
+
+COMO ACTUALIZAR LAS INSTRUCCIONES SIN CAMBIAR EL PROGRAMA
+1. Abra Instrucciones_OCRA_Una_Tarea.docx.
+2. Realice los cambios necesarios.
+3. Exporte/guarde como PDF.
+4. Sustituya el PDF publicado conservando exactamente este nombre:
+   Instrucciones_OCRA_Una_Tarea.pdf
+5. No es necesario modificar el codigo del programa mientras se conserve el mismo nombre y ubicacion.
+
+DOCUMENTACION INTERNA - NO VISIBLE PARA TECNICOS
+- INTERNO_Tablas_calculo_OCRA_fuentes_V3_V15_Libro.docx
+  Comparativa de tablas, reglas y fuentes utilizada para saber que referencia revisar cuando se cambie un calculo o tabla del programa.
+
+UBICACION RECOMENDADA EN EL REPOSITORIO
+ocra/documentacion/
+
+El programa debe enlazar solo al PDF de instrucciones. El documento interno no debe tener enlaces visibles en la interfaz.
