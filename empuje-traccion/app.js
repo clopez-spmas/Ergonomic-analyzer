@@ -5,7 +5,7 @@ const DIST=[["<5",null,null],[5,.27,.18],[6,.294,.196],[7,.318,.212],[8,.342,.22
 const FS=[[10,.49],[9,.488],[8,.486],[7,.484],[6,.482],[5,.48],[4,.47],[3,.4642857143],[2.9,.4585714286],[2.8,.4528571429],[2.7,.4471428571],[2.6,.4414285714],[2.5,.4357142857],[2.4,.43],[2.3,.425],[2.2,.42],[2.1,.415],[2,.41],[1.9,.405],[1.8,.4],[1.7,.395],[1.6,.39],[1.5,.385],[1.4,.38],[1.3,.375],[1.2,.37],[1.1,.365],[1,.36],[.9,.348],[.8,.336],[.7,.324],[.6,.312],[.5,.3],[.4,.2733333333],[.3,.2466666667],[.2,.22],[.1,.18],[.075,.16],[.05,.14],[.025,.11],[.02,.1],[1/60,.09],[1/70,.0866666667],[1/80,.0833333333],[1/90,.08],[.01,.0766666667],[1/110,.0733333333],[1/120,.07],[1/130,.0683333333],[1/140,.0666666667],[1/150,.065],[1/160,.0633333333],[1/170,.0616666667],[1/180,.06],[1/190,.0583333333],[.005,.0566666667],[1/210,.055],[1/220,.0533333333],[1/230,.0516666667],[1/240,.05],[.004,.0491666667],[1/260,.0483333333],[1/270,.0475],[1/280,.0466666667],[1/290,.0458333333],[1/300,.045],[1/310,.0441666667],[1/320,.0433333333],[1/330,.0425],[1/340,.0416666667],[1/350,.0408333333],[1/360,.04]];
 const FLS_PULL=[[1.4,190,300],[1.35,190,300],[1.3,190,300],[1.25,190,300],[1.2,190,300],[1.15,190,300],[1.1,310,490],[1.05,310,490],[1,310,490],[.95,310,490],[.9,330,520],[.85,330,520],[.8,330,520],[.75,330,520],[.7,330,520],[.65,330,520],[.6,330,520],[.55,330,520],[.5,330,520],[.45,330,520],[.4,330,520],[.35,330,520],[.3,330,520],[.25,330,520],[.2,330,520],[.15,330,520],[.1,330,520]];
 const $=id=>document.getElementById(id), q=n=>document.querySelector('input[name="'+n+'"]:checked');
-const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status"),simChangesBlock:$("simulationChangesBlock"),simChangesList:$("simulationChangesList"),resultsHeading:$("resultsHeading")};
+const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status"),simChangesBlock:$("simulationChangesBlock"),simChangesList:$("simulationChangesList"),resultsHeading:$("resultsHeading"),simPicker:$("simulationPicker"),simTaskSelect:$("simulationTaskSelect")};
 let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]}, editing=null, simBase=null;
 const fmt=n=>Number.isFinite(n)?n.toFixed(2).replace(".",","):"—";
 const actionText=a=>a==="push"?"Empujar":"Tirar";
@@ -139,6 +139,10 @@ function summaryPopulationCell(t,pop){
    return '<div class="summary-risk-row '+k.cls+'"><span>'+short+'</span><strong>IR '+fmt(x.ir)+'</strong><em>'+k.label+'</em></div>';
  }).join("")+'</div>';
 }
+function refreshSimulationPicker(){
+ if(!els.simTaskSelect)return;
+ els.simTaskSelect.innerHTML=study.tasks.map(t=>'<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>').join("");
+}
 function renderTasks(){
  els.rows.innerHTML="";
  study.tasks.forEach((t,i)=>{
@@ -149,6 +153,7 @@ function renderTasks(){
  els.counter.textContent="Tareas del puesto: "+study.tasks.length+" / 50";
  els.empty.classList.toggle("hidden",study.tasks.length>0);
  $("addTaskBtn").disabled=study.tasks.length>=50;
+ refreshSimulationPicker();
 }
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function saveTask(){
@@ -190,12 +195,36 @@ async function download(){
 }
 function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){alert("El archivo no contiene un estudio válido de Empuje y Tracción.")}};r.readAsText(file)}
 function newStudy(){if(study.tasks.length&&!confirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados."))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
+function intermediateWordTable(t,rw,rm){
+ const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center">'+fmt(v)+'</td>';
+ const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left">CÁLCULOS INTERMEDIOS</th><th style="border:1px solid #759CBF;padding:6px">MUJERES</th><th style="border:1px solid #759CBF;padding:6px">HOMBRES</th></tr>';
+ const row=(label,w,m)=>'<tr><td style="border:1px solid #759CBF;padding:6px"><b>'+label+'</b></td>'+cell(w)+cell(m)+'</tr>';
+ let rows='';
+ if(t.mode==="onehand"){
+   rows+=row("Límite aplicable inicial (N)",rw.fl0,rm.fl0);
+   if(t.distance!=="<5")rows+=row("Límite aplicable sostenida (N)",rw.flS,rm.flS);
+ }else{
+   rows+=row("Límite de fuerza básica FB (N)",rw.fb,rm.fb);
+   rows+=row("Multiplicador de distancia inicial md",rw.md0,rm.md0);
+   rows+=row("Multiplicador de frecuencia inicial mf",rw.mf0,rm.mf0);
+   rows+=row("Límite de fuerza básica resultante inicial FBri (N)",rw.fbr0,rm.fbr0);
+   if(t.distance!=="<5"){
+     rows+=row("Multiplicador de distancia sostenida md",rw.mdS,rm.mdS);
+     rows+=row("Multiplicador de frecuencia sostenida mf",rw.mfS,rm.mfS);
+     rows+=row("Límite de fuerza básica resultante sostenida FBrs ("+t.distance+" m) (N)",rw.fbrS,rm.fbrS);
+   }
+   rows+=row("Límite de fuerza de acción FLS (N)",rw.fls,rm.fls);
+   rows+=row("Límite de fuerza inicial FLi (N)",rw.fl0,rm.fl0);
+   if(t.distance!=="<5")rows+=row("Límite de fuerza sostenida FLs ("+t.distance+" m) (N)",rw.flS,rm.flS);
+ }
+ return '<table style="border-collapse:collapse;width:100%">'+head+rows+'</table>';
+}
 function copyTaskResults(){
  const t=formTask(),rw=calculate(t,"women"),rm=calculate(t,"men");
  const make=(title,r)=>{const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir),bg=k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td style="border:1px solid #759CBF;padding:6px">'+x.label+'</td><td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #759CBF;padding:6px;text-align:center;background:'+bg+'">&nbsp;</td></tr>'}).join("");return '<h3>'+title+'</h3><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">ÍNDICE DE RIESGO</th><th style="border:1px solid #759CBF;padding:6px">NIVEL DE RIESGO</th></tr>'+rows+'</table>'};
- const html='<div style="font-family:Arial;font-size:10pt">'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
+ const html='<div style="font-family:Arial;font-size:10pt">'+intermediateWordTable(t,rw,rm)+'<br>'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
  if(![...rowsFor(t,rw),...rowsFor(t,rm)].some(x=>Number.isFinite(x.ir))){alert("No hay resultados calculados para copiar.");return}
- const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Resultados de la tarea copiados. Puede pegarlos en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
+ const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Cálculos intermedios y resultados copiados. Puede pegarlos en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
 }
 function copySummary(){
  syncStudyFromHeader();
@@ -231,7 +260,11 @@ function bind(){
  document.querySelectorAll('input[name="mode"],input[name="has90"],input[name="action"]').forEach(x=>x.addEventListener("change",updateVisibility));
  [els.height,els.distance,els.fi,els.fs,els.people].forEach(x=>x.addEventListener("change",updateVisibility));
  document.querySelectorAll("#initial0Measures input,#initial90Measures input,#sustainedMeasures input").forEach(x=>x.addEventListener("input",renderResults));
- $("addTaskBtn").onclick=()=>openEditor();$("closeEditorBtn").onclick=closeEditor;$("cancelTaskBtn").onclick=closeEditor;$("saveTaskBtn").onclick=saveTask;$("copyTaskBtn").onclick=copyTaskResults;$("saveStudyBtn").onclick=download;$("newStudyBtn").onclick=newStudy;$("copySummaryBtn").onclick=copySummary;
+ $("addTaskBtn").onclick=()=>openEditor();
+ $("simulationBtn").onclick=()=>{if(!study.tasks.length){alert("Añada al menos una tarea antes de iniciar una simulación.");return}refreshSimulationPicker();els.simPicker.classList.remove("hidden");els.simPicker.scrollIntoView({behavior:"smooth"});};
+ $("closeSimulationPickerBtn").onclick=()=>els.simPicker.classList.add("hidden");
+ $("openSelectedSimulationBtn").onclick=()=>{const t=study.tasks.find(x=>x.id===els.simTaskSelect.value);if(t){els.simPicker.classList.add("hidden");openEditor(t,true)}};
+ $("closeEditorBtn").onclick=closeEditor;$("cancelTaskBtn").onclick=closeEditor;$("saveTaskBtn").onclick=saveTask;$("copyTaskBtn").onclick=copyTaskResults;$("saveStudyBtn").onclick=download;$("newStudyBtn").onclick=newStudy;$("copySummaryBtn").onclick=copySummary;
  $("loadStudyInput").onchange=e=>{if(e.target.files[0])load(e.target.files[0]);e.target.value=""};
  els.rows.onclick=e=>{const b=e.target.closest("button");if(!b)return;const id=b.dataset.edit||b.dataset.sim||b.dataset.dup||b.dataset.del,t=study.tasks.find(x=>x.id===id);if(!t)return;if(b.dataset.edit)openEditor(t);else if(b.dataset.sim)openEditor(t,true);else if(b.dataset.dup){if(study.tasks.length>=50)return;const c=JSON.parse(JSON.stringify(t));c.id=crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random();c.name=t.name+" (copia)";study.tasks.push(c);renderTasks()}else if(b.dataset.del&&confirm("¿Eliminar la tarea '"+t.name+"'?")){study.tasks=study.tasks.filter(x=>x.id!==id);renderTasks()}};
 }
