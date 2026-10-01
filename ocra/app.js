@@ -793,7 +793,7 @@ function postureScores(){
 function restoreKinoveaState(saved){
  kinoveaState={...kinoveaState,...saved,videoUrl:""};
  if(saved.range)kinoveaState.range={...{mode:"all",start:0,end:0,cycles:1},...saved.range};
- if(saved.dataSets)kinoveaState.dataSets=saved.dataSets;
+ if(saved.dataSets)kinoveaState.dataSets=saved.dataSets.map(kNormaliseDataSet);
  if(saved.shoulder)kinoveaState.shoulder=saved.shoulder;if(saved.elbow)kinoveaState.elbow=saved.elbow;if(saved.wrist)kinoveaState.wrist=saved.wrist;
  if(saved.postureManual)kinoveaState.postureManual={...ensureManualPosture(),...saved.postureManual};
  ensureManualPosture();
@@ -803,26 +803,22 @@ function restoreKinoveaState(saved){
 
 function renderKinoveaFileList(){
  const el=document.getElementById("kinoveaFileList");if(!el)return;
- const files=kinoveaState.dataSets||[];
+ const files=(kinoveaState.dataSets||[]).map(kNormaliseDataSet);
+ const tasks=[...new Set(files.map(x=>x.task.trim()).filter(Boolean))];
  el.innerHTML=files.length
-  ? "<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li><span>"+(i+1)+". "+escK(x.fileName)+"</span> <button type=\"button\" class=\"toolbar-btn\" data-remove-kinovea=\""+i+"\">Eliminar</button></li>").join("")+"</ul>"
+  ? "<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li><span>"+(i+1)+". "+escK(x.fileName)+" · "+escK(kViewLabel(x.view))+(x.task?" · "+escK(x.task):"")+"</span> <button type=\"button\" class=\"toolbar-btn\" data-remove-kinovea=\""+i+"\">Eliminar</button></li>").join("")+"</ul>"+(tasks.length>1?'<div class="notice"><strong>Revisión:</strong> se han indicado varias tareas/fases. Confirme que las muestras que se van a integrar corresponden a la misma tarea evaluada.</div>':"")
   : "No hay JSON seleccionados.";
  el.querySelectorAll("[data-remove-kinovea]").forEach(btn=>btn.addEventListener("click",()=>{
-   const index=Number(btn.dataset.removeKinovea);
-   kinoveaState.dataSets.splice(index,1);
-   kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
-   kinoveaState.data=kinoveaState.dataSets[0]?.data||null;
-   if(!kinoveaState.data){
-     kinoveaState.range={mode:"all",start:0,end:0,cycles:1};
-     kinoveaState.mapping={};
-   }else if(kinoveaState.range.end>kinoveaState.data.duration){
-     kinoveaState.range.end=kinoveaState.data.duration;
-   }
-   dirty=true;
-   renderKinovea();
-   renderKRange();
-   renderKinoveaFileList();
-   kSetStatus("JSON eliminado. El estudio continúa con los archivos restantes.");
+  const index=Number(btn.dataset.removeKinovea);
+  kinoveaState.dataSets.splice(index,1);
+  kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
+  kinoveaState.data=kinoveaState.dataSets[0]?.data||null;
+  dirty=true;
+  ensurePostureSourcesAvailable();
+  renderKinovea();
+  renderKinoveaFileList();
+  safeCalculate();
+  kSetStatus("JSON eliminado. El estudio continúa con los archivos restantes.");
  }));
 }
 async function sha256Hex(text){
@@ -837,7 +833,7 @@ async function loadKinoveaJson(file){
  kinoveaState.dataSets=kinoveaState.dataSets||[];
  const hash=await sha256Hex(txt);
  if(kinoveaState.dataSets.some(x=>x.sha256===hash))return;
- const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{}};
+ const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{},view:"unspecified",task:"",range:{mode:"all",start:0,end:data.duration,cycles:1}};
  kinoveaState.dataSets.push(ds);
  kinoveaState.data=kinoveaState.data||data;
  kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
