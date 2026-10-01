@@ -238,10 +238,10 @@ function intermediateWordTable(t,rw,rm){
 }
 function copyTaskResults(){
  const t=formTask(),rw=calculate(t,"women"),rm=calculate(t,"men");
- const make=(title,r)=>{const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir),bg=k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td style="border:1px solid #759CBF;padding:6px">'+x.label+'</td><td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #759CBF;padding:6px;text-align:center;background:'+bg+'">&nbsp;</td></tr>'}).join("");return '<h3>'+title+'</h3><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">ÍNDICE DE RIESGO</th><th style="border:1px solid #759CBF;padding:6px">NIVEL DE RIESGO</th></tr>'+rows+'</table>'};
+ const make=(title,r)=>{const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir),bg=k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td style="border:1px solid #759CBF;padding:6px">'+x.label+'</td><td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #759CBF;padding:6px;text-align:center;background:'+bg+'"><b>'+k.label+'</b></td></tr>'}).join("");return '<h3>'+title+'</h3><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">ÍNDICE DE RIESGO</th><th style="border:1px solid #759CBF;padding:6px">NIVEL DE RIESGO</th></tr>'+rows+'</table>'};
  const html='<div style="font-family:Arial;font-size:10pt">'+intermediateWordTable(t,rw,rm)+'<br>'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
  if(![...rowsFor(t,rw),...rowsFor(t,rm)].some(x=>Number.isFinite(x.ir))){appNotice("No hay resultados calculados para copiar.");return}
- const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Cálculos intermedios y resultados copiados. Puede pegarlos en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
+ const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Cálculos intermedios y resultados copiados. Puede pegarlos en Word.")).catch(()=>appNotice("No se pudo copiar automáticamente."));
 }
 function copySummary(){
  syncStudyFromHeader();
@@ -270,7 +270,7 @@ function copySummary(){
  const html='<div style="font-family:Arial;font-size:10pt"><table style="border-collapse:collapse;width:100%">'+
  '<tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">IR MUJERES</th><th style="border:1px solid #759CBF;padding:6px">NIVEL</th><th style="border:1px solid #759CBF;padding:6px">IR HOMBRES</th><th style="border:1px solid #759CBF;padding:6px">NIVEL</th></tr>'+rows+'</table></div>';
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});
- navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
+ navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>appNotice("No se pudo copiar automáticamente."));
 }
 function bind(){
  ["company","area","job","studyDate","studyNotes"].forEach(id=>$(id).addEventListener("input",syncStudyFromHeader));
