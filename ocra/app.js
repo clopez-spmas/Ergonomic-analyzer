@@ -426,6 +426,20 @@ function kSetStatus(msg){status.textContent=msg}
 function kViewLabel(view){
  return ({unspecified:"Sin definir",lateral_right:"Lateral derecho",lateral_left:"Lateral izquierdo",frontal:"Frontal",threequarter_right:"3/4 derecho",threequarter_left:"3/4 izquierdo"})[view]||"Sin definir";
 }
+function kViewMovementLabel(kind,view){
+ if(view==="frontal"){
+  if(kind==="shoulder")return "abducción de hombro";
+  if(kind==="wrist")return "desviación radial/ulnar de muñeca";
+  return "no automático";
+ }
+ if(view==="lateral_right"||view==="lateral_left"){
+  if(kind==="shoulder")return "flexión/extensión de hombro";
+  if(kind==="elbow")return "flexión/extensión de codo";
+  if(kind==="wrist")return "flexión/extensión de muñeca";
+ }
+ if(view==="threequarter_right"||view==="threequarter_left")return "muestra complementaria";
+ return "criterio postural";
+}
 function kDataSetRangeLabel(ds){
  const r=kDataSetRange(ds);
  if(r.mode==="interval")return fmt(r.start,2)+"–"+fmt(r.end,2)+" s · "+fmt(r.duration,2)+" s";
@@ -461,7 +475,7 @@ function renderKinovea(){
     '<label>Periodo de análisis<select data-krange-mode="'+di+'"><option value="all" '+(ds.range.mode==="all"?"selected":"")+'>Todo el vídeo</option><option value="interval" '+(interval?"selected":"")+'>Desde un tiempo hasta otro</option><option value="cycles" '+(cycles?"selected":"")+'>Número de ciclos visibles</option></select></label>'+
     (interval?'<label>Tiempo inicial (s)<input type="number" min="0" step="0.01" data-krange-start="'+di+'" value="'+range.start+'"></label><label>Tiempo final (s)<input type="number" min="0" step="0.01" data-krange-end="'+di+'" value="'+range.end+'"></label>':"")+
     (cycles?'<label>Número de ciclos visibles<input type="number" min="1" step="1" data-krange-cycles="'+di+'" value="'+range.cycles+'"></label>':"")+
-   '</div><div class="notice">'+escK(kDataSetRangeLabel(ds))+'</div>'+
+   '</div><div class="notice">'+escK(kDataSetRangeLabel(ds))+' · '+escK(ds.view==="unspecified"?"Seleccione la vista para identificar qué movimientos puede aportar.":"Aporta: "+[kViewMovementLabel("shoulder",ds.view),kViewMovementLabel("elbow",ds.view),kViewMovementLabel("wrist",ds.view)].filter((x,i,a)=>x!=="no automático"&&a.indexOf(x)===i).join("; "))+'</div>'+
    '<p>Asigne los marcadores de este archivo a los puntos anatómicos.</p><div class="form-grid">'+KPOINTS.map(([key,label])=>'<label>'+label+'<select data-kset="'+di+'" data-kmap="'+key+'"><option value="">No asignado</option>'+opts+'</select></label>').join("")+'</div></div>';
  }).join("");
  m.querySelectorAll("[data-kmap]").forEach(sel=>{
@@ -580,19 +594,31 @@ function kDataSetExposure(ds,kind,side){
   }
   if(!Number.isFinite(va)||!Number.isFinite(vb))continue;
   if(base===null)base=va;
-  const v=(va+vb)/2-base;
+  const v=(va+vb)/2-base,view=ds.view||"unspecified";
   if(kind==="shoulder"){
-   if(v>=80||v<-20)total+=dt;
-   if(v>=80)maxPositive=Math.max(maxPositive,v);
-   if(v<-20)minNegative=Math.min(minNegative,v);
+   if(view==="frontal"){
+    if(Math.abs(v)>=80)total+=dt;
+    if(Math.abs(v)>=80)maxAbs=Math.max(maxAbs,Math.abs(v));
+   }else{
+    if(v>=80||v<-20)total+=dt;
+    if(v>=80)maxPositive=Math.max(maxPositive,v);
+    if(v<-20)minNegative=Math.min(minNegative,v);
+   }
+  }else if(kind==="elbow"){
+   if(Math.abs(v)>60)total+=dt;
+   if(Math.abs(v)>60)maxAbs=Math.max(maxAbs,Math.abs(v));
   }else{
-   const threshold=kind==="elbow"?60:60;
-   if(Math.abs(v)>threshold)total+=dt;
-   if(Math.abs(v)>(kind==="elbow"?60:45))maxAbs=Math.max(maxAbs,Math.abs(v));
+   if(view==="frontal"){
+    if(v>15||v<-20)total+=dt;
+    if(v>15||v<-20)maxAbs=Math.max(maxAbs,Math.abs(v));
+   }else{
+    if(Math.abs(v)>60)total+=dt;
+    if(Math.abs(v)>45)maxAbs=Math.max(maxAbs,Math.abs(v));
+   }
   }
  }
  const pct=Math.max(0,Math.min(100,100*total/r.duration));
- const angle=kind==="shoulder"?(maxPositive>0?maxPositive:(minNegative<0?minNegative:0)):maxAbs;
+ const angle=kind==="shoulder"?(ds.view==="frontal"?maxAbs:(maxPositive>0?maxPositive:(minNegative<0?minNegative:0))):maxAbs;
  return {ds,seconds:total,pct,duration:r.duration,angle};
 }
 function kForcedExposure(kind,side){
@@ -628,7 +654,7 @@ function kAnalysisRows(kind){
   const exposure=kForcedExposure(kind,side);if(!exposure.ds||exposure.duration<=0)return;
   const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
   const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
-  const origin="KINOVEA · "+exposure.ds.fileName+" · "+kViewLabel(exposure.ds.view);
+  const origin="KINOVEA · "+exposure.ds.fileName+" · "+kViewLabel(exposure.ds.view)+" · "+kViewMovementLabel(kind,exposure.ds.view);
   rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>'+escK(origin)+'</td><td>'+criterion+'</td><td>'+postureTimeLabel(exposure.seconds)+'</td><td>'+fmt(exposure.pct,2)+' %</td><td>'+fmt(postureScore(table,exposure.pct),2)+'</td></tr>');
  });
  return '<div class="notice"><strong>Criterio:</strong> cada vídeo se calcula de forma independiente. Si existen varias muestras Kinovea válidas para la misma articulación y lado, se utiliza el porcentaje de exposición más desfavorable; los tiempos de vídeos distintos no se suman.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
