@@ -1092,7 +1092,15 @@ function simRecoveryRenderInputs(){
  tbody.querySelectorAll("[data-sim-recovery-remove]").forEach(x=>x.onclick=()=>{simRecoveryState.pauses.splice(Number(x.dataset.simRecoveryRemove),1);dirty=true;simRecoveryRenderInputs();simRecoveryCalculate();});
 }
 function simRecoveryApplyStoredResult(){
- const result=simRecoveryState.lastResult;
+ const domStart=document.getElementById("simRecoveryStart")?.value||simRecoveryState.start||"";
+ const domEnd=document.getElementById("simRecoveryEnd")?.value||simRecoveryState.end||"";
+ simRecoveryState.start=domStart;
+ simRecoveryState.end=domEnd;
+ let result=simRecoveryState.lastResult;
+ if(!result?.valid&&domStart&&domEnd){
+   result=calculateRecoverySchedule({...simRecoveryState,start:domStart,end:domEnd,minPause:8,pauses:(simRecoveryState.pauses||[]).map(p=>({...p}))});
+   simRecoveryState.lastResult=result;
+ }
  const tntr=Number.isFinite(simRecoveryState.initialTNTR)?simRecoveryState.initialTNTR:simActualTNTR();
  const shift=Number.isFinite(simRecoveryState.initialShiftDuration)?simRecoveryState.initialShiftDuration:(n("turnoEfectivoManual")||n("turnoOficial"));
  const nonRep=Number.isFinite(simRecoveryState.initialNonRep)?simRecoveryState.initialNonRep:n("noRepetitivo");
@@ -1108,7 +1116,15 @@ function simRecoveryApplyStoredResult(){
  }
  simSetText("simDurationScheduleFactor",fmt(lookup(duration,tntr),3));
  const detail=document.getElementById("simRecoveryScheduleDetail");
- if(detail)detail.innerHTML=result?.valid?'<div class="notice"><strong>Datos iniciales del estudio.</strong> Las horas sin recuperación adecuada, el factor de recuperación y el TNTR se han copiado del cálculo original. Al modificar el horario o las pausas se recalculará el escenario.</div>':'<div class="placeholder">'+escK(result?.reason||"No hay un cálculo de recuperación válido en el estudio original.")+'</div>';
+ if(detail){
+   if(result?.valid){
+     const meal=result.meal?"Comida válida: "+recoveryMinutesToTime(recoveryTimeToMinutes(domStart)+result.meal.start)+"–"+recoveryMinutesToTime(recoveryTimeToMinutes(domStart)+result.meal.end)+" ("+fmt(result.meal.duration,0)+" min).":"No hay comida ≥30 min; cualquier comida corta se trata como pausa.";
+     detail.innerHTML='<div class="notice"><strong>Datos iniciales del estudio.</strong> '+meal+' Las horas sin recuperación adecuada y los factores corresponden al escenario cargado. Al modificar horario o pausas se recalcularán automáticamente.</div>';
+   }else{
+     detail.innerHTML='<div class="placeholder">'+escK(result?.reason||"No hay un cálculo de recuperación válido en el estudio original.")+'</div>';
+   }
+ }
+ simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
  simCalculate();
 }
 function simRecoveryCalculate(){
@@ -1144,14 +1160,16 @@ function simRecoveryCalculate(){
  simCalculate();
 }
 function simRecoveryInitFromStudy(){
- const sourceResult=recoveryState.lastResult?.valid
-   ?simClone(recoveryState.lastResult)
-   :calculateRecoverySchedule({...recoveryState,start:recoveryState.start||form.elements.horaInicio?.value||"",end:recoveryState.end||form.elements.horaFin?.value||"",minPause:8,pauses:(recoveryState.pauses||[]).map(p=>({...p}))});
+ const sourceStart=recoveryState.start||form.elements.horaInicio?.value||"";
+ const sourceEnd=recoveryState.end||form.elements.horaFin?.value||"";
+ const sourcePauses=(recoveryState.pauses||[]).map(p=>({...p}));
+ const calculatedSource=sourceStart&&sourceEnd?calculateRecoverySchedule({...recoveryState,start:sourceStart,end:sourceEnd,minPause:8,pauses:sourcePauses}):null;
+ const sourceResult=recoveryState.lastResult?.valid?simClone(recoveryState.lastResult):(calculatedSource||recoveryState.lastResult||null);
  simRecoveryState={
-   start:recoveryState.start||form.elements.horaInicio?.value||"",
-   end:recoveryState.end||form.elements.horaFin?.value||"",
+   start:sourceStart,
+   end:sourceEnd,
    minPause:8,
-   pauses:(recoveryState.pauses||[]).map(p=>({...p})),
+   pauses:sourcePauses,
    mealId:recoveryState.mealId??null,
    lastResult:sourceResult,
    inherited:true,
