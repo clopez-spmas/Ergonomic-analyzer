@@ -269,7 +269,7 @@ function freq(actionsPerMin,interruptions){
 function forceScore(seconds34,seconds57,seconds810,cycle){if(cycle<=0)return 0;return lookup(force34,seconds34/cycle)+lookup(force57,seconds57/cycle)+lookup(force810,seconds810/cycle)}
 function forceInputSeconds(name,cycle){const value=n(name);if(cycle<=0)return 0;const mode=document.getElementById("fuerzaModo")?.value||"segundos";return mode==="porcentaje"?cycle*value/100:value}
 function updateForceModeUI(){const mode=document.getElementById("fuerzaModo")?.value||"segundos";const unidad=mode==="porcentaje"?"% del tiempo de ciclo":"segundos/ciclo";document.querySelectorAll(".fuerza-unidad").forEach(el=>{el.textContent=unidad;el.style.display="inline";});document.querySelectorAll('input[name^="dxFuerza"],input[name^="ixFuerza"]').forEach(el=>{el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;});}
-function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked||form.elements[prefix+"StereoStatic"]?.checked)?1.5:0}
+function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked)?1.5:0}
 function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "Riesgo aceptable";if(x<=11)return "Riesgo muy leve";if(x<=14)return "Riesgo medio leve";if(x<=22.5)return "Riesgo medio";return "Riesgo elevado"}
 function classificationClass(x){if(!Number.isFinite(x))return "";if(x<7.5)return "green";if(x<=11)return "yellow";if(x<=14)return "light-red";if(x<=22.5)return "red";return "purple"}
 function setRiskBlock(id,value){
@@ -935,11 +935,11 @@ function simSet(id,value){
 }
 function simText(id){return document.getElementById(id)?.textContent||"—";}
 const simStereoDefs=[
- {key:"Half",form:"StereoHalf",score:1.5,label:"Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo."},
- {key:"Cycle815",form:"StereoCycle815",score:1.5,label:"Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior."},
- {key:"Static",form:"StereoStatic",score:1.5,label:"Postura estática de la extremidad superior durante más del 50 % del ciclo."},
- {key:"Almost",form:"StereoAlmost",score:3,label:"Movimiento idéntico/repetitivo prácticamente durante todo el tiempo."},
- {key:"Cycle8",form:"StereoCycle8",score:3,label:"Ciclo inferior a 8 s en el que predominan las acciones técnicas de la extremidad superior."}
+ {key:"CycleOver15",form:"StereoCycleOver15",score:0,label:"Tiempo de ciclo superior a 15 segundos."},
+ {key:"Cycle815",form:"StereoCycle815",score:1.5,label:"Tiempo de ciclo entre 9 y 15 segundos."},
+ {key:"Cycle8",form:"StereoCycle8",score:3,label:"Tiempo de ciclo igual o inferior a 8 segundos."},
+ {key:"Half",form:"StereoHalf",score:1.5,label:"Repetición de las mismas acciones técnicas la mayoría de las veces (más de la mitad)."},
+ {key:"Almost",form:"StereoAlmost",score:3,label:"Repetición de las mismas acciones técnicas casi todo el tiempo."}
 ];
 function simStereoReasonIds(){return simStereoDefs.flatMap(d=>["simStereo"+d.key+"Dx","simStereo"+d.key+"Ix"])}
 function simRenderStereoReasons(side,prefix){
