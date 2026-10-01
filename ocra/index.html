@@ -14,7 +14,6 @@
 .mode-card h2{margin:0;color:#005a9c;font-size:20px}
 .mode-card p{margin:0;color:#526477;line-height:1.5}
 .mode-card .mode-action{margin-top:auto;font-weight:700;color:#005a9c}
-.mode-note{margin-top:22px;padding:16px 18px;border-radius:10px;background:#f8fafc;border:1px solid #d8e0e8;color:#526477}
 @media(max-width:760px){.mode-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -23,38 +22,35 @@
 <header class="ocra-header">
   <div class="brand">OCRA ANALYZER</div>
   <h1>Seleccione el tipo de evaluación OCRA</h1>
-  <p>Las cuatro modalidades comparten un único motor OCRA base para las tablas y los cálculos de cada tarea.</p>
+  <p>Seleccione la modalidad de evaluación que corresponda a la organización del trabajo analizada.</p>
 </header>
 
 <section class="mode-grid" aria-label="Modalidades OCRA">
   <a class="mode-card" href="una-tarea/">
     <h2>OCRA · Una tarea</h2>
-    <p>Evaluación OCRA de una única tarea repetitiva. Corresponde al programa validado actualmente.</p>
+    <p>Evaluación OCRA de una única tarea repetitiva durante el turno de trabajo.</p>
     <span class="mode-action">Abrir evaluación →</span>
   </a>
 
   <a class="mode-card" href="rotacion-menor-90/">
     <h2>OCRA · Rotación &lt; 90 min</h2>
-    <p>Evaluación de cada tarea mediante OCRA base y cálculo final específico para rotaciones inferiores a 90 minutos.</p>
+    <p>Evaluación de las tareas implicadas y cálculo específico para rotaciones inferiores a 90 minutos.</p>
     <span class="mode-action">Abrir modalidad →</span>
   </a>
 
   <a class="mode-card" href="rotacion-mayor-90/">
     <h2>OCRA · Rotación &gt; 90 min</h2>
-    <p>Evaluación de cada tarea mediante OCRA base y cálculo final específico para rotaciones superiores a 90 minutos.</p>
+    <p>Evaluación de las tareas implicadas y cálculo específico para rotaciones superiores a 90 minutos.</p>
     <span class="mode-action">Abrir modalidad →</span>
   </a>
 
   <a class="mode-card" href="multigei/">
     <h2>OCRA · MultiGEI</h2>
-    <p>Modalidad para escenarios MultiGEI. Utilizará los resultados OCRA base de las tareas y su cálculo agregado específico.</p>
+    <p>Evaluación MultiGEI para escenarios con exposición a distintas tareas y condiciones de trabajo.</p>
     <span class="mode-action">Abrir modalidad →</span>
   </a>
 </section>
 
-<div class="mode-note">
-  <strong>Arquitectura:</strong> las tablas y fórmulas OCRA base permanecen centralizadas en <code>ocra/app.js</code>. Las modalidades de rotación y MultiGEI añadirán únicamente su lógica de combinación específica.
-</div>
 
 <p style="margin-top:20px"><a href="../">← Volver al portal de programas</a></p>
 </main>
