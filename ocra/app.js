@@ -264,7 +264,13 @@ function forceScore(seconds34,seconds57,seconds810,cycle){if(cycle<=0)return 0;r
 function forceInputSeconds(name,cycle){const value=n(name);if(cycle<=0)return 0;const mode=document.getElementById("fuerzaModo")?.value||"segundos";return mode==="porcentaje"?cycle*value/100:value}
 function updateForceModeUI(){const mode=document.getElementById("fuerzaModo")?.value||"segundos";const unidad=mode==="porcentaje"?"% del tiempo de ciclo":"segundos/ciclo";document.querySelectorAll(".fuerza-unidad").forEach(el=>{el.textContent=unidad;el.style.display="inline";});document.querySelectorAll('input[name^="dxFuerza"],input[name^="ixFuerza"]').forEach(el=>{el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;});}
 function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked||form.elements[prefix+"StereoStatic"]?.checked)?1.5:0}
-function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "VERDE · Riesgo aceptable";if(x<=11)return "AMARILLO · Riesgo muy leve";if(x<=14)return "ROJO SUAVE · Riesgo medio leve";if(x<=22.5)return "ROJO · Riesgo medio";return "VIOLETA · Riesgo elevado"}
+function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "Riesgo aceptable";if(x<=11)return "Riesgo muy leve";if(x<=14)return "Riesgo medio leve";if(x<=22.5)return "Riesgo medio";return "Riesgo elevado"}
+function classificationClass(x){if(!Number.isFinite(x))return "";if(x<7.5)return "green";if(x<=11)return "yellow";if(x<=14)return "light-red";if(x<=22.5)return "red";return "purple"}
+function setClassificationOutput(id,value){
+ const el=document.getElementById(id);if(!el)return;
+ el.textContent=classification(value);
+ el.className="classification-output"+(classificationClass(value)?" "+classificationClass(value):"");
+}
 
 let kinoveaState={jsonFiles:[],dataSets:[],data:null,mapping:{},range:{mode:"all",start:0,end:0,cycles:1},
  postureManual:{
@@ -787,8 +793,8 @@ function calculate(){
  document.getElementById("finalHandDx")&&(document.getElementById("finalHandDx").textContent=fmt(ps.right.hand,2));document.getElementById("finalHandIx")&&(document.getElementById("finalHandIx").textContent=fmt(ps.left.hand,2));document.getElementById("finalHandGripDx")&&(document.getElementById("finalHandGripDx").textContent=fmt(ps.right.handGrip,2));document.getElementById("finalHandGripIx")&&(document.getElementById("finalHandGripIx").textContent=fmt(ps.left.handGrip,2));document.getElementById("finalHandFingerDx")&&(document.getElementById("finalHandFingerDx").textContent=fmt(ps.right.handFinger,2));document.getElementById("finalHandFingerIx")&&(document.getElementById("finalHandFingerIx").textContent=fmt(ps.left.handFinger,2));
  const dxBase=dxF+dxForce+dxPosture+comp,ixBase=ixF+ixForce+ixPosture+comp,dxFinal=dxBase*(rm??1)*md,ixFinal=ixBase*(rm??1)*md;
  const set=(id,v,d=2)=>document.getElementById(id).textContent=Number.isFinite(v)?fmt(v,d):"—";
- set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
- set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
+ set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);setClassificationOutput("clasificacionDx",dxFinal);
+ set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);setClassificationOutput("clasificacionIx",ixFinal);
 }
 function safeCalculate(){try{calculate();renderHandPosture();renderWordTables();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
 function markDirty(){dirty=true;status.textContent="";safeCalculate()}
@@ -1034,7 +1040,7 @@ function simCalculate(){
    ?Math.min(9,Math.max(0,simRecoveryState.lastResult.hours))
    :simActualRecoveryHours(),rm=recoveryMultiplier(recoveryHours),md=lookup(duration,tntr);
  const dxBase=dxF+dxForce+dxPost.total+comp,ixBase=ixF+ixForce+ixPost.total+comp,dxFinal=dxBase*rm*md,ixFinal=ixBase*rm*md;
- simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));simSetText("simClassificationDx",classification(dxFinal));simSetText("simClassificationIx",classification(ixFinal));
+ simSetText("simResultDx",fmt(dxFinal,2));simSetText("simResultIx",fmt(ixFinal,2));setClassificationOutput("simClassificationDx",dxFinal);setClassificationOutput("simClassificationIx",ixFinal);
  simSetText("simFreqDx",fmt(dxF,2));simSetText("simFreqIx",fmt(ixF,2));
  simSetText("simPostureDx",fmt(dxPost.total,2));simSetText("simPostureIx",fmt(ixPost.total,2));
  simSetText("simGripScoreDx",fmt(dxPost.handGrip,2));simSetText("simGripScoreIx",fmt(ixPost.handGrip,2));simSetText("simFingerScoreDx",fmt(dxPost.handFinger,2));simSetText("simFingerScoreIx",fmt(ixPost.handFinger,2));simSetText("simHandScoreDx",fmt(dxPost.hand,2));simSetText("simHandScoreIx",fmt(ixPost.hand,2));simSetText("simStereoScoreDx",fmt(dxPost.stereo,2));simSetText("simStereoScoreIx",fmt(ixPost.stereo,2));
@@ -1284,7 +1290,7 @@ function ocraReportEsc(value){
  return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 function ocraReportRows(rows){
- return rows.map(r=>'<tr class="'+(r[3]||"")+'><td>'+ocraReportEsc(r[0])+'</td><td>'+ocraReportEsc(r[1])+'</td><td>'+ocraReportEsc(r[2])+'</td></tr>').join("");
+ return rows.map(r=>'<tr class="'+(r[3]||"")+'"><td>'+ocraReportEsc(r[0])+'</td><td class="'+(r[4]||"")+'">'+ocraReportEsc(r[1])+'</td><td class="'+(r[5]||"")+'">'+ocraReportEsc(r[2])+'</td></tr>').join("");
 }
 function ocraReportTable(title,rows){
  return '<div class="report-table-block"><h3>'+ocraReportEsc(title)+'</h3><table class="ocra-report-table"><thead><tr><th>Factor / resultado</th><th>Derecha (DX)</th><th>Izquierda (IX)</th></tr></thead><tbody>'+ocraReportRows(rows)+'</tbody></table><div class="report-table-actions"><button type="button" class="toolbar-btn copy-report-table">Copiar tabla para Word</button></div></div>';
@@ -1312,7 +1318,7 @@ function ocraStudyReportRows(){
   ["Factor de recuperación",ocraReportText("finalRecDx"),ocraReportText("finalRecIx")],
   ["Factor de duración",ocraReportText("finalDurDx"),ocraReportText("finalDurIx")],
   ["Índice OCRA",ocraReportText("resultadoFinalDx"),ocraReportText("resultadoFinalIx"),"report-total-row"],
-  ["Clasificación",ocraReportText("clasificacionDx"),ocraReportText("clasificacionIx"),"report-total-row"]
+  ["Clasificación",ocraReportText("clasificacionDx"),ocraReportText("clasificacionIx"),"report-total-row","risk-fill "+classificationClass(ocraReportNumber("resultadoFinalDx")),"risk-fill "+classificationClass(ocraReportNumber("resultadoFinalIx"))]
  ];
 }
 function ocraSimulationReportRows(){
@@ -1341,7 +1347,7 @@ function ocraSimulationReportRows(){
   ["Factor de recuperación",ocraReportText("simRecoveryFactor"),ocraReportText("simRecoveryFactor")],
   ["Factor de duración",ocraReportText("simDurationFactor"),ocraReportText("simDurationFactor")],
   ["Índice OCRA",ocraReportText("simResultDx"),ocraReportText("simResultIx"),"report-total-row"],
-  ["Clasificación",ocraReportText("simClassificationDx"),ocraReportText("simClassificationIx"),"report-total-row"]
+  ["Clasificación",ocraReportText("simClassificationDx"),ocraReportText("simClassificationIx"),"report-total-row","risk-fill "+classificationClass(ocraReportNumber("simResultDx")),"risk-fill "+classificationClass(ocraReportNumber("simResultIx"))]
  ];
 }
 function ocraInlineComputedStyle(el){
