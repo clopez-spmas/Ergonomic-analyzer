@@ -9,7 +9,7 @@ const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),
 let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]}, editing=null, simBase=null;
 const fmt=n=>Number.isFinite(n)?n.toFixed(2).replace(".",","):"—";
 const actionText=a=>a==="push"?"Empujar":"Tirar";
-const risk=ir=>!Number.isFinite(ir)?{label:"No calculable",cls:"risk-na"}:ir<.85?{label:"Zona verde",cls:"risk-green"}:ir<=1?{label:"Zona amarilla",cls:"risk-yellow"}:{label:"Zona roja",cls:"risk-red"};
+const risk=ir=>!Number.isFinite(ir)?{label:"No calculable",cls:"risk-na"}:ir<.85?{label:"Aceptable",cls:"risk-green"}:ir<=1?{label:"Leve",cls:"risk-yellow"}:{label:"Presente",cls:"risk-red"};
 const values=id=>[...document.querySelectorAll("#"+id+" input")].map(x=>Number(x.value)).filter(x=>Number.isFinite(x)&&x.value!=="");
 const max=a=>a.length?Math.max(...a):null, avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 function setStatus(t){els.status.textContent=t||"";if(t)setTimeout(()=>{if(els.status.textContent===t)els.status.textContent=""},4500)}
