@@ -1379,7 +1379,7 @@ function ocraTableToWordHtml(table){
  clone.setAttribute("width","100%");
  clone.style.cssText="width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10pt;color:#000;background:#fff;";
  clone.querySelectorAll("tr").forEach(row=>{
-   row.style.cssText="page-break-inside:avoid;mso-yfti-irow:0;";
+   row.style.cssText="page-break-inside:avoid;mso-yfti-irow:0;font-family:Arial,sans-serif;font-size:10pt;";
  });
  clone.querySelectorAll("th,td").forEach(cell=>{
    const isHeader=cell.tagName==="TH";
@@ -1395,7 +1395,9 @@ function ocraTableToWordHtml(table){
    cell.style.cssText=[
      "font-family:Arial,sans-serif",
      "font-size:10pt",
-     "line-height:1.15",
+     "mso-ansi-font-size:10pt",
+     "mso-bidi-font-size:10pt",
+     "line-height:11.5pt",
      "color:"+color,
      "background-color:"+bg,
      "mso-pattern:"+bg+" auto",
@@ -1409,7 +1411,7 @@ function ocraTableToWordHtml(table){
  clone.querySelectorAll("thead th").forEach(cell=>{cell.setAttribute("bgcolor","#FFFFFF");cell.style.backgroundColor="#FFFFFF";cell.style.color="#759CBF";cell.style.fontWeight="700"});
  clone.querySelectorAll("tbody td:first-child").forEach(cell=>{cell.style.color="#759CBF";cell.style.fontWeight="700"});
  clone.querySelectorAll("td.risk-fill").forEach(cell=>{cell.style.textAlign="center";cell.style.fontWeight="700"});
- return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}tr{page-break-inside:avoid;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;background:#fff;">'+clone.outerHTML+'</body></html>';
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--body,table,thead,tbody,tr,th,td,p,span{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}tr{page-break-inside:avoid;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;background:#fff;">'+clone.outerHTML+'</body></html>';
 }
 async function copyOCRAReportTable(button){
  const table=button.closest(".report-table-block")?.querySelector(".ocra-report-table");if(!table)return;
