@@ -1446,13 +1446,19 @@ async function copyOCRAReportTable(button){
   else fallback();
  }catch(e){fallback()}
 }
-function ocraRiskSummaryTable(){
- const dx=ocraReportNumber("resultadoFinalDx"),ix=ocraReportNumber("resultadoFinalIx");
+function ocraRiskSummaryTable(title,dxIndexId,ixIndexId,dxClassId,ixClassId){
+ const dx=ocraReportNumber(dxIndexId),ix=ocraReportNumber(ixIndexId);
  const dxClass=classificationClass(dx),ixClass=classificationClass(ix);
- return '<div class="report-table-block ocra-risk-summary-block"><h3>Resumen índice de riesgo OCRA</h3><table class="ocra-report-table ocra-risk-summary-table"><thead><tr><th>ÍNDICE DE RIESGO CHECK LIST OCRA</th><th>IR</th><th>NIVEL DE RIESGO</th></tr></thead><tbody>'+
-   '<tr><td class="risk-summary-label">EXTREMIDAD DERECHA</td><td class="risk-summary-ir">'+ocraReportEsc(ocraReportText("resultadoFinalDx"))+'</td><td class="risk-fill '+dxClass+'">'+ocraReportEsc(ocraReportText("clasificacionDx"))+'</td></tr>'+
-   '<tr><td class="risk-summary-label">EXTREMIDAD IZQUIERDA</td><td class="risk-summary-ir">'+ocraReportEsc(ocraReportText("resultadoFinalIx"))+'</td><td class="risk-fill '+ixClass+'">'+ocraReportEsc(ocraReportText("clasificacionIx"))+'</td></tr>'+
+ return '<div class="report-table-block ocra-risk-summary-block"><h3>'+ocraReportEsc(title)+'</h3><table class="ocra-report-table ocra-risk-summary-table"><thead><tr><th>ÍNDICE DE RIESGO CHECK LIST OCRA</th><th>IR</th><th>NIVEL DE RIESGO</th></tr></thead><tbody>'+
+   '<tr><td class="risk-summary-label">EXTREMIDAD DERECHA</td><td class="risk-summary-ir">'+ocraReportEsc(ocraReportText(dxIndexId))+'</td><td class="risk-fill '+dxClass+'">'+ocraReportEsc(ocraReportText(dxClassId))+'</td></tr>'+
+   '<tr><td class="risk-summary-label">EXTREMIDAD IZQUIERDA</td><td class="risk-summary-ir">'+ocraReportEsc(ocraReportText(ixIndexId))+'</td><td class="risk-fill '+ixClass+'">'+ocraReportEsc(ocraReportText(ixClassId))+'</td></tr>'+
    '</tbody></table><div class="report-table-actions"><button type="button" class="toolbar-btn copy-report-table">Copiar tabla para Word</button></div></div>';
+}
+function ocraStudyRiskSummaryTable(){
+ return ocraRiskSummaryTable("Resumen índice de riesgo OCRA · Evaluación","resultadoFinalDx","resultadoFinalIx","clasificacionDx","clasificacionIx");
+}
+function ocraSimulationRiskSummaryTable(){
+ return ocraRiskSummaryTable("Resumen índice de riesgo OCRA · Simulación","simResultDx","simResultIx","simClassificationDx","simClassificationIx");
 }
 function renderWordTables(){
  const host=document.getElementById("ocraReportTables");if(!host)return;
@@ -1460,7 +1466,8 @@ function renderWordTables(){
  const blocks=[];
  if(selected.includes("study"))blocks.push(ocraReportTable("Resultados de la evaluación OCRA",ocraStudyReportRows()));
  if(selected.includes("simulation"))blocks.push(ocraReportTable("Resultados de la simulación OCRA",ocraSimulationReportRows()));
- if(selected.includes("riskSummary"))blocks.push(ocraRiskSummaryTable());
+ if(selected.includes("studyRiskSummary"))blocks.push(ocraStudyRiskSummaryTable());
+ if(selected.includes("simulationRiskSummary"))blocks.push(ocraSimulationRiskSummaryTable());
  host.innerHTML=blocks.join("")||'<p class="report-tables-empty">Seleccione al menos una tabla.</p>';
  host.querySelectorAll(".copy-report-table").forEach(button=>button.addEventListener("click",()=>copyOCRAReportTable(button)));
 }
