@@ -571,10 +571,19 @@ function updatePostureModeUI(){
    });
  });
 }
+function kPostureSideScore(kind,side){
+ const p=ensureManualPosture()[kind][side],total=kRange()?.duration||kManualDuration();
+ const seconds=p.source==="manual"?postureInputSeconds(p.flex,kManualDuration(),kind):kForcedSeconds(kind,side);
+ const pct=total>0?seconds/total*100:0;
+ const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
+ return postureScore(table,pct);
+}
 function kManualControls(kind,side,threshold){
  const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",availability=kKinoveaAvailability(kind,side),canK=availability.state==="ready",mode=postureModeForKind(kind),unidad=mode==="porcentaje"?"% del tiempo":"segundos";
  const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
- return '<fieldset class="manual-posture-box paired-posture-side"><legend>'+label+' · origen del dato</legend><label class="paired-source-row">Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(availability.state==="none"?" · no disponible":availability.state==="partial"?" · faltan marcadores":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields paired-manual-row" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">'+unidad+'</span><input type="number" min="0" step="0.1" '+(mode==="porcentaje"?'max="100" placeholder="%"':'placeholder="s"')+' title="'+unidad+'" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice paired-criterion-row">'+criterion+'</div>'+'</fieldset>';
+ const scoreLabel=kind==="shoulder"?"Puntuación hombro":kind==="elbow"?"Puntuación codo":"Puntuación muñeca";
+ const scoreId="postureSideScore_"+kind+"_"+side;
+ return '<fieldset class="manual-posture-box paired-posture-side"><legend>'+label+' · origen del dato</legend><label class="paired-source-row">Fuente<select data-posture-source="'+kind+'" data-posture-side="'+side+'"><option value="kinovea" '+(p.source==="kinovea"?"selected":"")+' '+(!canK?"disabled":"")+'>Kinovea'+(availability.state==="none"?" · no disponible":availability.state==="partial"?" · faltan marcadores":"")+'</option><option value="manual" '+(p.source==="manual"?"selected":"") +'>Manual</option></select></label><div class="manual-posture-fields paired-manual-row" '+(p.source==="manual"?"":"hidden")+'><label>Tiempo en postura forzada <span class="postura-unidad">'+unidad+'</span><input type="number" min="0" step="0.1" '+(mode==="porcentaje"?'max="100" placeholder="%"':'placeholder="s"')+' title="'+unidad+'" data-manual-posture="'+kind+'" data-manual-side="'+side+'" data-manual-field="flex" value="'+fmt(p.flex,2).replace(",",".")+'"></label></div><div class="notice paired-criterion-row">'+criterion+'</div><div class="result-grid one-column posture-side-score"><div><span>'+scoreLabel+'</span><output id="'+scoreId+'">'+fmt(kPostureSideScore(kind,side),2)+'</output></div></div></fieldset>';
 }
 function initPostureInputMode(){
  const el=document.getElementById("postureModo");if(!el)return;
@@ -608,6 +617,7 @@ function kPanel(kind,title,defaultThreshold){
    ensureManualPosture().modes[kind]=mode;
    updatePostureModeUI();
    dirty=true;
+   kRenderAnalyses();
    safeCalculate();
  };
  box.querySelectorAll("[data-posture-source]").forEach(sel=>sel.onchange=()=>{
@@ -627,6 +637,8 @@ function kPanel(kind,title,defaultThreshold){
    dirty=true;
    const result=document.getElementById(kind+"Result");
    if(result)result.innerHTML=kAnalysisRows(kind);
+   const sideScore=document.getElementById("postureSideScore_"+kind+"_"+input.dataset.manualSide);
+   if(sideScore)sideScore.textContent=fmt(kPostureSideScore(kind,input.dataset.manualSide),2);
    safeCalculate();
  };
  input.oninput=updateManualPosture;
