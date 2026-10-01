@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OCRA · Ergonomic Analyzer</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<main class="ocra-shell">
+<header class="ocra-header">
+  <div class="brand">ERGONOMIC ANALYZER · OCRA</div>
+  <h1>Checklist OCRA Revisado</h1>
+  <p>Estudio de movimientos repetitivos y exposición de la extremidad superior.</p>
+</header>
+
+<nav class="screen-nav" aria-label="Navegación del estudio">
+  <button type="button" id="homeBtn" class="nav-secondary">Inicio</button>
+  <div class="screen-counter" id="screenCounter">Pantalla 1 de 17</div>
+  <button type="button" id="prevBtn" class="nav-secondary">Anterior</button>
+  <button type="button" id="nextBtn" class="nav-primary">Siguiente</button>
+</nav>
+
+<section class="study-toolbar">
+  <button type="button" id="saveBtn" class="toolbar-btn">Guardar estudio</button>
+  <button type="button" id="loadBtn" class="toolbar-btn">Cargar estudio</button>
+  <button type="button" id="newBtn" class="toolbar-btn">Nuevo estudio</button>
+  <button type="button" id="simulationBtn" class="toolbar-btn">Ir a simulación</button>
+  <button type="button" id="wordTablesBtn" class="toolbar-btn">Tablas para Word</button>
+  <input type="file" id="fileInput" accept=".json,application/json" hidden>
+</section>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+
+<form id="ocraForm" novalidate>
+
+<section class="screen active" data-screen="0">
+  <div class="screen-title"><span>1</span><div><h2>Identificación del estudio</h2><p>Datos básicos para identificar la evaluación.</p></div></div>
+  <div class="form-grid">
+    <label>Empresa<input name="empresa" type="text"></label>
+    <label>Departamento / servicio<input name="departamento" type="text"></label>
+    <label>Fecha del estudio<input name="fecha" type="date"></label>
+    <label>Línea / área<input name="area" type="text"></label>
+    <label>Puesto de trabajo<input name="puesto" type="text"></label>
+    <label>Tarea evaluada<input name="tarea" type="text"></label>
+    <label>Descripción breve de la tarea<textarea name="descripcionTarea" rows="4"></textarea></label>
+  </div>
+</section>
+
+<section class="screen" data-screen="1">
+  <div class="screen-title"><span>2</span><div><h2>Organización del trabajo</h2><p>Datos de la jornada representativa y de su distribución temporal.</p></div></div>
+  <div class="form-grid">
+    <label>Duración del turno oficial (min)<input name="turnoOficial" type="number" min="0" step="1"></label>
+    <label>Duración efectiva del turno en el puesto (min)<input name="turnoEfectivoManual" type="number" min="0" step="1"></label>
+    <label>Hora de inicio en el puesto<input name="horaInicio" type="time"></label>
+    <label>Hora de finalización en el puesto<input name="horaFin" type="time"></label>
+    <label>N.º de pausas efectivas ≥ 8 min<input name="numPausas" type="number" min="0" step="1"></label>
+    <label>Tiempo efectivo de pausas, sin comida (min)<input name="tiempoPausas" type="number" min="0" step="1"></label>
+    <label>Pausa para comer efectiva incluida en el turno (min)<input name="pausaComer" type="number" min="0" step="1"></label>
+    <label>Trabajo no repetitivo estimado (min)<input name="noRepetitivo" type="number" min="0" step="1"></label>
+    <label>Descripción de pausas y distribución<textarea name="descripcionTurno" rows="5"></textarea></label>
+  </div>
+</section>
+
+<section class="screen" data-screen="2">
+  <div class="screen-title"><span>3</span><div><h2>Tiempo neto de trabajo repetitivo (TNTR)</h2><p>El programa calcula el tiempo neto a partir de la organización indicada.</p></div></div>
+  <div class="calculation-box">
+    <strong>TNTR</strong>
+    <div class="formula">TNTR = turno efectivo − pausas − comida − trabajo no repetitivo</div>
+    <div class="result-grid">
+      <div><span>Turno efectivo</span><output id="turnoEfectivo">—</output> min</div>
+      <div><span>Pausas sin comida</span><output id="tntrPausas">—</output> min</div>
+      <div><span>Comida</span><output id="tntrComida">—</output> min</div>
+      <div><span>Trabajo no repetitivo</span><output id="tntrNoRep">—</output> min</div>
+      <div><span>TNTR</span><output id="tiempoNeto">—</output> min</div>
+    </div>
+  </div>
+  <div class="notice">El TNTR se utiliza para los cálculos posteriores. Los tiempos de inicio tardío, salida anticipada o interrupciones no consideradas recuperación no se contabilizan como tiempo de recuperación.</div>
+</section>
+
+<section class="screen" data-screen="3">
+  <div class="screen-title"><span>4</span><div><h2>Ciclos</h2><p>Se introduce un único ciclo observado y el número efectivo de ciclos del turno.</p></div></div>
+  <div class="form-grid">
+    <label>Ciclos programados<input name="ciclosProgramados" type="number" min="0" step="1"></label>
+    <label>Ciclos efectivos en el turno<input name="ciclosEfectivos" type="number" min="0" step="1"></label>
+    <label>Tiempo de ciclo observado (segundos)<input name="cicloObservado" type="number" min="0" step="0.1"></label>
+    <label>Descripción del ciclo<textarea name="descripcionCiclo" rows="5"></textarea></label>
+  </div>
+  <div class="calculation-box">
+    <strong>Comprobación del ciclo</strong>
+    <div class="result-grid">
+      <div><span>Tiempo de ciclo calculado</span><output id="cicloNeto">—</output> s</div>
+      <div id="criterioCicloNota" class="notice" style="grid-column:1 / -1; display:block !important;"></div>
+      <div><span>Diferencia respecto al observado</span><output id="diferenciaCiclo">—</output> %</div>
+      <div><span>Minutos no justificados</span><output id="minNoJustificados">—</output> min</div>
+      <div><span>Concordancia</span><output id="alertaCiclo">—</output></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="4">
+  <div class="screen-title"><span>5</span><div><h2>Recuperación</h2><p>Introduzca todas las pausas habituales de la jornada. El horario se toma de la pantalla «Organización del trabajo».</p></div></div>
+
+  <div class="calculation-box">
+    <strong>Horario que se analizará</strong>
+    <div class="recovery-info">
+      <p>El horario de inicio y finalización utilizado para el cálculo es el indicado en «Organización del trabajo».</p>
+      <p><strong>Duración mínima de una pausa válida: 8 minutos</strong></p>
+      <p>Para el cálculo de la recuperación, una pausa solo se considera válida cuando tiene una duración mínima de 8 minutos. Este valor es fijo y no puede modificarse.</p>
+    </div>
+    <div class="notice">Se pueden introducir tantas pausas como sean necesarias. Marque como habitual únicamente las interrupciones que se realizan la mayoría de los días. Las ocasionales no participan en el cálculo.</div>
+  </div>
+
+  <div class="calculation-box">
+    <strong>Pausas y comida</strong>
+    <div class="result-table-wrap">
+      <table class="compact-table">
+        <thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Habitual</th><th></th></tr></thead>
+        <tbody id="recoveryPausesBody"><tr><td colspan="6">No hay pausas añadidas.</td></tr></tbody>
+      </table>
+    </div>
+    <button type="button" class="toolbar-btn" id="addRecoveryPauseBtn">Añadir pausa</button>
+    <div class="notice">Una comida de ≥30 min se utiliza para recuperar la hora inmediatamente anterior. Una comida de &lt;30 min se trata como una pausa normal y no activa esa recuperación automática.</div>
+  </div>
+
+  <div class="calculation-box selected-box">
+    <strong>Resultado del procedimiento de recuperación</strong>
+    <div class="result-grid">
+      <div><span>Horas sin recuperación adecuada</span><output id="recAutomatico">—</output></div>
+      <div><span>Multiplicador de recuperación</span><output id="recMultAutomatico">—</output></div>
+    </div>
+
+  </div>
+
+  <details class="help-panel">
+    <summary>ⓘ Criterio de cálculo utilizado</summary>
+    <div class="help-content">
+      <p>El procedimiento considera como recuperación las interrupciones habituales de al menos 8 minutos consecutivos. La comida cuenta como descanso para comer cuando dura al menos 30 minutos. Una comida inferior a 30 minutos se considera una pausa normal y no marca automáticamente como recuperada la hora anterior.</p>
+      <p>Primero se considera recuperada la última hora del turno. Si existe una comida válida, también se considera recuperada la hora inmediatamente anterior a la comida. El resto se analiza en bloques de 60 minutos de derecha a izquierda, en las dos secuencias alrededor de la comida.</p>
+      <ul>
+        <li>Bloque de 60 min con una pausa válida → recuperado.</li>
+        <li>Bloque de 60 min sin pausa válida → 1 h sin recuperación adecuada.</li>
+        <li>Periodo residual &lt;20 min → 0 h sin recuperación.</li>
+        <li>Periodo residual ≥20 y ≤40 min → 0,5 h.</li>
+        <li>Periodo residual &gt;40 y &lt;80 min → 1 h.</li>
+      </ul>
+      <p>Las pausas situadas en la hora previa a una comida válida o en la última hora del turno no añaden una hora adicional de recuperación. El procedimiento admite múltiples pausas de diferente duración y horario.</p>
+    </div>
+  </details>
+</section>
+
+<section class="screen" data-screen="5">
+  <div class="screen-title"><span>6</span><div><h2>Duración de la exposición</h2><p>Multiplicador de duración según el TNTR.</p></div></div>
+  <div class="calculation-box">
+    <strong>Resultado</strong>
+    <div class="result-grid">
+      <div><span>TNTR</span><output id="duracionTNTR">—</output> min</div>
+      <div><span>Multiplicador de duración</span><output id="multDuracion">—</output></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-screen="6">
+  <div class="screen-title"><span>7</span><div><h2>Acciones técnicas</h2><p>Introduzca las acciones observadas en un ciclo. El programa calcula las acciones por minuto y la frecuencia.</p></div></div>
+  <div class="side-grid paired-side-grid">
+    <fieldset><legend>Derecha (DX)</legend>
+      <label>Acciones técnicas por ciclo<input name="dxAcciones" type="number" min="0" step="0.01"></label>
+      <label>¿Existen breves interrupciones?<select name="dxInterrupciones"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <div class="result-grid one-column"><div><span>Acciones/min</span><output id="dxAccionesMin">—</output></div><div><span>Puntuación frecuencia</span><output id="dxFrecuencia">—</output></div></div>
+    </fieldset>
+    <fieldset><legend>Izquierda (IX)</legend>
+      <label>Acciones técnicas por ciclo<input name="ixAcciones" type="number" min="0" step="0.01"></label>
+      <label>¿Existen breves interrupciones?<select name="ixInterrupciones"><option value="no">No</option><option value="si">Sí</option></select></label>
+      <div class="result-grid one-column"><div><span>Acciones/min</span><output id="ixAccionesMin">—</output></div><div><span>Puntuación frecuencia</span><output id="ixFrecuencia">—</output></div></div>
+    </fieldset>
+  </div>
+  <div class="notice">Las acciones técnicas se introducen por ciclo. La conversión a acciones/minuto utiliza el único tiempo de ciclo observado indicado en la pantalla de ciclos.</div>
+</section>
+
+<section class="screen" data-screen="7">
+  <div class="screen-title"><span>8</span><div><h2>Fuerza</h2><p>Introduzca la duración de cada nivel de fuerza durante el ciclo, por separado para DX e IX.</p></div></div>
+  <div class="calculation-box">
+    <strong>Modo de introducción</strong>
+    <div class="form-grid">
+      <label>Unidad de entrada
+        <select id="fuerzaModo" name="fuerzaModo">
+          <option value="segundos">Segundos por ciclo</option>
+          <option value="porcentaje">% del tiempo de ciclo</option>
+        </select>
+      </label>
+    </div>
+    <div class="notice" style="display:block !important;">Seleccione una sola unidad de entrada. El programa utilizará exclusivamente el valor introducido para realizar el cálculo de la puntuación de fuerza.</div>
+  </div>
+  <div class="side-grid paired-side-grid">
+    <fieldset><legend>Derecha (DX)</legend>
+      <label>Fuerza Borg 3–4: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza34" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 5–7: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza57" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 8–10: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza810" type="number" min="0" step="0.1"></label>
+      <div class="result-grid one-column"><div><span>Puntuación fuerza DX</span><output id="dxFuerzaScore">—</output></div></div>
+    </fieldset>
+    <fieldset><legend>Izquierda (IX)</legend>
+      <label>Fuerza Borg 3–4: <span class="fuerza-unidad">segundos/ciclo</span><input name="ixFuerza34" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 5–7: <span class="fuerza-unidad">segundos/ciclo</span><input name="ixFuerza57" type="number" min="0" step="0.1"></label>
+      <label>Fuerza Borg 8–10: <span class="fuerza-unidad">segundos/ciclo</span><input name="ixFuerza810" type="number" min="0" step="0.1"></label>
+      <div class="result-grid one-column"><div><span>Puntuación fuerza IX</span><output id="ixFuerzaScore">—</output></div></div>
+    </fieldset>
+  </div>
+  <details class="help-panel">
+    <summary>ⓘ Ayuda: escala de Borg y ejemplos de actividades</summary>
+    <div class="help-content">
+      <p>Los ejemplos son orientativos. La puntuación Borg representa el esfuerzo percibido y no equivale automáticamente a una fuerza física concreta.</p>
+      <table class="compact-table"><thead><tr><th>Borg</th><th>Percepción</th><th>Vida profesional</th><th>Vida diaria</th></tr></thead><tbody>
+        <tr><td>0</td><td>Nada</td><td>Pulsar un botón o accionar un mando sin resistencia.</td><td>Tocar una pantalla o pulsar un interruptor.</td></tr>
+        <tr><td>0,5–1</td><td>Muy, muy débil / muy débil</td><td>Manipular piezas muy ligeras o colocar pequeños objetos sin resistencia.</td><td>Coger un papel, un bolígrafo o un objeto muy ligero.</td></tr>
+        <tr><td>2</td><td>Ligero</td><td>Utilizar una herramienta ligera o mover un objeto que se desplaza fácilmente.</td><td>Mover una silla vacía o llevar una botella pequeña.</td></tr>
+        <tr><td>3</td><td>Moderado</td><td>Empujar un carro ligero o utilizar una herramienta manual con esfuerzo apreciable.</td><td>Llevar una bolsa de la compra con algo de peso o mover una silla con cierta resistencia.</td></tr>
+        <tr><td>4</td><td>Bastante duro</td><td>Empujar un carro con carga o utilizar una herramienta manual que requiere bastante fuerza.</td><td>Abrir un tarro resistente o mover una caja mediana.</td></tr>
+        <tr><td>5–6</td><td>Duro / intenso</td><td>Empujar o arrastrar un carro pesado o levantar y colocar una caja que requiere bastante esfuerzo.</td><td>Subir escaleras llevando bolsas pesadas o transportar una maleta cargada.</td></tr>
+        <tr><td>7</td><td>Muy duro</td><td>Empujar o arrastrar una carga muy pesada o utilizar repetidamente una herramienta que exige mucha fuerza.</td><td>Mover un mueble pequeño y pesado o empujar un objeto que cuesta mucho desplazar.</td></tr>
+        <tr><td>8–9</td><td>Muy, muy duro / extremadamente duro</td><td>Aplicar una fuerza muy elevada para empujar, tirar, presionar o manipular una carga difícil.</td><td>Mover un mueble pesado o empujar con mucha fuerza un objeto atascado.</td></tr>
+        <tr><td>10</td><td>Máximo</td><td>Realizar un esfuerzo máximo para mover, levantar, empujar o tirar de una carga.</td><td>Intentar mover un objeto extremadamente pesado haciendo prácticamente toda la fuerza posible.</td></tr>
+      </tbody></table>
+    </div>
+  </details>
+</section>
+
+<section class="screen" data-screen="8">
+  <div class="screen-title"><span>9</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Puede estudiar las posturas mediante los datos de Kinovea o introducirlas manualmente. Si utiliza Kinovea, puede completar manualmente cualquier postura o lado que no tenga todos los marcadores o cuyos datos no sean adecuados.</p></div></div>
+  <div class="calculation-box">
+    <strong>Método de estudio de las posturas</strong>
+    <div class="form-grid">
+      <label>Fuente principal
+        <select id="postureStudyMode" name="postureStudyMode">
+          <option value="manual" selected>Manual</option>
+          <option value="kinovea">Kinovea (JSON)</option>
+        </select>
+      </label>
+    </div>
+    <div class="notice">Si selecciona <strong>Manual</strong>, todas las posturas se introducirán manualmente. Si selecciona <strong>Kinovea</strong>, el programa utilizará Kinovea cuando disponga de todos los marcadores necesarios y permitirá pasar a MANUAL de forma independiente para cualquier lado o postura.</div>
+  </div>
+  <div class="form-grid">
+    <label>JSON de Kinovea (hasta 12 archivos)<small>Seleccione un JSON. Para cargar otro, pulse «Añadir otro JSON». Cada archivo puede estar en una carpeta o ubicación diferente.</small><div id="kinoveaFileInputs" class="form-grid"></div><button type="button" class="toolbar-btn" id="addKinoveaJsonBtn">Añadir otro JSON</button><div id="kinoveaFileList" class="notice">No hay JSON seleccionados.</div></label>
+  </div>
+  <div class="calculation-box">
+    <strong>Periodo de análisis</strong>
+    <div id="kinoveaRangeSummary" class="notice">Cada vídeo se analiza como una muestra independiente. La vista, la tarea/fase, el periodo y el número de ciclos se configuran en el bloque de cada JSON dentro de «Asignación de marcadores».</div>
+  </div>
+  <div id="kinoveaMapping" class="calculation-box"><strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div></div>
+</section>
+
+<section class="screen" data-screen="9">
+  <div class="screen-title"><span>10</span><div><h2>Datos importados de Kinovea</h2><p>Comprobación de los datos que el programa ha leído del JSON.</p></div></div>
+  <div id="kinoveaSummary" hidden></div>
+  <div id="kinoveaDataTable" class="calculation-box"><div class="placeholder">Todavía no hay datos importados.</div></div>
+</section>
+
+<section class="screen" data-screen="10">
+  <div class="screen-title"><span>11</span><div><h2>Postura de hombro</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
+  <div id="ocraShoulderPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
+</section>
+
+<section class="screen" data-screen="11">
+  <div class="screen-title"><span>12</span><div><h2>Postura de codo</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
+  <div id="ocraElbowPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
+</section>
+
+<section class="screen" data-screen="12">
+  <div class="screen-title"><span>13</span><div><h2>Postura de muñeca</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
+  <div id="ocraWristPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
+</section>
+
+<section class="screen" data-screen="13">
+  <div class="screen-title"><span>14</span><div><h2>Mano - dedo</h2><p></p></div></div>
+  <div class="calculation-box">
+    <strong>Modo de introducción del tiempo de agarre</strong>
+    <div class="form-grid">
+      <label>Unidad de entrada
+        <select id="manoModo" name="manoModo">
+          <option value="segundos">Segundos</option>
+          <option value="porcentaje">% del tiempo</option>
+        </select>
+      </label>
+    </div>
+    <div class="notice">Seleccione una sola unidad de entrada. El programa convertirá el valor al porcentaje de exposición necesario para calcular la puntuación del agarre.</div>
+  </div>
+  <div class="side-grid paired-side-grid hand-study-grid">
+    <fieldset><legend>Derecha (DX) · D) Mano-dedo</legend>
+      <label>Tipo de agarre
+        <select name="dxManoAgarre">
+          <option value="none">Ningún agarre puntuable</option>
+          <option value="pinch">Pinza</option>
+          <option value="hook">Agarre en gancho</option>
+          <option value="palmar">Agarre palmar</option>
+          <option value="grip">Agarre de potencia (grip) · no puntúa</option>
+        </select>
+      </label>
+      <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="dxManoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% del tiempo</span><output id="dxManoPct">0,00 %</output></div><div><span>Puntuación agarre DX</span><output id="dxManoAgarreScore">0,00</output></div></div>
+      <label>Tiempo utilizando un solo dedo (con o sin agarre de potencia) <span class="mano-unidad">segundos</span><input name="dxManoDedoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% un solo dedo</span><output id="dxManoDedoPct">0,00 %</output></div><div><span>Puntuación un solo dedo</span><output id="dxManoDedoScore">0,00</output></div></div>
+      <div class="result-grid one-column"><div><span>Puntuación total mano-dedo DX</span><output id="dxManoScore">0,00</output></div></div>
+      <div id="dxManoAviso" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del tiempo analizado para la mano derecha.</div>
+    </fieldset>
+    <fieldset><legend>Izquierda (IX) · D) Mano-dedo</legend>
+      <label>Tipo de agarre
+        <select name="ixManoAgarre">
+          <option value="none">Ningún agarre puntuable</option>
+          <option value="pinch">Pinza</option>
+          <option value="hook">Agarre en gancho</option>
+          <option value="palmar">Agarre palmar</option>
+          <option value="grip">Agarre de potencia (grip) · no puntúa</option>
+        </select>
+      </label>
+      <label>Tiempo en el agarre seleccionado <span class="mano-unidad">segundos</span><input name="ixManoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% del tiempo</span><output id="ixManoPct">0,00 %</output></div><div><span>Puntuación agarre IX</span><output id="ixManoAgarreScore">0,00</output></div></div>
+      <label>Tiempo utilizando un solo dedo (con o sin agarre de potencia) <span class="mano-unidad">segundos</span><input name="ixManoDedoTiempo" type="number" min="0" step="0.01"></label>
+      <div class="result-grid"><div><span>% un solo dedo</span><output id="ixManoDedoPct">0,00 %</output></div><div><span>Puntuación un solo dedo</span><output id="ixManoDedoScore">0,00</output></div></div>
+      <div class="result-grid one-column"><div><span>Puntuación total mano-dedo IX</span><output id="ixManoScore">0,00</output></div></div>
+      <div id="ixManoAviso" class="notice" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del tiempo analizado para la mano izquierda.</div>
+    </fieldset>
+  </div>
+  <div class="side-grid">
+    <label class="check-row"><input type="checkbox" name="dxHombroCabeza"> Las manos trabajan por encima de la altura de la cabeza</label>
+    <label class="check-row"><input type="checkbox" name="ixHombroCabeza"> Las manos trabajan por encima de la altura de la cabeza</label>
+  </div>
+  <div class="notice"><strong>Nota del hombro:</strong> si las manos operan sobre la altura de la cabeza, se duplica el valor del hombro.</div>
+  <details class="help-panel">
+    <summary>ⓘ Ayuda: tipos de agarre</summary>
+    <div class="help-content">      <p><strong>Uso de un solo dedo:</strong> situación en la que una acción se realiza principalmente con un único dedo, con o sin agarre de potencia de la mano, por ejemplo al accionar repetidamente un pulsador, gatillo, tecla o elemento similar. Su tiempo de exposición se valora de forma independiente y su puntuación se suma, cuando corresponda, a la del tipo de agarre.</p>
+
+      <p><strong>Pinza:</strong> agarre realizado principalmente con las yemas de los dedos y el pulgar, normalmente para sujetar o manipular objetos pequeños.</p>
+      <p><strong>Agarre en gancho:</strong> agarre en el que los dedos permanecen flexionados y enganchan el objeto principalmente con los dedos, mientras que el pulgar tiene poca o ninguna participación. La mano actúa como un gancho alrededor del objeto.</p>
+      <p><strong>Agarre palmar:</strong> agarre realizado utilizando la palma de la mano junto con los dedos para envolver y sujetar el objeto. El objeto queda en contacto con una parte importante de la palma y los dedos.</p>
+      <p><strong>Agarre de potencia (grip):</strong> es un agarre en el que la mano envuelve firmemente el objeto utilizando la palma y los dedos. En este módulo se muestra como referencia, pero <strong>no puntúa</strong>.</p>
+      <p><strong>Cómo identificarlo:</strong> pinza = pulgar y yemas de los dedos; agarre en gancho = dedos flexionados con poca participación del pulgar; agarre palmar = palma y dedos rodeando el objeto.</p>
+      <p>Seleccione el tipo de agarre que corresponda a la forma en que se sujeta el objeto durante la actividad analizada.</p>
+    </div>
+  </details>
+</section>
+
+<section class="screen" data-screen="14">
+  <div class="screen-title"><span>15</span><div><h2>Estereotipia</h2><p></p></div></div>
+  <div class="side-grid paired-side-grid stereotypy-grid">
+    <fieldset><legend>Derecha (DX) · E) Estereotipia</legend>
+      <label class="check-row"><input type="checkbox" name="dxStereoCycleOver15"> Tiempo de ciclo superior a 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoCycle815"> Tiempo de ciclo entre 9 y 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoCycle8"> Tiempo de ciclo igual o inferior a 8 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Repetición de las mismas acciones técnicas la mayoría de las veces (más de la mitad).</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoAlmost"> Repetición de las mismas acciones técnicas casi todo el tiempo.</label>
+      <div class="result-grid one-column"><div><span>Puntuación estereotipia DX</span><output id="dxStereoScore">0,00</output></div></div>
+    </fieldset>
+    <fieldset><legend>Izquierda (IX) · E) Estereotipia</legend>
+      <label class="check-row"><input type="checkbox" name="ixStereoCycleOver15"> Tiempo de ciclo superior a 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoCycle815"> Tiempo de ciclo entre 9 y 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoCycle8"> Tiempo de ciclo igual o inferior a 8 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoHalf"> Repetición de las mismas acciones técnicas la mayoría de las veces (más de la mitad).</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoAlmost"> Repetición de las mismas acciones técnicas casi todo el tiempo.</label>
+      <div class="result-grid one-column"><div><span>Puntuación estereotipia IX</span><output id="ixStereoScore">0,00</output></div></div>
+    </fieldset>
+  </div>
+  
+</section></section>
+
+<section class="screen" data-screen="14">
+  <div class="screen-title"><span>15</span><div><h2>Factor complementario</h2><p>Seleccione una sola respuesta en cada grupo. La selección se utilizará para calcular el factor complementario.</p></div></div>
+  <div class="side-grid">
+    <fieldset><legend>Bloque A: Factores físico-mecánicos</legend>
+      <div class="checklist">
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Se emplean por más de la mitad del tiempo guantes <strong>inadecuados</strong> para la tarea (incómodos, demasiado gruesos, talla incorrecta).</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Presencia de movimientos repentinos, bruscos con frecuencia de 2 o más por minuto.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Presencia de impactos repetidos (uso de las manos para dar golpes) con frecuencia de al menos 10 veces por hora.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Contacto con superficies frías (inferior a 0 °C) o desarrollo de labores en cámaras frigoríficas por más de la mitad del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Se emplean herramientas vibradoras por al menos un tercio del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="4" data-comp-a="4"> Se emplean instrumentos con elevado contenido de vibración (ej. martillo neumático, etc.) utilizados en al menos 1/3 del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Se emplean herramientas que provocan compresión sobre las estructuras musculosas y tendinosas (verificar la presencia de enrojecimiento, callos, heridas, etc. sobre la piel).</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Se realizan tareas de precisión durante más de la mitad del tiempo (tareas en áreas menores a 2 o 3 mm) que requieren distancia visual de acercamiento.</label>
+        <label class="check-row"><input type="radio" name="compA" value="2" data-comp-a="2"> Existen más factores complementarios al mismo tiempo que ocupan más de la mitad del tiempo.</label>
+        <label class="check-row"><input type="radio" name="compA" value="3" data-comp-a="3"> Existen uno o más factores complementarios que ocupan casi todo el tiempo del ciclo.</label>
+      </div>
+
+    </fieldset>
+    <fieldset><legend>Bloque B: Factores socio-organizativos</legend>
+      <div class="checklist">
+        <label class="check-row"><input type="radio" name="compB" value="1" data-comp-b="1"> El ritmo de trabajo está determinado por la máquina, pero existen “espacios de recuperación” por lo que el ritmo se puede acelerar o desacelerar.</label>
+        <label class="check-row"><input type="radio" name="compB" value="2" data-comp-b="2"> El ritmo de trabajo está completamente determinado por la máquina.</label>
+      </div>
+
+    </fieldset>
+  </div>
+  <details class="help-panel">
+    <summary>ⓘ Ayuda: ejemplos de factores complementarios</summary>
+    <div class="help-content">
+      <p><strong>Impactos repetidos:</strong> golpear repetidamente piezas o componentes con la mano durante operaciones de montaje, encaje o ajuste; dar golpes manuales reiterados para posicionar materiales.</p>
+      <p><strong>Herramientas vibratorias:</strong> atornilladores eléctricos, taladros manuales, lijadoras orbitales o pulidoras utilizadas de forma sostenida.</p>
+      <p><strong>Instrumentos de elevado contenido de vibración:</strong> martillos neumáticos, martillos demoledores, perforadores percutores de alta potencia o equipos manuales de compactación.</p>
+      <p><strong>Herramientas que provocan compresión:</strong> alicates, tenazas, cizallas, tijeras industriales o herramientas con mangos estrechos o duros que ejercen presión localizada sobre la palma o los dedos.</p>
+      <p><strong>Tareas de precisión:</strong> montaje de pequeños componentes electrónicos, manipulación de tornillería o piezas milimétricas, relojería, microensamblaje o trabajos que requieren aproximar mucho la vista.</p>
+      <p><strong>Ritmo determinado por la máquina con posibilidad de ajuste:</strong> líneas de montaje o envasado en las que la persona debe seguir el flujo de producción, pero dispone de pequeños márgenes, acumuladores, pausas técnicas o momentos en los que puede recuperar retraso acelerando temporalmente o reduciendo el ritmo.</p>
+      <p><strong>Ritmo completamente determinado por la máquina:</strong> cintas transportadoras, prensas automáticas, máquinas de ciclo fijo o procesos continuos en los que cada pieza llega a una cadencia predeterminada y la persona no puede modificar ni retrasar el ritmo sin detener el proceso.</p>
+    </div>
+  </details>
+  <div class="calculation-box"><strong>Resultado</strong><div class="result-grid"><div><span>Complementarios A</span><output id="compA">0,00</output></div><div><span>Complementarios B</span><output id="compB">0,00</output></div><div><span>Complementarios total</span><output id="compTotal">0,00</output></div></div></div>
+</section>
+
+<section class="screen" data-screen="15">
+  <div class="screen-title"><span>16</span><div><h2>Cálculo y resultado final</h2></div></div>
+  <div class="final-side-grid">
+    <section class="final-side"><h3>Extremidad derecha</h3><div class="result-list">
+      <div class="main-result"><span>Frecuencia</span><output id="finalFreqDx">—</output></div>
+      <div class="sub-result"><span>Acciones/min</span><output id="finalFreqActionsDx">—</output></div>
+      <div class="main-result"><span>Fuerza</span><output id="finalForceDx">—</output></div>
+      <div class="sub-result"><span>Borg 3–4</span><output id="finalForce34Dx">—</output></div>
+      <div class="sub-result"><span>Borg 5–7</span><output id="finalForce57Dx">—</output></div>
+      <div class="sub-result"><span>Borg 8–10</span><output id="finalForce810Dx">—</output></div>
+      <div class="main-result"><span>Postura + estereotipia</span><output id="finalPostureDx">—</output></div>
+      <div class="sub-result"><span>Hombro</span><output id="finalShoulderDx">—</output></div>
+      <div class="sub-result"><span>Codo</span><output id="finalElbowDx">—</output></div>
+      <div class="sub-result"><span>Muñeca</span><output id="finalWristDx">—</output></div>
+      <div class="sub-result"><span>Mano-dedo</span><output id="finalHandDx">—</output></div>
+      <div class="sub-result"><span>· Agarre</span><output id="finalHandGripDx">—</output></div>
+      <div class="sub-result"><span>· Un solo dedo</span><output id="finalHandFingerDx">—</output></div>
+      <div class="sub-result"><span>Estereotipia</span><output id="finalStereoDx">—</output></div>
+      <div class="main-result"><span>Complementarios</span><output id="finalCompDx">—</output></div>
+      <div class="sub-result"><span>Bloque A</span><output id="finalCompADx">—</output></div>
+      <div class="sub-result"><span>Bloque B</span><output id="finalCompBDx">—</output></div>
+      <div class="main-result"><span>Suma de factores</span><output id="finalBaseDx">—</output></div>
+      <div class="main-result"><span>Factor de recuperación</span><output id="finalRecDx">—</output></div>
+      <div class="main-result"><span>Factor de duración</span><output id="finalDurDx">—</output></div>
+      <div class="total"><span>Índice OCRA</span><output id="resultadoFinalDx">—</output></div>
+      <div class="main-result"><span>Clasificación</span><output id="clasificacionDx">—</output></div>
+    </div></section>
+
+    <section class="final-side"><h3>Extremidad izquierda</h3><div class="result-list">
+      <div class="main-result"><span>Frecuencia</span><output id="finalFreqIx">—</output></div>
+      <div class="sub-result"><span>Acciones/min</span><output id="finalFreqActionsIx">—</output></div>
+      <div class="main-result"><span>Fuerza</span><output id="finalForceIx">—</output></div>
+      <div class="sub-result"><span>Borg 3–4</span><output id="finalForce34Ix">—</output></div>
+      <div class="sub-result"><span>Borg 5–7</span><output id="finalForce57Ix">—</output></div>
+      <div class="sub-result"><span>Borg 8–10</span><output id="finalForce810Ix">—</output></div>
+      <div class="main-result"><span>Postura + estereotipia</span><output id="finalPostureIx">—</output></div>
+      <div class="sub-result"><span>Hombro</span><output id="finalShoulderIx">—</output></div>
+      <div class="sub-result"><span>Codo</span><output id="finalElbowIx">—</output></div>
+      <div class="sub-result"><span>Muñeca</span><output id="finalWristIx">—</output></div>
+      <div class="sub-result"><span>Mano-dedo</span><output id="finalHandIx">—</output></div>
+      <div class="sub-result"><span>· Agarre</span><output id="finalHandGripIx">—</output></div>
+      <div class="sub-result"><span>· Un solo dedo</span><output id="finalHandFingerIx">—</output></div>
+      <div class="sub-result"><span>Estereotipia</span><output id="finalStereoIx">—</output></div>
+      <div class="main-result"><span>Complementarios</span><output id="finalCompIx">—</output></div>
+      <div class="sub-result"><span>Bloque A</span><output id="finalCompAIx">—</output></div>
+      <div class="sub-result"><span>Bloque B</span><output id="finalCompBIx">—</output></div>
+      <div class="main-result"><span>Suma de factores</span><output id="finalBaseIx">—</output></div>
+      <div class="main-result"><span>Factor de recuperación</span><output id="finalRecIx">—</output></div>
+      <div class="main-result"><span>Factor de duración</span><output id="finalDurIx">—</output></div>
+      <div class="total"><span>Índice OCRA</span><output id="resultadoFinalIx">—</output></div>
+      <div class="main-result"><span>Clasificación</span><output id="clasificacionIx">—</output></div>
+    </div></section>
+  </div>
+  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="resultsWordTablesBtn">Abrir tablas para Word</button></div>
+</section>
+</section>
+<section class="screen" data-screen="16">
+  <div class="screen-title"><span>17</span><div><h2>Simulación</h2><p>Modifique temporalmente los factores estudiados para comprobar cómo cambia el índice OCRA. El estudio original no se modifica.</p></div></div>
+  <div class="calculation-box simulation-summary-top">
+    <strong>Resumen de cambios</strong>
+    <div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div>
+  </div>
+  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button><button type="button" class="toolbar-btn" id="simulationWordTablesBtn">Abrir tablas para Word</button></div>
+  <div class="calculation-box simulation-recovery-link">
+    <strong>Pausas y recuperación</strong>
+    <p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p>
+    <button type="button" class="toolbar-btn" id="simOpenRecoveryBtn">Abrir pausas y recuperación</button>
+  </div>
+  <div class="calculation-box">
+    <strong>Control de la simulación</strong>
+    <div class="form-grid">
+      <label>TNTR (min)<output id="simTNTR" class="simulation-inline-output">—</output></label>
+      <label>Horas sin recuperación adecuada<output id="simRecoveryHours" class="simulation-inline-output">—</output></label>
+      <label>Ciclos efectivos<input id="simCycles" type="number" min="0" step="1"></label>
+      <label>Ciclo observado (s)<input id="simObservedCycle" type="number" min="0" step="0.1"></label>
+      <label>Duración del turno simulado (min)<output id="simShiftDuration" class="simulation-inline-output">—</output></label><label>Trabajo no repetitivo (min)<output id="simNonRep" class="simulation-inline-output">—</output></label><label>Ciclo calculado (s)<output id="simCycleDuration" class="simulation-inline-output">—</output></label>
+      <label>Factor de recuperación<output id="simRecoveryFactor" class="simulation-inline-output">—</output></label>
+      <label>Factor de duración<output id="simDurationFactor" class="simulation-inline-output">—</output></label>
+    </div>
+    <div class="notice">Los cambios son temporales. «Restablecer datos iniciales» devuelve la simulación al estado con el que se abrió esta pantalla.</div>
+  </div>
+
+  <div class="calculation-box"><strong>Frecuencia</strong><div class="side-grid paired-side-grid">
+    <fieldset><legend>Derecha (DX)</legend><label>Acciones por ciclo<input id="simActionsDx" type="number" min="0" step="0.01"></label><label>Breves interrupciones<select id="simInterruptionsDx"><option value="no">No</option><option value="si">Sí</option></select></label><div class="result-grid one-column"><div><span>Frecuencia</span><output id="simFreqDx">—</output></div></div></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><label>Acciones por ciclo<input id="simActionsIx" type="number" min="0" step="0.01"></label><label>Breves interrupciones<select id="simInterruptionsIx"><option value="no">No</option><option value="si">Sí</option></select></label><div class="result-grid one-column"><div><span>Frecuencia</span><output id="simFreqIx">—</output></div></div></fieldset>
+  </div></div>
+
+  <div class="calculation-box"><strong>Fuerza</strong><div class="form-grid"><label>Unidad de entrada<select id="simForceMode"><option value="segundos">Segundos por ciclo</option><option value="porcentaje">% del tiempo de ciclo</option></select></label></div>
+    <div class="side-grid paired-side-grid">
+      <fieldset><legend>Derecha (DX)</legend><label>Borg 3–4<input id="simForceDx34" type="number" min="0" step="0.1"></label><label>Borg 5–7<input id="simForceDx57" type="number" min="0" step="0.1"></label><label>Borg 8–10<input id="simForceDx810" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación fuerza</span><output id="simForceResultDx">—</output></div></div></fieldset>
+      <fieldset><legend>Izquierda (IX)</legend><label>Borg 3–4<input id="simForceIx34" type="number" min="0" step="0.1"></label><label>Borg 5–7<input id="simForceIx57" type="number" min="0" step="0.1"></label><label>Borg 8–10<input id="simForceIx810" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación fuerza</span><output id="simForceResultIx">—</output></div></div></fieldset>
+    </div>
+  </div>
+
+  <div class="calculation-box"><strong>Posturas</strong>
+    <div class="notice">
+      <strong>Cómo introducir los datos:</strong> indique el ángulo y modifique <strong>uno de los dos campos</strong> de tiempo. 
+      <strong>Tiempo de postura (s)</strong> = segundos durante los que se mantiene la postura forzada. 
+      <strong>% del TNTR</strong> = qué porcentaje representa ese tiempo respecto al tiempo neto de trabajo repetitivo. 
+      Ambos campos están vinculados: al cambiar uno, el otro se recalcula automáticamente.
+    </div>
+    <div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Articulación</th><th>Ángulo (°)</th><th>Tiempo de postura (s)<br><small>EDITABLE</small></th><th>% del TNTR<br><small>EDITABLE</small></th></tr></thead><tbody>
+      <tr><td>Derecha</td><td>Hombro</td><td><input id="simShoulderAngleDx" type="number" step="0.1"></td><td><input id="simShoulderTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simShoulderPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
+      <tr><td>Izquierda</td><td>Hombro</td><td><input id="simShoulderAngleIx" type="number" step="0.1"></td><td><input id="simShoulderTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simShoulderPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
+      <tr><td>Derecha</td><td>Codo</td><td><input id="simElbowAngleDx" type="number" step="0.1"></td><td><input id="simElbowTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simElbowPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
+      <tr><td>Izquierda</td><td>Codo</td><td><input id="simElbowAngleIx" type="number" step="0.1"></td><td><input id="simElbowTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simElbowPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
+      <tr><td>Derecha</td><td>Muñeca</td><td><input id="simWristAngleDx" type="number" step="0.1"></td><td><input id="simWristTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simWristPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
+      <tr><td>Izquierda</td><td>Muñeca</td><td><input id="simWristAngleIx" type="number" step="0.1"></td><td><input id="simWristTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simWristPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
+    </tbody></table></div>
+    <div class="side-grid paired-side-grid"><fieldset><legend>Derecha (DX)</legend><label class="check-row"><input id="simHeadDx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureDx">—</output></div></div></fieldset>
+      <fieldset><legend>Izquierda (IX)</legend><label class="check-row"><input id="simHeadIx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureIx">—</output></div></div></fieldset></div>
+  </div>
+
+  <div class="calculation-box simulation-hand-box"><strong>Mano-dedo y estereotipia</strong>
+    <div class="form-grid simulation-hand-mode"><label>Unidad de entrada<select id="simHandMode"><option value="segundos">Segundos</option><option value="porcentaje">% del TNTR</option></select></label></div>
+    <div class="side-grid paired-side-grid simulation-hand-grid">
+      <fieldset class="simulation-hand-side"><legend>Derecha (DX)</legend>
+        <label><span class="simulation-field-label">Tipo de agarre</span><select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label>
+        <label><span class="simulation-field-label">Tiempo de agarre (<span class="sim-hand-unit">s</span>)</span><input id="simGripTimeDx" type="number" min="0" step="0.1"></label>
+        <label><span class="simulation-field-label">Tiempo utilizando un solo dedo (<span class="sim-hand-unit">s</span>)</span><input id="simFingerTimeDx" type="number" min="0" step="0.1"></label>
+        <div class="result-grid one-column simulation-hand-results"><div><span>Puntuación agarre</span><output id="simGripScoreDx">—</output></div><div><span>Puntuación un solo dedo</span><output id="simFingerScoreDx">—</output></div><div><span>Total mano-dedo</span><output id="simHandScoreDx">—</output></div></div>
+        <div id="simHandWarningDx" class="notice simulation-hand-warning" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del TNTR simulado para la mano derecha.</div>
+        <div class="result-grid one-column simulation-stereo-score"><div><span>Puntuación de estereotipia usada</span><output id="simStereoScoreDx">—</output></div></div>
+        <div id="simStereoReasonsDx" class="simulation-stereo-reasons"></div>
+      </fieldset>
+      <fieldset class="simulation-hand-side"><legend>Izquierda (IX)</legend>
+        <label><span class="simulation-field-label">Tipo de agarre</span><select id="simGripIx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label>
+        <label><span class="simulation-field-label">Tiempo de agarre (<span class="sim-hand-unit">s</span>)</span><input id="simGripTimeIx" type="number" min="0" step="0.1"></label>
+        <label><span class="simulation-field-label">Tiempo utilizando un solo dedo (<span class="sim-hand-unit">s</span>)</span><input id="simFingerTimeIx" type="number" min="0" step="0.1"></label>
+        <div class="result-grid one-column simulation-hand-results"><div><span>Puntuación agarre</span><output id="simGripScoreIx">—</output></div><div><span>Puntuación un solo dedo</span><output id="simFingerScoreIx">—</output></div><div><span>Total mano-dedo</span><output id="simHandScoreIx">—</output></div></div>
+        <div id="simHandWarningIx" class="notice simulation-hand-warning" hidden>La suma del tiempo de uso de un solo dedo y del agarre no puede superar el 100 % del TNTR simulado para la mano izquierda.</div>
+        <div class="result-grid one-column simulation-stereo-score"><div><span>Puntuación de estereotipia usada</span><output id="simStereoScoreIx">—</output></div></div>
+        <div id="simStereoReasonsIx" class="simulation-stereo-reasons"></div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="calculation-box"><strong>Factores complementarios</strong><div class="simulation-complementary-stack"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
+
+  <div class="calculation-box selected-box"><strong>Resultado de la simulación</strong><div class="side-grid paired-side-grid">
+    <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
+    <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
+  </div><div id="simStatus" class="notice"></div></div></section>
+
+<section class="screen" data-screen="18" id="ocraReportTablesScreen">
+  <div class="screen-title"><span>19</span><div><h2>Tablas para informe Word</h2><p>Seleccione de forma independiente la tabla de resultados de la evaluación y la tabla de la simulación. Cada tabla puede copiarse por separado y pegarse directamente en Word.</p></div></div>
+  <div class="report-table-selectors">
+    <label><input type="checkbox" data-ocra-report-table="study" checked> Resultados de la evaluación OCRA</label>
+    <label><input type="checkbox" data-ocra-report-table="simulation" checked> Resultados de la simulación OCRA</label>
+    <label><input type="checkbox" data-ocra-report-table="studyRiskSummary" checked> Resumen índice de riesgo · Evaluación</label>
+    <label><input type="checkbox" data-ocra-report-table="simulationRiskSummary" checked> Resumen índice de riesgo · Simulación</label>
+  </div>
+  <div class="tables-toolbar">
+    <button type="button" class="toolbar-btn" id="generateOCRAReportTables">Generar tablas</button>
+  </div>
+  <div id="ocraReportTables"></div>
+</section>
+
+<section class="screen simulation-recovery-screen" data-screen="17" hidden>
+  <div class="screen-title"><span>17</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
+  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simCloseRecoveryBtn">Volver a la simulación</button></div>
+  <div class="calculation-box">
+    <strong>Horario simulado</strong>
+    <div class="form-grid">
+      <label>Inicio del turno<input id="simRecoveryStart" type="time"></label>
+      <label>Fin del turno<input id="simRecoveryEnd" type="time"></label>
+    </div>
+    <div class="notice">Las pausas habituales de <strong>8 minutos</strong> o más se consideran para la recuperación. Una comida solo se considera comida si dura al menos 30 minutos.</div>
+  </div>
+  <div class="calculation-box">
+    <strong>Pausas del escenario</strong>
+    <div class="result-table-wrap"><table class="compact-table"><thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Habitual</th><th></th></tr></thead><tbody id="simRecoveryPausesBody"><tr><td colspan="6">No hay pausas añadidas.</td></tr></tbody></table></div>
+    <button type="button" class="toolbar-btn" id="simAddRecoveryPauseBtn">Añadir pausa</button>
+  </div>
+  <div class="calculation-box selected-box">
+    <strong>Resultado de recuperación</strong>
+    <div class="result-grid">
+      <div><span>Horas sin recuperación adecuada</span><output id="simRecoveryScheduleHours">—</output></div>
+      <div><span>Factor de recuperación</span><output id="simRecoveryScheduleFactor">—</output></div>
+      <div><span>Factor de duración</span><output id="simDurationScheduleFactor">—</output></div>
+    </div>
+    <div id="simRecoveryScheduleDetail" class="simulation-recovery-detail"></div>
+  </div>
+</section>
+</form>
+<script src="../app.js?v=20261001-classification-v15-v17"></script>
+</body>
+</html>
