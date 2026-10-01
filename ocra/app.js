@@ -1410,8 +1410,18 @@ function ocraTableToWordHtml(table){
      "font-weight:"+(isHeader||classes.includes("report-total-row")||classes.includes("risk-fill")?"700":"400")
    ].join(";")+";";
  });
- clone.querySelectorAll("thead th").forEach(cell=>{cell.setAttribute("bgcolor","#FFFFFF");cell.style.backgroundColor="#FFFFFF";cell.style.color="#759CBF";cell.style.fontWeight="700"});
- clone.querySelectorAll("tbody td:first-child").forEach(cell=>{cell.style.color="#759CBF";cell.style.fontWeight="700"});
+ clone.querySelectorAll("thead th").forEach(cell=>{
+   const special=table.classList.contains("ocra-risk-summary-table");
+   const bg=special?"#759CBF":"#FFFFFF",fg=special?"#FFFFFF":"#759CBF";
+   cell.setAttribute("bgcolor",bg);cell.style.backgroundColor=bg;cell.style.color=fg;cell.style.fontWeight="700";
+ });
+ clone.querySelectorAll("tbody td:first-child").forEach(cell=>{
+   if(table.classList.contains("ocra-risk-summary-table")){
+     cell.setAttribute("bgcolor","#D9E7F5");cell.style.backgroundColor="#D9E7F5";cell.style.color="#759CBF";cell.style.fontWeight="700";
+   }else{
+     cell.style.color="#759CBF";cell.style.fontWeight="700";
+   }
+ });
  clone.querySelectorAll("td.risk-fill").forEach(cell=>{cell.style.textAlign="center";cell.style.fontWeight="700"});
  return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--@page{size:A4;margin:1.5cm;}body,table,thead,tbody,tr,th,td,p,span{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}body{margin:0;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{padding:1.5pt 4pt!important;line-height:10.5pt!important;mso-line-height-rule:exactly;}p{margin:0!important;mso-margin-top-alt:0;mso-margin-bottom-alt:0;line-height:10.5pt!important;mso-line-height-rule:exactly;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;background:#fff;margin:0;">'+clone.outerHTML+'</body></html>';
 }
@@ -1425,12 +1435,21 @@ async function copyOCRAReportTable(button){
   else fallback();
  }catch(e){fallback()}
 }
+function ocraRiskSummaryTable(){
+ const dx=ocraReportNumber("resultadoFinalDx"),ix=ocraReportNumber("resultadoFinalIx");
+ const dxClass=classificationClass(dx),ixClass=classificationClass(ix);
+ return '<div class="report-table-block ocra-risk-summary-block"><h3>Resumen índice de riesgo OCRA</h3><table class="ocra-report-table ocra-risk-summary-table"><thead><tr><th>ÍNDICE DE RIESGO CHECK LIST OCRA</th><th>IR</th><th>NIVEL DE RIESGO</th></tr></thead><tbody>'+
+   '<tr><td class="risk-summary-label">EXTREMIDAD DERECHA</td><td class="risk-summary-ir">'+ocraReportEsc(ocraReportText("resultadoFinalDx"))+'</td><td class="risk-fill '+dxClass+'">'+ocraReportEsc(ocraReportText("clasificacionDx"))+'</td></tr>'+
+   '<tr><td class="risk-summary-label">EXTREMIDAD IZQUIERDA</td><td class="risk-summary-ir">'+ocraReportEsc(ocraReportText("resultadoFinalIx"))+'</td><td class="risk-fill '+ixClass+'">'+ocraReportEsc(ocraReportText("clasificacionIx"))+'</td></tr>'+
+   '</tbody></table><div class="report-table-actions"><button type="button" class="toolbar-btn copy-report-table">Copiar tabla para Word</button></div></div>';
+}
 function renderWordTables(){
  const host=document.getElementById("ocraReportTables");if(!host)return;
  const selected=[...document.querySelectorAll("[data-ocra-report-table]")].filter(x=>x.checked).map(x=>x.dataset.ocraReportTable);
  const blocks=[];
  if(selected.includes("study"))blocks.push(ocraReportTable("Resultados de la evaluación OCRA",ocraStudyReportRows()));
  if(selected.includes("simulation"))blocks.push(ocraReportTable("Resultados de la simulación OCRA",ocraSimulationReportRows()));
+ if(selected.includes("riskSummary"))blocks.push(ocraRiskSummaryTable());
  host.innerHTML=blocks.join("")||'<p class="report-tables-empty">Seleccione al menos una tabla.</p>';
  host.querySelectorAll(".copy-report-table").forEach(button=>button.addEventListener("click",()=>copyOCRAReportTable(button)));
 }
