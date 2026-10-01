@@ -159,8 +159,34 @@ function saveTask(){
  if(simBase){setStatus("Simulación calculada. La tarea original no se ha modificado.");return}
  const idx=study.tasks.findIndex(x=>x.id===t.id);if(idx>=0)study.tasks[idx]=t;else{if(study.tasks.length>=50)return;study.tasks.push(t)}renderTasks();closeEditor();setStatus("Tarea guardada.");
 }
-function download(){
- syncStudyFromHeader();const blob=new Blob([JSON.stringify(study,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=((study.company||"estudio")+"_"+(study.job||"puesto")).replace(/[^a-z0-9áéíóúñ_-]+/gi,"_")+"_empuje_traccion.json";a.click();URL.revokeObjectURL(a.href);setStatus("Estudio guardado.");
+async function download(){
+ syncStudyFromHeader();
+ const json=JSON.stringify(study,null,2);
+ const blob=new Blob([json],{type:"application/json"});
+ const suggested=((study.company||"estudio")+"_"+(study.job||"puesto")).replace(/[^a-z0-9áéíóúñ_-]+/gi,"_")+"_empuje_traccion.json";
+ try{
+   if(window.showSaveFilePicker){
+     const handle=await window.showSaveFilePicker({
+       suggestedName:suggested,
+       types:[{description:"Estudio Empuje y Tracción",accept:{"application/json":[".json"]}}]
+     });
+     const writable=await handle.createWritable();
+     await writable.write(blob);
+     await writable.close();
+     setStatus("Estudio guardado correctamente en la ubicación seleccionada.");
+   }else{
+     const a=document.createElement("a");
+     a.href=URL.createObjectURL(blob);
+     a.download=suggested;
+     a.click();
+     setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+     setStatus("Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.");
+   }
+ }catch(error){
+   if(error?.name==="AbortError"){setStatus("Guardado cancelado. El estudio no se ha modificado.");return}
+   console.error("Empuje-traccion save:",error);
+   setStatus("No se ha podido guardar el estudio.");
+ }
 }
 function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){alert("El archivo no contiene un estudio válido de Empuje y Tracción.")}};r.readAsText(file)}
 function newStudy(){if(study.tasks.length&&!confirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados."))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
