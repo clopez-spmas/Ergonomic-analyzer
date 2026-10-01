@@ -131,9 +131,24 @@ function openEditor(task=null,simulate=false){
  els.simBanner.classList.toggle("hidden",!simulate);els.simBanner.textContent=simulate?"SIMULACIÓN: los cambios no modifican la tarea original.":"";els.editor.classList.remove("hidden");updateVisibility();els.editor.scrollIntoView({behavior:"smooth"});
 }
 function closeEditor(){els.editor.classList.add("hidden");editing=null;simBase=null;$("saveTaskBtn").textContent="Guardar tarea";if(els.simChangesBlock)els.simChangesBlock.classList.add("hidden");if(els.resultsHeading)els.resultsHeading.textContent="6. Resultados"}
+function summaryPopulationCell(t,pop){
+ const r=calculate(t,pop);
+ return '<div class="summary-risk-list">'+rowsFor(t,r).map(x=>{
+   const k=risk(x.ir);
+   const short=x.label.includes("90°")?"Inicial 90°":x.label.includes("sostenida")?"Sostenida":"Inicial 0°";
+   return '<div class="summary-risk-row '+k.cls+'"><span>'+short+'</span><strong>IR '+fmt(x.ir)+'</strong><em>'+k.label+'</em></div>';
+ }).join("")+'</div>';
+}
 function renderTasks(){
- els.rows.innerHTML="";study.tasks.forEach((t,i)=>{const iw=worst(t,"women"),im=worst(t,"men"),kw=risk(iw),km=risk(im),tr=document.createElement("tr");tr.innerHTML='<td>'+(i+1)+'</td><td><strong>'+escapeHtml(t.name)+'</strong></td><td>'+actionText(t.action)+'</td><td class="risk-cell '+kw.cls+'">IR '+fmt(iw)+' · '+kw.label+'</td><td class="risk-cell '+km.cls+'">IR '+fmt(im)+' · '+km.label+'</td><td><div class="task-actions"><button class="et-btn" data-edit="'+t.id+'">Editar</button><button class="et-btn" data-sim="'+t.id+'">Simular</button><button class="et-btn" data-dup="'+t.id+'">Duplicar</button><button class="et-btn danger" data-del="'+t.id+'">Eliminar</button></div></td>';els.rows.appendChild(tr)});
- els.counter.textContent="Tareas del puesto: "+study.tasks.length+" / 50";els.empty.classList.toggle("hidden",study.tasks.length>0);$("addTaskBtn").disabled=study.tasks.length>=50;
+ els.rows.innerHTML="";
+ study.tasks.forEach((t,i)=>{
+   const tr=document.createElement("tr");
+   tr.innerHTML='<td>'+(i+1)+'</td><td><strong>'+escapeHtml(t.name)+'</strong></td><td>'+actionText(t.action)+'</td><td>'+summaryPopulationCell(t,"women")+'</td><td>'+summaryPopulationCell(t,"men")+'</td><td><div class="task-actions"><button class="et-btn" data-edit="'+t.id+'">Editar</button><button class="et-btn" data-sim="'+t.id+'">Simular</button><button class="et-btn" data-dup="'+t.id+'">Duplicar</button><button class="et-btn danger" data-del="'+t.id+'">Eliminar</button></div></td>';
+   els.rows.appendChild(tr);
+ });
+ els.counter.textContent="Tareas del puesto: "+study.tasks.length+" / 50";
+ els.empty.classList.toggle("hidden",study.tasks.length>0);
+ $("addTaskBtn").disabled=study.tasks.length>=50;
 }
 function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function saveTask(){
@@ -157,11 +172,33 @@ function copyTaskResults(){
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Resultados de la tarea copiados. Puede pegarlos en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
 }
 function copySummary(){
- syncStudyFromHeader();if(!study.tasks.length){alert("No hay tareas para copiar.");return}
- const rows=study.tasks.map((t,i)=>{const w=worst(t,"women"),m=worst(t,"men"),kw=risk(w),km=risk(m);const bg=k=>k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(t.name)+'</td><td>'+actionText(t.action)+'</td><td style="background:'+bg(kw)+'"><b>IR '+fmt(w)+' · '+kw.label+'</b></td><td style="background:'+bg(km)+'"><b>IR '+fmt(m)+' · '+km.label+'</b></td></tr>'}).join("");
- const body=rows.replace(/<td( style="background:([^"]+)")?>/g,(m,a,b)=>'<td style="border:1px solid #759CBF;padding:6px;'+(b?'background:'+b+';':'')+'">');
- const html='<div style="font-family:Arial;font-size:10pt"><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">Acción</th><th style="border:1px solid #759CBF;padding:6px">Mujeres</th><th style="border:1px solid #759CBF;padding:6px">Hombres</th></tr>'+body.replace(/IR ([^·<]+) · [^<]+/g,'IR $1')+'</table></div>';
- const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
+ syncStudyFromHeader();
+ if(!study.tasks.length){alert("No hay tareas para copiar.");return}
+ const bg=k=>k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";
+ let rows="";
+ study.tasks.forEach((t,i)=>{
+   const rw=calculate(t,"women"),rm=calculate(t,"men");
+   const wr=rowsFor(t,rw),mr=rowsFor(t,rm);
+   const key=x=>x.label.includes("90°")?"initial90":x.label.includes("sostenida")?"sustained":"initial0";
+   const all=[...wr,...mr].filter((x,idx,arr)=>arr.findIndex(y=>key(y)===key(x))===idx);
+   all.forEach((cond,j)=>{
+     const w=wr.find(x=>key(x)===key(cond)),m=mr.find(x=>key(x)===key(cond));
+     const kw=risk(w?.ir),km=risk(m?.ir);
+     rows+='<tr>'+
+       '<td style="border:1px solid #759CBF;padding:6px">'+(j===0?(i+1):"")+'</td>'+
+       '<td style="border:1px solid #759CBF;padding:6px">'+(j===0?escapeHtml(t.name):"")+'</td>'+
+       '<td style="border:1px solid #759CBF;padding:6px">'+escapeHtml(cond.label)+'</td>'+
+       '<td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(w?.ir)+'</b></td>'+
+       '<td style="border:1px solid #759CBF;padding:6px;background:'+bg(kw)+'">&nbsp;</td>'+
+       '<td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(m?.ir)+'</b></td>'+
+       '<td style="border:1px solid #759CBF;padding:6px;background:'+bg(km)+'">&nbsp;</td>'+
+     '</tr>';
+   });
+ });
+ const html='<div style="font-family:Arial;font-size:10pt"><table style="border-collapse:collapse;width:100%">'+
+ '<tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">IR MUJERES</th><th style="border:1px solid #759CBF;padding:6px">NIVEL</th><th style="border:1px solid #759CBF;padding:6px">IR HOMBRES</th><th style="border:1px solid #759CBF;padding:6px">NIVEL</th></tr>'+rows+'</table></div>';
+ const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});
+ navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
 }
 function bind(){
  ["company","area","job","studyDate","studyNotes"].forEach(id=>$(id).addEventListener("input",syncStudyFromHeader));
