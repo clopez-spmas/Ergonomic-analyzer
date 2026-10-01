@@ -883,7 +883,7 @@ function simRestoreSaved(saved){
    simSet("simRecoveryStart",simRecoveryState.start||"");
    simSet("simRecoveryEnd",simRecoveryState.end||"");
    simRecoveryRenderInputs();
-   simRecoveryCalculate();
+   if(simRecoveryState.inherited)simRecoveryApplyStoredResult();else simRecoveryCalculate();
  }
  simulationState.recoveryBaseline=simClone(simRecoveryState);
  simulationState.recoveryCurrent=simClone(simRecoveryState);
@@ -1091,10 +1091,31 @@ function simRecoveryRenderInputs(){
  tbody.querySelectorAll("[data-sim-recovery-habitual]").forEach(x=>x.onchange=()=>{simRecoveryState.pauses[Number(x.dataset.simRecoveryHabitual)].habitual=x.checked;dirty=true;simRecoveryCalculate();});
  tbody.querySelectorAll("[data-sim-recovery-remove]").forEach(x=>x.onclick=()=>{simRecoveryState.pauses.splice(Number(x.dataset.simRecoveryRemove),1);dirty=true;simRecoveryRenderInputs();simRecoveryCalculate();});
 }
+function simRecoveryApplyStoredResult(){
+ const result=simRecoveryState.lastResult;
+ const tntr=Number.isFinite(simRecoveryState.initialTNTR)?simRecoveryState.initialTNTR:simActualTNTR();
+ const shift=Number.isFinite(simRecoveryState.initialShiftDuration)?simRecoveryState.initialShiftDuration:(n("turnoEfectivoManual")||n("turnoOficial"));
+ const nonRep=Number.isFinite(simRecoveryState.initialNonRep)?simRecoveryState.initialNonRep:n("noRepetitivo");
+ simSet("simTNTR",fmt(tntr,1));
+ simSetText("simShiftDuration",fmt(shift,1));
+ simSetText("simNonRep",fmt(nonRep,1));
+ if(result?.valid){
+   simSetText("simRecoveryScheduleHours",fmt(result.hours,1));
+   simSetText("simRecoveryScheduleFactor",fmt(recoveryMultiplier(result.hours),3));
+ }else{
+   simSetText("simRecoveryScheduleHours","—");
+   simSetText("simRecoveryScheduleFactor","—");
+ }
+ simSetText("simDurationScheduleFactor",fmt(lookup(duration,tntr),3));
+ const detail=document.getElementById("simRecoveryScheduleDetail");
+ if(detail)detail.innerHTML=result?.valid?'<div class="notice"><strong>Datos iniciales del estudio.</strong> Las horas sin recuperación adecuada, el factor de recuperación y el TNTR se han copiado del cálculo original. Al modificar el horario o las pausas se recalculará el escenario.</div>':'<div class="placeholder">'+escK(result?.reason||"No hay un cálculo de recuperación válido en el estudio original.")+'</div>';
+ simCalculate();
+}
 function simRecoveryCalculate(){
  simRecoveryState.start=document.getElementById("simRecoveryStart")?.value||"";
  simRecoveryState.end=document.getElementById("simRecoveryEnd")?.value||"";
  simRecoveryState.minPause=8;
+ simRecoveryState.inherited=false;
  const result=calculateRecoverySchedule(simRecoveryState);
  simRecoveryState.lastResult=result;
  simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
@@ -1123,17 +1144,25 @@ function simRecoveryCalculate(){
  simCalculate();
 }
 function simRecoveryInitFromStudy(){
+ const sourceResult=recoveryState.lastResult?.valid
+   ?simClone(recoveryState.lastResult)
+   :calculateRecoverySchedule({...recoveryState,start:recoveryState.start||form.elements.horaInicio?.value||"",end:recoveryState.end||form.elements.horaFin?.value||"",minPause:8,pauses:(recoveryState.pauses||[]).map(p=>({...p}))});
  simRecoveryState={
    start:recoveryState.start||form.elements.horaInicio?.value||"",
    end:recoveryState.end||form.elements.horaFin?.value||"",
    minPause:8,
    pauses:(recoveryState.pauses||[]).map(p=>({...p})),
-   lastResult:null
+   mealId:recoveryState.mealId??null,
+   lastResult:sourceResult,
+   inherited:true,
+   initialTNTR:simActualTNTR(),
+   initialShiftDuration:n("turnoEfectivoManual")||n("turnoOficial"),
+   initialNonRep:n("noRepetitivo")
  };
  simSet("simRecoveryStart",simRecoveryState.start);
  simSet("simRecoveryEnd",simRecoveryState.end);
  simRecoveryRenderInputs();
- simRecoveryCalculate();
+ simRecoveryApplyStoredResult();
 }
 function simRecoveryInit(){
  const add=document.getElementById("simAddRecoveryPauseBtn");
@@ -1160,7 +1189,7 @@ function initSimulation(){
        simSet("simRecoveryStart",simRecoveryState.start||"");
        simSet("simRecoveryEnd",simRecoveryState.end||"");
        simRecoveryRenderInputs();
-       simRecoveryCalculate();
+       if(simRecoveryState.inherited)simRecoveryApplyStoredResult();else simRecoveryCalculate();
      }
      simulationState.current=simClone(simulationState.baseline);
      simulationState.recoveryCurrent=JSON.parse(JSON.stringify(simRecoveryState));
