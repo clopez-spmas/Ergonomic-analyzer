@@ -26,6 +26,7 @@
   <button type="button" id="saveBtn" class="toolbar-btn">Guardar estudio</button>
   <button type="button" id="loadBtn" class="toolbar-btn">Cargar estudio</button>
   <button type="button" id="newBtn" class="toolbar-btn">Nuevo estudio</button>
+  <button type="button" id="wordTablesBtn" class="toolbar-btn">Tablas para Word</button>
   <input type="file" id="fileInput" accept=".json,application/json" hidden>
 </section>
 <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -445,7 +446,7 @@
       <div class="main-result"><span>Clasificación</span><output id="clasificacionIx">—</output></div>
     </div></section>
   </div>
-  
+  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="resultsWordTablesBtn">Abrir tablas para Word</button></div>
 </section>
 </section>
 <section class="screen" data-screen="16">
@@ -454,7 +455,7 @@
     <strong>Resumen de cambios</strong>
     <div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div>
   </div>
-  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button></div>
+  <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simResetBtn">Restablecer datos iniciales</button><button type="button" class="toolbar-btn" id="simulationWordTablesBtn">Abrir tablas para Word</button></div>
   <div class="calculation-box simulation-recovery-link">
     <strong>Pausas y recuperación</strong>
     <p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p>
@@ -575,6 +576,6 @@
   </div>
 </section>
 </form>
-<script src="app.js?v=20261001-report-tables-v1"></script>
+<script src="app.js?v=20261001-report-tables-access-v2"></script>
 </body>
 </html>
