@@ -20,9 +20,29 @@
   <button id="saveStudyBtn" class="et-btn">Guardar estudio</button>
   <label class="et-btn" for="loadStudyInput">Cargar estudio</label>
   <input id="loadStudyInput" type="file" accept=".json,application/json" hidden>
+  <button id="simulationBtn" class="et-btn">Simulación</button>
   <button id="copySummaryBtn" class="et-btn">Copiar resumen para Word</button>
   <a class="et-link" href="../">← Volver al portal</a>
 </section>
+
+<section id="simulationPicker" class="et-card hidden">
+  <div class="et-section-title">
+    <div>
+      <h2>Simulación</h2>
+      <div class="muted">Seleccione por nombre la tarea que desea modificar en un escenario simulado.</div>
+    </div>
+    <button id="closeSimulationPickerBtn" class="et-btn">Cerrar</button>
+  </div>
+  <div class="et-grid">
+    <label class="et-field">Tarea
+      <select id="simulationTaskSelect"></select>
+    </label>
+    <div style="display:flex;align-items:end">
+      <button id="openSelectedSimulationBtn" class="et-btn primary">Abrir simulación</button>
+    </div>
+  </div>
+</section>
+
 <div id="status" class="status"></div>
 
 <section class="et-card">
