@@ -968,7 +968,11 @@ function simActualRecoveryHours(){
  return r?.valid&&Number.isFinite(r.hours)?r.hours:recoveryHours(eff,n("numPausas"),meal);
 }
 function simPostureTime(kind,side){
- try{return Math.max(0,kForcedSeconds(kind,side));}catch(e){return 0}
+ try{
+  const exposure=kForcedExposure(kind,side);
+  if(ensureManualPosture()[kind][side].source==="manual")return Math.max(0,exposure.seconds);
+  return Math.max(0,exposure.pct/100*simActualTNTR()*60);
+ }catch(e){return 0}
 }
 function simRestoreSaved(saved){
  const current=saved?.current&&typeof saved.current==="object"?saved.current:null;
@@ -990,20 +994,8 @@ function simRestoreSaved(saved){
  simCalculate();
 }
 function simPostureRepresentativeAngle(kind,side){
- const p=ensureManualPosture()[kind][side];
- if(p.source==="manual")return kNum(p.flex,0)>0?(kind==="shoulder"?80:kind==="elbow"?60:45):0;
- const r=kRange();if(!r||!kinoveaState.data||kMissingMarkers(kind,side).length)return 0;
- const frames=kinoveaState.data.frames||[];let base=null,maxPositive=0,minNegative=0,maxAbs=0;
- for(let i=0;i<frames.length-1;i++){
-   const x=frames[i],y=frames[i+1],dt=Math.max(0,Math.min(y.time,r.end)-Math.max(x.time,r.start));if(dt<=0)continue;
-   let va,vb;
-   if(kind==="shoulder"){va=kSigned(kPoint(x,side+"_hip"),kPoint(x,side+"_shoulder"),kPoint(x,side+"_elbow"),side==="right"?"right":"left");vb=kSigned(kPoint(y,side+"_hip"),kPoint(y,side+"_shoulder"),kPoint(y,side+"_elbow"),side==="right"?"right":"left")}
-   else if(kind==="elbow"){va=kAngle(kPoint(x,side+"_shoulder"),kPoint(x,side+"_elbow"),kPoint(x,side+"_wrist"));vb=kAngle(kPoint(y,side+"_shoulder"),kPoint(y,side+"_elbow"),kPoint(y,side+"_wrist"))}
-   else{va=kSigned(kPoint(x,side+"_elbow"),kPoint(x,side+"_wrist"),kPoint(x,side+"_index"),side==="right"?"right":"left");vb=kSigned(kPoint(y,side+"_elbow"),kPoint(y,side+"_wrist"),kPoint(y,side+"_index"),side==="right"?"right":"left")}
-   if(!Number.isFinite(va)||!Number.isFinite(vb))continue;if(base===null)base=va;
-   [va-base,vb-base].forEach(v=>{if(kind==="shoulder"){if(v>=80)maxPositive=Math.max(maxPositive,v);if(v<-20)minNegative=Math.min(minNegative,v)}else if(Math.abs(v)>(kind==="elbow"?60:45))maxAbs=Math.max(maxAbs,Math.abs(v))});
- }
- return kind==="shoulder"?(maxPositive>0?maxPositive:(minNegative<0?minNegative:0)):maxAbs;
+ const exposure=kForcedExposure(kind,side);
+ return Number.isFinite(exposure.angle)?exposure.angle:0;
 }
 function simSetInitialFromStudy(){
  simRenderStereoReasons("Dx","dx");simRenderStereoReasons("Ix","ix");
