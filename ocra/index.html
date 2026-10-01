@@ -535,6 +535,19 @@
     <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
     <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
   </div><div id="simStatus" class="notice"></div></div></section>
+
+<section class="screen" data-screen="18" id="ocraReportTablesScreen">
+  <div class="screen-title"><span>19</span><div><h2>Tablas para informe Word</h2><p>Seleccione de forma independiente la tabla de resultados de la evaluación y la tabla de la simulación. Cada tabla puede copiarse por separado y pegarse directamente en Word.</p></div></div>
+  <div class="report-table-selectors">
+    <label><input type="checkbox" data-ocra-report-table="study" checked> Resultados de la evaluación OCRA</label>
+    <label><input type="checkbox" data-ocra-report-table="simulation" checked> Resultados de la simulación OCRA</label>
+  </div>
+  <div class="tables-toolbar">
+    <button type="button" class="toolbar-btn" id="generateOCRAReportTables">Generar tablas</button>
+  </div>
+  <div id="ocraReportTables"></div>
+</section>
+
 <section class="screen simulation-recovery-screen" data-screen="17" hidden>
   <div class="screen-title"><span>17</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
   <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simCloseRecoveryBtn">Volver a la simulación</button></div>
@@ -562,6 +575,6 @@
   </div>
 </section>
 </form>
-<script src="app.js?v=20261001-recovery-fix-v1"></script>
+<script src="app.js?v=20261001-report-tables-v1"></script>
 </body>
 </html>
