@@ -784,7 +784,7 @@ function calculate(){
  set("finalFreqDx",dxF);set("finalForceDx",dxForce);set("finalCompDx",comp);set("finalBaseDx",dxBase);set("finalRecDx",rm??1,3);set("finalDurDx",md,3);set("resultadoFinalDx",dxFinal);document.getElementById("clasificacionDx").textContent=classification(dxFinal);
  set("finalFreqIx",ixF);set("finalForceIx",ixForce);set("finalCompIx",comp);set("finalBaseIx",ixBase);set("finalRecIx",rm??1,3);set("finalDurIx",md,3);set("resultadoFinalIx",ixFinal);document.getElementById("clasificacionIx").textContent=classification(ixFinal);
 }
-function safeCalculate(){try{calculate();renderHandPosture();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
+function safeCalculate(){try{calculate();renderHandPosture();renderWordTables();return true}catch(error){console.error("OCRA calculate:",error);status.textContent="Se ha producido un error en el cálculo. La navegación continúa disponible.";return false}}
 function markDirty(){dirty=true;status.textContent="";safeCalculate()}
 function addKinoveaFileInput(){
  const container=document.getElementById("kinoveaFileInputs");if(!container)return;
@@ -1040,6 +1040,7 @@ function simCalculate(){
  if(st)st.innerHTML="<strong>Simulación activa.</strong> Índices calculados sobre una copia temporal. El estudio original no se modifica.";
  simulationState.current=simReadState();
  simRenderChanged();
+ renderWordTables();
 }
 function simSetText(id,value){const el=document.getElementById(id);if(el)el.textContent=value;}
 function simStateHasChanges(baseline,current){
@@ -1264,45 +1265,113 @@ bindKinovea();
 renderKinovea();
 }
 
-function ocraRiskInfo(value){
- const v=Number(value);
- if(!Number.isFinite(v))return {range:"—",level:"—",className:"",label:"—"};
- if(v<=7.5)return {range:"≤ 7,5",level:"Verde",className:"green",label:"Aceptable"};
- if(v<=11)return {range:"7,6 – 11",level:"Amarillo",className:"yellow",label:"Borderline / riesgo muy leve"};
- if(v<=14)return {range:"11,1 – 14",level:"Rojo suave",className:"light-red",label:"Riesgo leve"};
- if(v<=22.5)return {range:"14,1 – 22,5",level:"Rojo",className:"red",label:"Riesgo medio"};
- return {range:"> 22,5",level:"Morado",className:"purple",label:"Riesgo alto"};
+function ocraReportText(id){
+ const el=document.getElementById(id);
+ return String(el?.textContent||"—").trim()||"—";
 }
-function ocraSetWord(id,value){const el=document.getElementById(id);if(el)el.textContent=value||"—"}
-function ocraSetRiskCell(id,value){
- const el=document.getElementById(id);if(!el)return;
- const info=ocraRiskInfo(value);
- el.textContent=Number.isFinite(Number(value))?fmt(Number(value),2):"—";
- el.className=info.className?("risk-result-cell "+info.className):"risk-result-cell";
+function ocraReportNumber(id){
+ const v=Number(String(ocraReportText(id)).replace(",","."));
+ return Number.isFinite(v)?v:0;
+}
+function ocraReportEsc(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function ocraReportRows(rows){
+ return rows.map(r=>'<tr class="'+(r[3]||"")+'><td>'+ocraReportEsc(r[0])+'</td><td>'+ocraReportEsc(r[1])+'</td><td>'+ocraReportEsc(r[2])+'</td></tr>').join("");
+}
+function ocraReportTable(title,rows){
+ return '<div class="report-table-block"><h3>'+ocraReportEsc(title)+'</h3><table class="ocra-report-table"><thead><tr><th>Factor / resultado</th><th>Derecha (DX)</th><th>Izquierda (IX)</th></tr></thead><tbody>'+ocraReportRows(rows)+'</tbody></table><div class="report-table-actions"><button type="button" class="toolbar-btn copy-report-table">Copiar tabla para Word</button></div></div>';
+}
+function ocraStudyReportRows(){
+ return [
+  ["Frecuencia",ocraReportText("finalFreqDx"),ocraReportText("finalFreqIx")],
+  ["Acciones/min",ocraReportText("finalFreqActionsDx"),ocraReportText("finalFreqActionsIx")],
+  ["Fuerza",ocraReportText("finalForceDx"),ocraReportText("finalForceIx")],
+  ["Borg 3–4",ocraReportText("finalForce34Dx"),ocraReportText("finalForce34Ix")],
+  ["Borg 5–7",ocraReportText("finalForce57Dx"),ocraReportText("finalForce57Ix")],
+  ["Borg 8–10",ocraReportText("finalForce810Dx"),ocraReportText("finalForce810Ix")],
+  ["Postura + estereotipia",ocraReportText("finalPostureDx"),ocraReportText("finalPostureIx")],
+  ["Hombro",ocraReportText("finalShoulderDx"),ocraReportText("finalShoulderIx")],
+  ["Codo",ocraReportText("finalElbowDx"),ocraReportText("finalElbowIx")],
+  ["Muñeca",ocraReportText("finalWristDx"),ocraReportText("finalWristIx")],
+  ["Mano-dedo",ocraReportText("finalHandDx"),ocraReportText("finalHandIx")],
+  ["· Agarre",ocraReportText("finalHandGripDx"),ocraReportText("finalHandGripIx")],
+  ["· Un solo dedo",ocraReportText("finalHandFingerDx"),ocraReportText("finalHandFingerIx")],
+  ["Estereotipia",ocraReportText("finalStereoDx"),ocraReportText("finalStereoIx")],
+  ["Complementarios",ocraReportText("finalCompDx"),ocraReportText("finalCompIx")],
+  ["· Bloque A",ocraReportText("finalCompADx"),ocraReportText("finalCompAIx")],
+  ["· Bloque B",ocraReportText("finalCompBDx"),ocraReportText("finalCompBIx")],
+  ["Suma de factores",ocraReportText("finalBaseDx"),ocraReportText("finalBaseIx")],
+  ["Factor de recuperación",ocraReportText("finalRecDx"),ocraReportText("finalRecIx")],
+  ["Factor de duración",ocraReportText("finalDurDx"),ocraReportText("finalDurIx")],
+  ["Índice OCRA",ocraReportText("resultadoFinalDx"),ocraReportText("resultadoFinalIx"),"report-total-row"],
+  ["Clasificación",ocraReportText("clasificacionDx"),ocraReportText("clasificacionIx"),"report-total-row"]
+ ];
+}
+function ocraSimulationReportRows(){
+ const tntr=Math.max(0,simNum("simTNTR"));
+ const dxPost=simPostureSide("right",tntr),ixPost=simPostureSide("left",tntr);
+ const compA=Number(document.getElementById("simCompA")?.selectedOptions[0]?.dataset.score)||0;
+ const compB=Number(document.getElementById("simCompB")?.selectedOptions[0]?.dataset.score)||0;
+ const comp=compA+compB;
+ const dxBase=ocraReportNumber("simFreqDx")+ocraReportNumber("simForceResultDx")+ocraReportNumber("simPostureDx")+comp;
+ const ixBase=ocraReportNumber("simFreqIx")+ocraReportNumber("simForceResultIx")+ocraReportNumber("simPostureIx")+comp;
+ return [
+  ["Frecuencia",ocraReportText("simFreqDx"),ocraReportText("simFreqIx")],
+  ["Fuerza",ocraReportText("simForceResultDx"),ocraReportText("simForceResultIx")],
+  ["Postura + estereotipia",ocraReportText("simPostureDx"),ocraReportText("simPostureIx")],
+  ["Hombro",fmt(dxPost.shoulder,2),fmt(ixPost.shoulder,2)],
+  ["Codo",fmt(dxPost.elbow,2),fmt(ixPost.elbow,2)],
+  ["Muñeca",fmt(dxPost.wrist,2),fmt(ixPost.wrist,2)],
+  ["Mano-dedo",ocraReportText("simHandScoreDx"),ocraReportText("simHandScoreIx")],
+  ["· Agarre",ocraReportText("simGripScoreDx"),ocraReportText("simGripScoreIx")],
+  ["· Un solo dedo",ocraReportText("simFingerScoreDx"),ocraReportText("simFingerScoreIx")],
+  ["Estereotipia",ocraReportText("simStereoScoreDx"),ocraReportText("simStereoScoreIx")],
+  ["Complementarios",fmt(comp,2),fmt(comp,2)],
+  ["· Bloque A",fmt(compA,2),fmt(compA,2)],
+  ["· Bloque B",fmt(compB,2),fmt(compB,2)],
+  ["Suma de factores",fmt(dxBase,2),fmt(ixBase,2)],
+  ["Factor de recuperación",ocraReportText("simRecoveryFactor"),ocraReportText("simRecoveryFactor")],
+  ["Factor de duración",ocraReportText("simDurationFactor"),ocraReportText("simDurationFactor")],
+  ["Índice OCRA",ocraReportText("simResultDx"),ocraReportText("simResultIx"),"report-total-row"],
+  ["Clasificación",ocraReportText("simClassificationDx"),ocraReportText("simClassificationIx"),"report-total-row"]
+ ];
+}
+function ocraInlineComputedStyle(el){
+ const cs=window.getComputedStyle(el),props=["background-color","color","font-family","font-size","font-weight","font-style","text-align","vertical-align","border","border-top","border-right","border-bottom","border-left","padding","width","line-height","white-space"];
+ return props.map(p=>p+":"+cs.getPropertyValue(p)+";").join("");
+}
+function ocraTableToWordHtml(table){
+ const clone=table.cloneNode(true);
+ clone.style.cssText=ocraInlineComputedStyle(table)+"border-collapse:collapse;border-spacing:0;width:100%;";
+ clone.setAttribute("cellpadding","0");clone.setAttribute("cellspacing","0");
+ clone.querySelectorAll("thead,tbody,tr,th,td").forEach(el=>{el.style.cssText=ocraInlineComputedStyle(el)});
+ clone.querySelectorAll("th,td").forEach(el=>{const cs=window.getComputedStyle(el);el.style.border=cs.border&&cs.border!=="none"?cs.border:"1px solid #759CBF";el.style.padding=cs.padding||"4pt 6pt";el.style.verticalAlign=cs.verticalAlign||"middle";el.style.textAlign=cs.textAlign||"left"});
+ clone.querySelectorAll("th").forEach(el=>el.style.fontWeight="700");
+ return '<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}th,td{border:0.5pt solid #759CBF;}tr{page-break-inside:avoid;}</style></head><body>'+clone.outerHTML+'</body></html>';
+}
+async function copyOCRAReportTable(button){
+ const table=button.closest(".report-table-block")?.querySelector(".ocra-report-table");if(!table)return;
+ const html=ocraTableToWordHtml(table),text=table.innerText;
+ const done=()=>{const old=button.textContent;button.textContent="✓ Tabla copiada";setTimeout(()=>button.textContent=old,1800)};
+ const fallback=()=>{const holder=document.createElement("div");holder.contentEditable="true";holder.style.position="fixed";holder.style.left="-9999px";holder.innerHTML=html;document.body.appendChild(holder);const range=document.createRange();range.selectNodeContents(holder);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);document.execCommand("copy");sel.removeAllRanges();holder.remove();done()};
+ try{
+  if(navigator.clipboard&&window.ClipboardItem)await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})})]).then(done).catch(fallback);
+  else fallback();
+ }catch(e){fallback()}
 }
 function renderWordTables(){
- const ids={wordRecDx:"finalRecDx",wordRecIx:"finalRecIx",wordFreqDx:"finalFreqDxSub",wordFreqIx:"finalFreqIxSub",wordForceDx:"finalForceDx",wordForceIx:"finalForceIx",wordPostureDx:"finalPostureDx",wordPostureIx:"finalPostureIx",wordCompDx:"finalCompDx",wordCompIx:"finalCompIx",wordBaseDx:"finalBaseDx",wordBaseIx:"finalBaseIx",wordRecFactorDx:"finalRecDx",wordRecFactorIx:"finalRecIx",wordDurDx:"finalDurDx",wordDurIx:"finalDurIx",wordIndexDx:"resultadoFinalDx",wordIndexIx:"resultadoFinalIx"};
- Object.entries(ids).forEach(([target,source])=>{const s=document.getElementById(source);ocraSetWord(target,s?.textContent||"—")});
- const dx=Number(String(document.getElementById("resultadoFinalDx")?.textContent||"").replace(",",".")),ix=Number(String(document.getElementById("resultadoFinalIx")?.textContent||"").replace(",","."));
- const di=ocraRiskInfo(dx),ii=ocraRiskInfo(ix);
- ocraSetWord("wordRiskDx",di.label);ocraSetWord("wordRiskIx",ii.label);
- ocraSetWord("riskRangeDx",di.range);ocraSetWord("riskLevelDx",di.level);
- ocraSetRiskCell("riskCellDx",dx);ocraSetRiskCell("riskCellIx",ix);
-}
-function copyOCRAWordTables(){
- renderWordTables();
- const area=document.getElementById("wordTablesArea");if(!area)return;
- const html=area.innerHTML,text=area.innerText;
- if(navigator.clipboard?.write&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([text],{type:"text/plain"})})]).then(()=>status.textContent="Tablas copiadas. Puedes pegarlas directamente en Word.").catch(()=>ocraLegacyCopy(area));else ocraLegacyCopy(area);
-}
-function ocraLegacyCopy(area){
- const range=document.createRange();range.selectNodeContents(area);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
- try{document.execCommand("copy");status.textContent="Tablas copiadas. Puedes pegarlas directamente en Word."}catch(e){status.textContent="Selecciona las tablas y copia con Ctrl+C."}
- sel.removeAllRanges();
+ const host=document.getElementById("ocraReportTables");if(!host)return;
+ const selected=[...document.querySelectorAll("[data-ocra-report-table]")].filter(x=>x.checked).map(x=>x.dataset.ocraReportTable);
+ const blocks=[];
+ if(selected.includes("study"))blocks.push(ocraReportTable("Resultados de la evaluación OCRA",ocraStudyReportRows()));
+ if(selected.includes("simulation"))blocks.push(ocraReportTable("Resultados de la simulación OCRA",ocraSimulationReportRows()));
+ host.innerHTML=blocks.join("")||'<p class="report-tables-empty">Seleccione al menos una tabla.</p>';
+ host.querySelectorAll(".copy-report-table").forEach(button=>button.addEventListener("click",()=>copyOCRAReportTable(button)));
 }
 function initWordTables(){
- document.getElementById("copyOCRAResultsBtn")?.addEventListener("click",copyOCRAWordTables);
- document.getElementById("printOCRAResultsBtn")?.addEventListener("click",()=>{renderWordTables();window.print()});
+ document.querySelectorAll("[data-ocra-report-table]").forEach(input=>input.addEventListener("change",renderWordTables));
+ document.getElementById("generateOCRAReportTables")?.addEventListener("click",renderWordTables);
  renderWordTables();
 }
 function initApp(){
