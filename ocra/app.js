@@ -95,7 +95,7 @@ const recAuto={480:[7,6,5,4,3,2,1,0],460:[7,6,5,4,3,2,1],440:[6.5,5.5,4.5,3.5,2.
 let recoveryState={method:"schedule",start:"",end:"",minPause:8,pauses:[],mealId:null,lastResult:null};
 
 function recoveryTimeToMinutes(value){
- const m=/^(\\d{1,2}):(\\d{2})$/.exec(String(value||""));
+ const m=/^(\d{1,2}):(\d{2})$/.exec(String(value||""));
  if(!m)return null;
  const h=Number(m[1]),min=Number(m[2]);
  return Number.isFinite(h)&&Number.isFinite(min)&&h>=0&&h<24&&min>=0&&min<60?h*60+min:null;
