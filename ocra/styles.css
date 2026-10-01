@@ -178,3 +178,12 @@
 .report-table-actions{margin-top:6px}
 .report-tables-empty{opacity:.7}
 @media(max-width:760px){.ocra-report-table{font-size:9pt}.ocra-report-table th,.ocra-report-table td{font-size:9pt;padding:4pt}}
+
+/* Clasificación OCRA visual: el color se muestra como fondo, no como texto */
+.classification-output{display:inline-block;min-width:150px;padding:7px 10px;border-radius:6px;text-align:center;font-weight:800!important;color:#111!important}
+.classification-output.green,.ocra-report-table td.risk-fill.green{background:#00B050!important;color:#fff!important}
+.classification-output.yellow,.ocra-report-table td.risk-fill.yellow{background:#FFFF00!important;color:#000!important}
+.classification-output.light-red,.ocra-report-table td.risk-fill.light-red{background:#f4cccc!important;color:#000!important}
+.classification-output.red,.ocra-report-table td.risk-fill.red{background:#FF0000!important;color:#fff!important}
+.classification-output.purple,.ocra-report-table td.risk-fill.purple{background:#7030A0!important;color:#fff!important}
+.ocra-report-table td.risk-fill{font-weight:700;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
