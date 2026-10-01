@@ -270,8 +270,8 @@ function forceScore(seconds34,seconds57,seconds810,cycle){if(cycle<=0)return 0;r
 function forceInputSeconds(name,cycle){const value=n(name);if(cycle<=0)return 0;const mode=document.getElementById("fuerzaModo")?.value||"segundos";return mode==="porcentaje"?cycle*value/100:value}
 function updateForceModeUI(){const mode=document.getElementById("fuerzaModo")?.value||"segundos";const unidad=mode==="porcentaje"?"% del tiempo de ciclo":"segundos/ciclo";document.querySelectorAll(".fuerza-unidad").forEach(el=>{el.textContent=unidad;el.style.display="inline";});document.querySelectorAll('input[name^="dxFuerza"],input[name^="ixFuerza"]').forEach(el=>{el.step="0.1";el.max=mode==="porcentaje"?"100":"";el.placeholder=mode==="porcentaje"?"%":"s";el.title=unidad;});}
 function stereo(prefix){return (form.elements[prefix+"StereoAlmost"]?.checked||form.elements[prefix+"StereoCycle8"]?.checked)?3:(form.elements[prefix+"StereoHalf"]?.checked||form.elements[prefix+"StereoCycle815"]?.checked)?1.5:0}
-function classification(x){if(!Number.isFinite(x))return "—";if(x<7.5)return "Riesgo aceptable";if(x<=11)return "Riesgo muy leve";if(x<=14)return "Riesgo medio leve";if(x<=22.5)return "Riesgo medio";return "Riesgo elevado"}
-function classificationClass(x){if(!Number.isFinite(x))return "";if(x<7.5)return "green";if(x<=11)return "yellow";if(x<=14)return "light-red";if(x<=22.5)return "red";return "purple"}
+function classification(x){if(!Number.isFinite(x))return "—";if(x<=7.5)return "Riesgo aceptable";if(x<=11)return "Riesgo muy leve";if(x<=16)return "Riesgo leve";if(x<=22.5)return "Riesgo medio";return "Riesgo alto"}
+function classificationClass(x){if(!Number.isFinite(x))return "";if(x<=7.5)return "green";if(x<=11)return "yellow";if(x<=16)return "light-red";if(x<=22.5)return "red";return "purple"}
 function setRiskBlock(id,value){
  const el=document.getElementById(id);if(!el)return;
  const cls=classificationClass(value);
