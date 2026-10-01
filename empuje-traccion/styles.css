@@ -30,3 +30,10 @@
 
 #simulationPicker .et-section-title{margin-bottom:14px}
 #simulationPicker select{width:100%}
+
+.app-dialog{border:0;border-radius:12px;padding:0;max-width:520px;width:calc(100% - 32px);box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.app-dialog::backdrop{background:rgba(20,35,50,.42)}
+.app-dialog-content{padding:24px}
+.app-dialog-content h2{margin:0 0 10px;color:#005a9c}
+.app-dialog-content p{margin:0;color:#425466;line-height:1.55;white-space:pre-line}
+.app-dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
