@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OCRA · MultiGEI · OCRA Analyzer</title>
+<link rel="stylesheet" href="../../css/styles.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.variant-shell{max-width:1000px;margin:0 auto;padding:28px 18px 48px}
+.variant-card{margin-top:24px;padding:24px;border:1px solid #d8e0e8;border-radius:12px;background:#fff}
+.variant-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center;margin:22px 0}
+.variant-step{padding:16px;border:1px solid #d8e0e8;border-radius:10px;background:#f8fafc;text-align:center}
+.variant-arrow{font-weight:700;color:#759CBF}
+.variant-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+@media(max-width:760px){.variant-flow{grid-template-columns:1fr}.variant-arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<main class="variant-shell">
+<header class="ocra-header">
+  <div class="brand">OCRA ANALYZER</div>
+  <h1>OCRA · MultiGEI</h1>
+  <p>Modalidad independiente para el cálculo MultiGEI, construida sobre evaluaciones OCRA base de las tareas implicadas.</p>
+</header>
+
+<section class="variant-card">
+  <h2>Estructura de cálculo</h2>
+  <div class="variant-flow">
+    <div class="variant-step"><strong>1. Definir tareas</strong><br>Crear las tareas que forman parte de la exposición.</div>
+    <div class="variant-arrow">→</div>
+    <div class="variant-step"><strong>2. OCRA base</strong><br>Evaluar individualmente cada tarea con el motor OCRA validado.</div>
+    <div class="variant-arrow">→</div>
+    <div class="variant-step"><strong>3. Cálculo específico</strong><br>Aplicar la fórmula propia de esta modalidad sobre los resultados necesarios.</div>
+  </div>
+  <p class="notice"><strong>Motor compartido:</strong> esta modalidad no tendrá copias propias de las tablas ni de las fórmulas OCRA de una tarea. Cuando sea necesario actualizar una tabla o cálculo base, se modificará únicamente el motor común.</p>
+  <div class="variant-actions">
+    <a class="toolbar-btn" href="../">← Volver a modalidades OCRA</a>
+    <a class="toolbar-btn" href="../una-tarea/">Abrir OCRA base</a>
+  </div>
+</section>
+</main>
+</body>
+</html>
