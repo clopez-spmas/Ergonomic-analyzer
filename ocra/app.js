@@ -1373,12 +1373,43 @@ function ocraInlineComputedStyle(el){
 }
 function ocraTableToWordHtml(table){
  const clone=table.cloneNode(true);
- clone.style.cssText=ocraInlineComputedStyle(table)+"border-collapse:collapse;border-spacing:0;width:100%;";
- clone.setAttribute("cellpadding","0");clone.setAttribute("cellspacing","0");
- clone.querySelectorAll("thead,tbody,tr,th,td").forEach(el=>{el.style.cssText=ocraInlineComputedStyle(el)});
- clone.querySelectorAll("th,td").forEach(el=>{const cs=window.getComputedStyle(el);el.style.border=cs.border&&cs.border!=="none"?cs.border:"1px solid #759CBF";el.style.padding=cs.padding||"4pt 6pt";el.style.verticalAlign=cs.verticalAlign||"middle";el.style.textAlign=cs.textAlign||"left"});
- clone.querySelectorAll("th").forEach(el=>el.style.fontWeight="700");
- return '<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}th,td{border:0.5pt solid #759CBF;}tr{page-break-inside:avoid;}</style></head><body>'+clone.outerHTML+'</body></html>';
+ clone.setAttribute("border","0");
+ clone.setAttribute("cellpadding","0");
+ clone.setAttribute("cellspacing","0");
+ clone.setAttribute("width","100%");
+ clone.style.cssText="width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10pt;color:#000;background:#fff;";
+ clone.querySelectorAll("tr").forEach(row=>{
+   row.style.cssText="page-break-inside:avoid;mso-yfti-irow:0;";
+ });
+ clone.querySelectorAll("th,td").forEach(cell=>{
+   const isHeader=cell.tagName==="TH";
+   const classes=[...cell.classList];
+   let bg="#FFFFFF",color=isHeader?"#759CBF":"#000000";
+   if(classes.includes("green")){bg="#00B050";color="#FFFFFF"}
+   else if(classes.includes("yellow")){bg="#FFFF00";color="#000000"}
+   else if(classes.includes("light-red")){bg="#F4CCCC";color="#000000"}
+   else if(classes.includes("red")){bg="#FF0000";color="#FFFFFF"}
+   else if(classes.includes("purple")){bg="#7030A0";color="#FFFFFF"}
+   cell.setAttribute("bgcolor",bg);
+   cell.setAttribute("valign","middle");
+   cell.style.cssText=[
+     "font-family:Arial,sans-serif",
+     "font-size:10pt",
+     "line-height:1.15",
+     "color:"+color,
+     "background-color:"+bg,
+     "mso-pattern:"+bg+" auto",
+     "border:0.5pt solid #759CBF",
+     "padding:4pt 6pt",
+     "vertical-align:middle",
+     "text-align:left",
+     "font-weight:"+(isHeader||classes.includes("report-total-row")||classes.includes("risk-fill")?"700":"400")
+   ].join(";")+";";
+ });
+ clone.querySelectorAll("thead th").forEach(cell=>{cell.setAttribute("bgcolor","#FFFFFF");cell.style.backgroundColor="#FFFFFF";cell.style.color="#759CBF";cell.style.fontWeight="700"});
+ clone.querySelectorAll("tbody td:first-child").forEach(cell=>{cell.style.color="#759CBF";cell.style.fontWeight="700"});
+ clone.querySelectorAll("td.risk-fill").forEach(cell=>{cell.style.textAlign="center";cell.style.fontWeight="700"});
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;}tr{page-break-inside:avoid;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;background:#fff;">'+clone.outerHTML+'</body></html>';
 }
 async function copyOCRAReportTable(button){
  const table=button.closest(".report-table-block")?.querySelector(".ocra-report-table");if(!table)return;
