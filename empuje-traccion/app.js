@@ -79,7 +79,9 @@ function renderResults(){
 }
 function compareTable(base,sim,pop){
  const a=calculate(base,pop),b=calculate(sim,pop), ar=rowsFor(base,a),br=rowsFor(sim,b);
- let rows=br.map((x,i)=>{const old=ar[i]||{},k=risk(x.ir);return '<tr><td>'+x.label+'</td><td>'+fmt(old.ir)+'</td><td><strong>'+fmt(x.ir)+'</strong></td><td class="risk-cell '+k.cls+'">'+k.label+'</td></tr>'}).join("");
+ const key=s=>s.includes("90°")?"initial90":s.includes("sostenida")?"sustained":"initial0";
+ const all=[...ar,...br].filter((x,i,z)=>z.findIndex(y=>key(y.label)===key(x.label))===i);
+ let rows=all.map(x=>{const kx=key(x.label),old=ar.find(y=>key(y.label)===kx),neu=br.find(y=>key(y.label)===kx),ir=neu?neu.ir:null,k=risk(ir);return '<tr><td>'+x.label+'</td><td>'+fmt(old?old.ir:null)+'</td><td><strong>'+fmt(ir)+'</strong></td><td class="risk-cell '+k.cls+'">'+k.label+'</td></tr>'}).join("");
  return '<table class="result-table"><thead><tr><th>Condición</th><th>Estudio</th><th>Simulación</th><th>Nivel simulado</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 function renderSimulationCompare(t){
@@ -95,10 +97,10 @@ function setMeasures(id,arr){const inputs=document.querySelectorAll("#"+id+" inp
 function openEditor(task=null,simulate=false){
  editing=task?JSON.parse(JSON.stringify(task)):null;simBase=simulate&&task?JSON.parse(JSON.stringify(task)):null;
  const t=task||{name:"",description:"",action:"push",mode:"twohands",people:2,has90:false,height:1.15,distance:30,freqInitial:1.1,freqSustained:2.9,initial0:[],initial90:[],sustained:[]};
- els.title.textContent=simulate?"Simulación · "+t.name:(task?"Editar tarea":"Nueva tarea");els.name.value=t.name||"";els.desc.value=t.description||"";radio("action",t.action);radio("mode",t.mode);radio("has90",t.has90?"yes":"no");els.people.value=t.people||2;els.height.value=String(t.height);els.distance.value=String(t.distance);els.fi.value=String(t.freqInitial);els.fs.value=String(t.freqSustained);setMeasures("initial0Measures",t.initial0);setMeasures("initial90Measures",t.initial90);setMeasures("sustainedMeasures",t.sustained);
+ els.title.textContent=simulate?"Simulación · "+t.name:(task?"Editar tarea":"Nueva tarea");$("saveTaskBtn").textContent=simulate?"Calcular simulación":"Guardar tarea";els.name.value=t.name||"";els.desc.value=t.description||"";radio("action",t.action);radio("mode",t.mode);radio("has90",t.has90?"yes":"no");els.people.value=t.people||2;els.height.value=String(t.height);els.distance.value=String(t.distance);els.fi.value=String(t.freqInitial);els.fs.value=String(t.freqSustained);setMeasures("initial0Measures",t.initial0);setMeasures("initial90Measures",t.initial90);setMeasures("sustainedMeasures",t.sustained);
  els.simBanner.classList.toggle("hidden",!simulate);els.simBanner.textContent=simulate?"SIMULACIÓN: los cambios no modifican la tarea original.":"";els.editor.classList.remove("hidden");updateVisibility();els.editor.scrollIntoView({behavior:"smooth"});
 }
-function closeEditor(){els.editor.classList.add("hidden");editing=null;simBase=null}
+function closeEditor(){els.editor.classList.add("hidden");editing=null;simBase=null;$("saveTaskBtn").textContent="Guardar tarea"}
 function renderTasks(){
  els.rows.innerHTML="";study.tasks.forEach((t,i)=>{const iw=worst(t,"women"),im=worst(t,"men"),kw=risk(iw),km=risk(im),tr=document.createElement("tr");tr.innerHTML='<td>'+(i+1)+'</td><td><strong>'+escapeHtml(t.name)+'</strong></td><td>'+actionText(t.action)+'</td><td class="risk-cell '+kw.cls+'">IR '+fmt(iw)+' · '+kw.label+'</td><td class="risk-cell '+km.cls+'">IR '+fmt(im)+' · '+km.label+'</td><td><div class="task-actions"><button class="et-btn" data-edit="'+t.id+'">Editar</button><button class="et-btn" data-sim="'+t.id+'">Simular</button><button class="et-btn" data-dup="'+t.id+'">Duplicar</button><button class="et-btn danger" data-del="'+t.id+'">Eliminar</button></div></td>';els.rows.appendChild(tr)});
  els.counter.textContent="Tareas del puesto: "+study.tasks.length+" / 50";els.empty.classList.toggle("hidden",study.tasks.length>0);$("addTaskBtn").disabled=study.tasks.length>=50;
@@ -120,7 +122,8 @@ function newStudy(){if(study.tasks.length&&!confirm("¿Crear un estudio nuevo? S
 function copySummary(){
  syncStudyFromHeader();if(!study.tasks.length){alert("No hay tareas para copiar.");return}
  const rows=study.tasks.map((t,i)=>{const w=worst(t,"women"),m=worst(t,"men"),kw=risk(w),km=risk(m);const bg=k=>k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(t.name)+'</td><td>'+actionText(t.action)+'</td><td style="background:'+bg(kw)+'"><b>IR '+fmt(w)+' · '+kw.label+'</b></td><td style="background:'+bg(km)+'"><b>IR '+fmt(m)+' · '+km.label+'</b></td></tr>'}).join("");
- const html='<div style="font-family:Arial;font-size:10pt"><p><b>Empresa:</b> '+escapeHtml(study.company)+'<br><b>Puesto:</b> '+escapeHtml(study.job)+'</p><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">Acción</th><th style="border:1px solid #759CBF;padding:6px">Mujeres</th><th style="border:1px solid #759CBF;padding:6px">Hombres</th></tr>'+rows.replace(/<td/g,'<td style="border:1px solid #759CBF;padding:6px"')+'</table></div>';
+ const body=rows.replace(/<td( style="background:([^"]+)")?>/g,(m,a,b)=>'<td style="border:1px solid #759CBF;padding:6px;'+(b?'background:'+b+';':'')+'">');
+ const html='<div style="font-family:Arial;font-size:10pt"><p><b>Empresa:</b> '+escapeHtml(study.company)+'<br><b>Puesto:</b> '+escapeHtml(study.job)+'</p><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">Acción</th><th style="border:1px solid #759CBF;padding:6px">Mujeres</th><th style="border:1px solid #759CBF;padding:6px">Hombres</th></tr>'+body+'</table></div>';
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
 }
 function bind(){
