@@ -311,15 +311,54 @@ function kRequired(kind,side){
  if(kind==="elbow")return side==="left"?["left_shoulder","left_elbow","left_wrist"]:["right_shoulder","right_elbow","right_wrist"];
  return side==="left"?["left_elbow","left_wrist","left_index"]:["right_elbow","right_wrist","right_index"];
 }
+function kNormaliseDataSet(ds){
+ if(!ds)return ds;
+ ds.view=ds.view||"unspecified";
+ ds.task=String(ds.task||"");
+ ds.range={mode:"all",start:0,end:ds.data?.duration||0,cycles:1,...(ds.range||{})};
+ ds.range.start=Math.max(0,kNum(ds.range.start,0));
+ ds.range.end=Math.max(ds.range.start,kNum(ds.range.end,ds.data?.duration||0));
+ ds.range.cycles=Math.max(1,Math.floor(kNum(ds.range.cycles,1)));
+ ds.mapping=ds.mapping||{};
+ return ds;
+}
+function kDataSetRange(ds){
+ kNormaliseDataSet(ds);
+ const d=Math.max(0,ds?.data?.duration||0),r=ds.range||{};
+ let start=0,end=d;
+ if(r.mode==="interval"){start=Math.max(0,Math.min(d,kNum(r.start,0)));end=Math.max(start,Math.min(d,kNum(r.end,d)));}
+ return {start,end,duration:Math.max(0,end-start),cycles:Math.max(1,Math.floor(kNum(r.cycles,1))),mode:r.mode||"all"};
+}
+function kViewSupports(kind,side,view){
+ const v=view||"unspecified";
+ if(v==="unspecified")return true;
+ if(v==="lateral_right")return side==="right";
+ if(v==="lateral_left")return side==="left";
+ if(v==="frontal")return kind==="shoulder"||kind==="wrist";
+ if(v==="threequarter_right")return side==="right";
+ if(v==="threequarter_left")return side==="left";
+ return false;
+}
+function kDataSetMissingMarkers(ds,kind,side){
+ const mapping=ds?.mapping||{};
+ return kRequired(kind,side).filter(key=>!mapping[key]);
+}
+function kKinoveaCandidates(kind,side){
+ return (kinoveaState.dataSets||[]).map(kNormaliseDataSet).filter(ds=>kViewSupports(kind,side,ds.view)&&!kDataSetMissingMarkers(ds,kind,side).length&&kDataSetRange(ds).duration>0);
+}
 function kMissingMarkers(kind,side){
- const available=kAvailableMarkers();
- return kRequired(kind,side).filter(x=>!available[x]);
+ const sets=(kinoveaState.dataSets||[]).filter(ds=>kViewSupports(kind,side,ds.view));
+ if(!sets.length)return kRequired(kind,side);
+ const available=new Set();
+ sets.forEach(ds=>Object.entries(ds.mapping||{}).forEach(([key,value])=>{if(value)available.add(key)}));
+ return kRequired(kind,side).filter(key=>!available.has(key));
 }
 function kKinoveaAvailability(kind,side){
+ const candidates=kKinoveaCandidates(kind,side);
+ if(candidates.length)return {state:"ready",missing:[]};
  const missing=kMissingMarkers(kind,side);
- if(!kinoveaState.data)return {state:"none",missing};
- if(missing.length)return {state:"partial",missing};
- return {state:"ready",missing:[]};
+ if(!(kinoveaState.dataSets||[]).length)return {state:"none",missing};
+ return {state:"partial",missing};
 }
 function kMissingMessage(kind){
  const parts=[];
@@ -356,6 +395,7 @@ function parseKinovea(raw){
 }
 function escK(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
 function kPoint(frame,key){for(const ds of kinoveaState.dataSets||[]){const marker=ds.mapping?.[key];if(marker&&ds.data?.frames?.[frame.index]?.landmarks?.[marker])return ds.data.frames[frame.index].landmarks[marker]}const marker=kinoveaState.mapping?.[key];return marker?frame.landmarks[marker]:null}
+function kDataSetPoint(ds,frame,key){const marker=ds?.mapping?.[key];return marker?frame?.landmarks?.[marker]||null:null}
 function kAngle(a,b,c){
  if(!a||!b||!c)return NaN;
  const u={x:a.x-b.x,y:a.y-b.y},v={x:c.x-b.x,y:c.y-b.y};
@@ -375,18 +415,12 @@ function kRotation(elbow,wrist,index){
  return Math.atan2(a.x*b.y-a.y*b.x,a.x*b.x+a.y*b.y)*180/Math.PI;
 }
 function kRange(){
- if(!kinoveaState.data)return null;
- const d=kinoveaState.data.duration, r=kinoveaState.range;
- let start=0,end=d;
- if(r.mode==="interval"){start=Math.max(0,Math.min(d,kNum(r.start,0)));end=Math.max(start,Math.min(d,kNum(r.end,d)));}
- if(r.mode==="cycles"){const cycles=Math.max(1,Math.floor(kNum(r.cycles,1)));r.cycles=cycles;}
- return {start,end,duration:Math.max(0,end-start)};
+ const ds=(kinoveaState.dataSets||[])[0];
+ return ds?kDataSetRange(ds):null;
 }
 function kRangeLabel(){
- const r=kRange();if(!r)return "Cargue el JSON de Kinovea.";
- if(kinoveaState.range.mode==="all")return "Todo el vídeo · "+fmt(r.duration,2)+" s";
- if(kinoveaState.range.mode==="interval")return "Desde "+fmt(r.start,2)+" s hasta "+fmt(r.end,2)+" s · "+fmt(r.duration,2)+" s";
- return "Todo el vídeo · "+fmt(r.duration,2)+" s · "+kinoveaState.range.cycles+" ciclos visibles · media "+fmt(r.duration/kinoveaState.range.cycles,2)+" s/ciclo";
+ const count=(kinoveaState.dataSets||[]).length;
+ return count?count+" vídeo"+(count===1?"":"s")+" cargado"+(count===1?"":"s")+" · cada muestra utiliza su propio periodo y ciclos.":"Cargue el JSON de Kinovea.";
 }
 function kSetStatus(msg){status.textContent=msg}
 function renderKinoveaSelectedTable(){
@@ -515,8 +549,8 @@ function initPostureStudyMode(){
  if(el.value!=="manual"&&el.value!=="kinovea")el.value="manual";
  syncPostureSources();
 }
-function kKinoveaFileId(kind,side){const required=kRequired(kind,side);return (kinoveaState.dataSets||[]).find(ds=>required.every(key=>!!ds.mapping?.[key]))?.id||null}
-function kSideHasKinovea(kind,side){return !!kKinoveaFileId(kind,side) && !!kinoveaState.data}
+function kKinoveaFileId(kind,side){return kKinoveaCandidates(kind,side)[0]?.id||null}
+function kSideHasKinovea(kind,side){return kKinoveaCandidates(kind,side).length>0}
 function kSourceLabel(source){return source==="kinovea"?"KINOVEA":"MANUAL"}
 const postureFingerTable=[[0,0],[5,0],[10,.25],[15,.5],[20,.75],[25,1],[31,1.25],[37,1.4],[44,1.5],[50,1.5],[54,1.5],[57,2],[61,2.25],[65,2.5],[69,2.75],[72,3.15],[76,3.75],[80,3.95],[100,4]];
 const postureHandTable=[[0,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37,3],[44,3.5],[50,4],[54,4.5],[57,5],[61,5.5],[65,6],[69,6.5],[72,7],[76,7.5],[80,8],[100,8]];
