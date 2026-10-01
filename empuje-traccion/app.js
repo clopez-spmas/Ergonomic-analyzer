@@ -5,7 +5,7 @@ const DIST=[["<5",null,null],[5,.27,.18],[6,.294,.196],[7,.318,.212],[8,.342,.22
 const FS=[[10,.49],[9,.488],[8,.486],[7,.484],[6,.482],[5,.48],[4,.47],[3,.4642857143],[2.9,.4585714286],[2.8,.4528571429],[2.7,.4471428571],[2.6,.4414285714],[2.5,.4357142857],[2.4,.43],[2.3,.425],[2.2,.42],[2.1,.415],[2,.41],[1.9,.405],[1.8,.4],[1.7,.395],[1.6,.39],[1.5,.385],[1.4,.38],[1.3,.375],[1.2,.37],[1.1,.365],[1,.36],[.9,.348],[.8,.336],[.7,.324],[.6,.312],[.5,.3],[.4,.2733333333],[.3,.2466666667],[.2,.22],[.1,.18],[.075,.16],[.05,.14],[.025,.11],[.02,.1],[1/60,.09],[1/70,.0866666667],[1/80,.0833333333],[1/90,.08],[.01,.0766666667],[1/110,.0733333333],[1/120,.07],[1/130,.0683333333],[1/140,.0666666667],[1/150,.065],[1/160,.0633333333],[1/170,.0616666667],[1/180,.06],[1/190,.0583333333],[.005,.0566666667],[1/210,.055],[1/220,.0533333333],[1/230,.0516666667],[1/240,.05],[.004,.0491666667],[1/260,.0483333333],[1/270,.0475],[1/280,.0466666667],[1/290,.0458333333],[1/300,.045],[1/310,.0441666667],[1/320,.0433333333],[1/330,.0425],[1/340,.0416666667],[1/350,.0408333333],[1/360,.04]];
 const FLS_PULL=[[1.4,190,300],[1.35,190,300],[1.3,190,300],[1.25,190,300],[1.2,190,300],[1.15,190,300],[1.1,310,490],[1.05,310,490],[1,310,490],[.95,310,490],[.9,330,520],[.85,330,520],[.8,330,520],[.75,330,520],[.7,330,520],[.65,330,520],[.6,330,520],[.55,330,520],[.5,330,520],[.45,330,520],[.4,330,520],[.35,330,520],[.3,330,520],[.25,330,520],[.2,330,520],[.15,330,520],[.1,330,520]];
 const $=id=>document.getElementById(id), q=n=>document.querySelector('input[name="'+n+'"]:checked');
-const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status")};
+const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status"),simChangesBlock:$("simulationChangesBlock"),simChangesList:$("simulationChangesList"),resultsHeading:$("resultsHeading")};
 let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]}, editing=null, simBase=null;
 const fmt=n=>Number.isFinite(n)?n.toFixed(2).replace(".",","):"—";
 const actionText=a=>a==="push"?"Empujar":"Tirar";
@@ -66,8 +66,38 @@ function calcBlock(pop,r){return '<div class="subcard"><h3>'+pop+'</h3><div clas
 function formTask(){
  return {id:editing&&editing.id?editing.id:(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()),name:els.name.value.trim(),description:els.desc.value.trim(),action:q("action").value,mode:q("mode").value,people:Number(els.people.value)||2,has90:q("has90").value==="yes",height:Number(els.height.value),distance:els.distance.value==="<5"?"<5":Number(els.distance.value),freqInitial:Number(els.fi.value),freqSustained:Number(els.fs.value),initial0:values("initial0Measures"),initial90:q("has90").value==="yes"?values("initial90Measures"):[],sustained:els.distance.value==="<5"?[]:values("sustainedMeasures")};
 }
+function displayValue(label,v){
+ if(Array.isArray(v))return v.length?v.join(", ")+" N":"Sin mediciones";
+ if(label==="Acción")return v==="push"?"Empujar":"Tirar";
+ if(label==="Forma de realización")return v==="twohands"?"Una persona · dos manos":v==="onehand"?"Una persona · una mano":"Dos o más personas";
+ if(label==="Medición a 90°")return v?"Sí":"No";
+ if(label==="Distancia")return v==="<5"?"< 5 m":v+" m";
+ if(label==="Altura de agarre")return String(v).replace(".",",")+" m";
+ if(label.includes("Frecuencia"))return String(v).replace(".",",")+" /min";
+ return String(v??"");
+}
+function renderSimulationChanges(current){
+ if(!els.simChangesBlock||!els.simChangesList)return;
+ const active=!!simBase;
+ els.simChangesBlock.classList.toggle("hidden",!active);
+ if(els.resultsHeading)els.resultsHeading.textContent=active?"7. Resultados":"6. Resultados";
+ if(!active)return;
+ const defs=[
+  ["Nombre de la tarea","name"],["Descripción","description"],["Acción","action"],["Forma de realización","mode"],
+  ["Número de personas","people"],["Medición a 90°","has90"],["Altura de agarre","height"],["Distancia","distance"],
+  ["Frecuencia inicial","freqInitial"],["Frecuencia sostenida","freqSustained"],
+  ["Fuerza inicial a 0°","initial0"],["Fuerza inicial a 90°","initial90"],["Fuerza sostenida","sustained"]
+ ];
+ const rows=[];
+ defs.forEach(([label,key])=>{
+   const before=simBase[key],after=current[key];
+   const sa=Array.isArray(before)?JSON.stringify(before):String(before??""), sb=Array.isArray(after)?JSON.stringify(after):String(after??"");
+   if(sa!==sb)rows.push('<div><strong>'+escapeHtml(label)+'</strong><span>'+escapeHtml(displayValue(label,before))+' → '+escapeHtml(displayValue(label,after))+'</span></div>');
+ });
+ els.simChangesList.innerHTML=rows.length?rows.join(""):'<div class="placeholder">No se han realizado cambios.</div>';
+}
 function renderResults(){
- const t=formTask(), rw=calculate(t,"women"), rm=calculate(t,"men");
+ const t=formTask(), rw=calculate(t,"women"), rm=calculate(t,"men"); renderSimulationChanges(t);
  const any=[...rowsFor(t,rw),...rowsFor(t,rm)].some(x=>Number.isFinite(x.ir));
  els.resultMessage.classList.toggle("hidden",any);els.resultTables.classList.toggle("hidden",!any);els.calcDetails.classList.toggle("hidden",!any);
  if(any){els.women.innerHTML=resultTable(t,rw);els.men.innerHTML=resultTable(t,rm);els.calc.innerHTML=t.mode==="onehand"?'<div class="notice">Evaluación con límites específicos para empuje/tracción con una mano.</div>':calcBlock("Mujeres",rw)+calcBlock("Hombres",rm)}
@@ -100,7 +130,7 @@ function openEditor(task=null,simulate=false){
  els.title.textContent=simulate?"Simulación · "+t.name:(task?"Editar tarea":"Nueva tarea");$("saveTaskBtn").textContent=simulate?"Calcular simulación":"Guardar tarea";els.name.value=t.name||"";els.desc.value=t.description||"";radio("action",t.action);radio("mode",t.mode);radio("has90",t.has90?"yes":"no");els.people.value=t.people||2;els.height.value=String(t.height);els.distance.value=String(t.distance);els.fi.value=String(t.freqInitial);els.fs.value=String(t.freqSustained);setMeasures("initial0Measures",t.initial0);setMeasures("initial90Measures",t.initial90);setMeasures("sustainedMeasures",t.sustained);
  els.simBanner.classList.toggle("hidden",!simulate);els.simBanner.textContent=simulate?"SIMULACIÓN: los cambios no modifican la tarea original.":"";els.editor.classList.remove("hidden");updateVisibility();els.editor.scrollIntoView({behavior:"smooth"});
 }
-function closeEditor(){els.editor.classList.add("hidden");editing=null;simBase=null;$("saveTaskBtn").textContent="Guardar tarea"}
+function closeEditor(){els.editor.classList.add("hidden");editing=null;simBase=null;$("saveTaskBtn").textContent="Guardar tarea";if(els.simChangesBlock)els.simChangesBlock.classList.add("hidden");if(els.resultsHeading)els.resultsHeading.textContent="6. Resultados"}
 function renderTasks(){
  els.rows.innerHTML="";study.tasks.forEach((t,i)=>{const iw=worst(t,"women"),im=worst(t,"men"),kw=risk(iw),km=risk(im),tr=document.createElement("tr");tr.innerHTML='<td>'+(i+1)+'</td><td><strong>'+escapeHtml(t.name)+'</strong></td><td>'+actionText(t.action)+'</td><td class="risk-cell '+kw.cls+'">IR '+fmt(iw)+' · '+kw.label+'</td><td class="risk-cell '+km.cls+'">IR '+fmt(im)+' · '+km.label+'</td><td><div class="task-actions"><button class="et-btn" data-edit="'+t.id+'">Editar</button><button class="et-btn" data-sim="'+t.id+'">Simular</button><button class="et-btn" data-dup="'+t.id+'">Duplicar</button><button class="et-btn danger" data-del="'+t.id+'">Eliminar</button></div></td>';els.rows.appendChild(tr)});
  els.counter.textContent="Tareas del puesto: "+study.tasks.length+" / 50";els.empty.classList.toggle("hidden",study.tasks.length>0);$("addTaskBtn").disabled=study.tasks.length>=50;
@@ -121,8 +151,8 @@ function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.pars
 function newStudy(){if(study.tasks.length&&!confirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados."))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
 function copyTaskResults(){
  const t=formTask(),rw=calculate(t,"women"),rm=calculate(t,"men");
- const make=(title,r)=>{const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir),bg=k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td style="border:1px solid #759CBF;padding:6px">'+x.label+'</td><td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #759CBF;padding:6px;text-align:center;background:'+bg+'"><b>'+k.label+'</b></td></tr>'}).join("");return '<h3>'+title+'</h3><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">ÍNDICE DE RIESGO</th><th style="border:1px solid #759CBF;padding:6px">NIVEL DE RIESGO</th></tr>'+rows+'</table>'};
- const html='<div style="font-family:Arial;font-size:10pt"><p><b>Tarea:</b> '+escapeHtml(t.name||"Sin nombre")+'<br><b>Acción:</b> '+actionText(t.action)+'</p>'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
+ const make=(title,r)=>{const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir),bg=k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td style="border:1px solid #759CBF;padding:6px">'+x.label+'</td><td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #759CBF;padding:6px;text-align:center;background:'+bg+'">&nbsp;</td></tr>'}).join("");return '<h3>'+title+'</h3><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">ÍNDICE DE RIESGO</th><th style="border:1px solid #759CBF;padding:6px">NIVEL DE RIESGO</th></tr>'+rows+'</table>'};
+ const html='<div style="font-family:Arial;font-size:10pt">'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
  if(![...rowsFor(t,rw),...rowsFor(t,rm)].some(x=>Number.isFinite(x.ir))){alert("No hay resultados calculados para copiar.");return}
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Resultados de la tarea copiados. Puede pegarlos en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
 }
@@ -130,7 +160,7 @@ function copySummary(){
  syncStudyFromHeader();if(!study.tasks.length){alert("No hay tareas para copiar.");return}
  const rows=study.tasks.map((t,i)=>{const w=worst(t,"women"),m=worst(t,"men"),kw=risk(w),km=risk(m);const bg=k=>k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td>'+(i+1)+'</td><td>'+escapeHtml(t.name)+'</td><td>'+actionText(t.action)+'</td><td style="background:'+bg(kw)+'"><b>IR '+fmt(w)+' · '+kw.label+'</b></td><td style="background:'+bg(km)+'"><b>IR '+fmt(m)+' · '+km.label+'</b></td></tr>'}).join("");
  const body=rows.replace(/<td( style="background:([^"]+)")?>/g,(m,a,b)=>'<td style="border:1px solid #759CBF;padding:6px;'+(b?'background:'+b+';':'')+'">');
- const html='<div style="font-family:Arial;font-size:10pt"><p><b>Empresa:</b> '+escapeHtml(study.company)+'<br><b>Puesto:</b> '+escapeHtml(study.job)+'</p><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">Acción</th><th style="border:1px solid #759CBF;padding:6px">Mujeres</th><th style="border:1px solid #759CBF;padding:6px">Hombres</th></tr>'+body+'</table></div>';
+ const html='<div style="font-family:Arial;font-size:10pt"><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">Acción</th><th style="border:1px solid #759CBF;padding:6px">Mujeres</th><th style="border:1px solid #759CBF;padding:6px">Hombres</th></tr>'+body.replace(/IR ([^·<]+) · [^<]+/g,'IR $1')+'</table></div>';
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>alert("No se pudo copiar automáticamente."));
 }
 function bind(){
