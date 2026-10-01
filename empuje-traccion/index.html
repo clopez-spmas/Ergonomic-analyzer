@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Empuje y Tracción · Ergonomic Analyzer</title>
+<link rel="stylesheet" href="../css/styles.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="et-shell">
+<header class="et-header">
+  <div class="brand">ERGONOMIC ANALYZER</div>
+  <h1>Empuje y Tracción</h1>
+  <p>Evaluación de tareas de empuje y tracción manual de cargas.</p>
+</header>
+
+<section class="et-toolbar">
+  <button id="newStudyBtn" class="et-btn">Nuevo estudio</button>
+  <button id="saveStudyBtn" class="et-btn">Guardar estudio</button>
+  <label class="et-btn" for="loadStudyInput">Cargar estudio</label>
+  <input id="loadStudyInput" type="file" accept=".json,application/json" hidden>
+  <button id="copySummaryBtn" class="et-btn">Copiar resumen para Word</button>
+  <a class="et-link" href="../">← Volver al portal</a>
+</section>
+<div id="status" class="status"></div>
+
+<section class="et-card">
+  <div class="et-section-title">
+    <h2>Datos generales del estudio</h2>
+    <span class="muted">Un estudio corresponde a una empresa y un puesto.</span>
+  </div>
+  <div class="et-grid">
+    <label class="et-field">Empresa<input id="company" type="text"></label>
+    <label class="et-field">Centro / departamento<input id="area" type="text"></label>
+    <label class="et-field">Puesto<input id="job" type="text"></label>
+    <label class="et-field">Fecha<input id="studyDate" type="date"></label>
+    <label class="et-field full">Observaciones generales<textarea id="studyNotes" rows="3"></textarea></label>
+  </div>
+</section>
+
+<section class="et-card">
+  <div class="et-section-title">
+    <div>
+      <h2>Tareas del puesto</h2>
+      <div class="muted">Cada tarea se calcula de forma independiente. Máximo 50 tareas.</div>
+    </div>
+    <button id="addTaskBtn" class="et-btn primary">+ Añadir tarea</button>
+  </div>
+  <div id="taskCounter" class="status"></div>
+  <div style="overflow:auto">
+    <table class="task-list">
+      <thead><tr><th>Nº</th><th>Nombre de tarea</th><th>Acción</th><th>Mujeres</th><th>Hombres</th><th>Acciones</th></tr></thead>
+      <tbody id="taskRows"></tbody>
+    </table>
+  </div>
+  <div id="emptyTasks" class="notice">Todavía no hay tareas. Pulse <strong>+ Añadir tarea</strong> para comenzar.</div>
+</section>
+
+<section id="editorCard" class="et-card hidden">
+  <div class="editor-head">
+    <h2 id="editorTitle">Nueva tarea</h2>
+    <button id="closeEditorBtn" class="et-btn">Cerrar</button>
+  </div>
+  <div id="simBanner" class="sim-banner hidden"></div>
+
+  <div class="subcard">
+    <h3>1. Identificación de la tarea</h3>
+    <div class="et-grid">
+      <label class="et-field full">Nombre de la tarea *
+        <input id="taskName" type="text" placeholder="Ej.: Empuje carro picking">
+      </label>
+      <label class="et-field full">Descripción
+        <textarea id="taskDescription" rows="2"></textarea>
+      </label>
+    </div>
+  </div>
+
+  <div class="subcard">
+    <h3>2. Tipo de operación</h3>
+    <div class="et-grid">
+      <fieldset>
+        <legend>Acción</legend>
+        <div class="radio-row">
+          <label><input type="radio" name="action" value="push" checked> Empujar</label>
+          <label><input type="radio" name="action" value="pull"> Tirar</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Forma de realización</legend>
+        <div class="radio-row">
+          <label><input type="radio" name="mode" value="twohands" checked> Una persona · dos manos</label>
+          <label><input type="radio" name="mode" value="onehand"> Una persona · una mano</label>
+          <label><input type="radio" name="mode" value="multi"> Dos o más personas</label>
+        </div>
+      </fieldset>
+    </div>
+    <label id="peopleWrap" class="et-field hidden" style="margin-top:14px;max-width:260px">Número de personas
+      <input id="peopleCount" type="number" min="2" max="20" step="1" value="2">
+    </label>
+  </div>
+
+  <div class="subcard">
+    <h3>3. Configuración de las ruedas</h3>
+    <div class="radio-row">
+      <label><input type="radio" name="has90" value="yes"> Sí, pueden quedar orientadas a 90°</label>
+      <label><input type="radio" name="has90" value="no" checked> No aplica medición a 90°</label>
+    </div>
+    <div class="notice"><strong>0°:</strong> ruedas alineadas con la dirección de desplazamiento. <strong>90°:</strong> ruedas giratorias orientadas transversalmente antes de iniciar el movimiento.</div>
+  </div>
+
+  <div class="subcard">
+    <h3>4. Datos de la tarea</h3>
+    <div class="et-grid three">
+      <label class="et-field">Altura de agarre (m)
+        <select id="height"></select>
+      </label>
+      <label class="et-field">Distancia recorrida
+        <select id="distance"></select>
+      </label>
+      <label class="et-field">Frecuencia inicial (veces/min)
+        <select id="freqInitial"></select>
+      </label>
+      <label id="freqSustainedWrap" class="et-field">Frecuencia sostenida (veces/min)
+        <select id="freqSustained"></select>
+      </label>
+    </div>
+    <div id="methodWarning" class="notice warning hidden"></div>
+  </div>
+
+  <div class="subcard">
+    <h3>5. Mediciones con dinamómetro</h3>
+    <p class="muted">Se recomienda realizar hasta 5 mediciones cuando sea posible. El cálculo se efectuará con las mediciones disponibles. No introduzca ceros en las casillas sin medición.</p>
+
+    <h4>Fuerza inicial a 0° (N)</h4>
+    <div id="initial0Measures" class="measure-grid"></div>
+    <div id="initial90Block" class="hidden">
+      <h4>Fuerza inicial a 90° (N)</h4>
+      <div id="initial90Measures" class="measure-grid"></div>
+    </div>
+    <div id="sustainedBlock">
+      <h4>Fuerza sostenida (N)</h4>
+      <div id="sustainedMeasures" class="measure-grid"></div>
+    </div>
+  </div>
+
+  <div class="subcard">
+    <h3>6. Resultados</h3>
+    <div id="resultMessage" class="notice">Introduzca los datos de la tarea y las mediciones disponibles.</div>
+    <div id="resultTables" class="result-columns hidden">
+      <div>
+        <h3>MUJERES</h3>
+        <div id="womenResults"></div>
+      </div>
+      <div>
+        <h3>HOMBRES</h3>
+        <div id="menResults"></div>
+      </div>
+    </div>
+    <details id="calcDetails" class="calc-details hidden">
+      <summary>Ver cálculos intermedios</summary>
+      <div id="calcContent"></div>
+    </details>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+    <button id="saveTaskBtn" class="et-btn primary">Guardar tarea</button>
+    <button id="cancelTaskBtn" class="et-btn">Cancelar</button>
+  </div>
+</section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
