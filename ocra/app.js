@@ -562,24 +562,49 @@ const postureElbowTable=[[0,0],[5,0],[10,.5],[15,1],[20,1.5],[25,2],[31,2.5],[37
 const postureShoulderTable=[[0,0],[3,.5],[5,1],[8,1.5],[10,2],[12,2.5],[14,3],[16,3.5],[18,4],[20,4.5],[22,5],[24,5.5],[28,6],[31,6.5],[34,7],[37,7.5],[40,8],[43,9],[46,11],[50,12],[54,13],[58,14],[62,15],[66,16],[70,17],[74,18],[78,19],[82,20],[86,21],[90,22],[94,23],[100,24]];
 function postureScore(table,pct){return lookup(table,Math.max(0,Math.min(100,pct)))}
 function kManualDuration(){const p=ensureManualPosture(),r=kRange();if(postureStudyMode()==="manual"||!r){const tntr=n("turnoEfectivoManual")||n("turnoOficial"),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),net=Math.max(0,tntr-pauses-meal-nonRep);return net>0?net*60:p.duration}return r.duration}
-function kForcedSeconds(kind,side){
- const p=ensureManualPosture()[kind][side],r=kRange();
- if(p.source==="manual")return postureInputSeconds(p.flex,kManualDuration(),kind);
- if(!r||!kinoveaState.data||kMissingMarkers(kind,side).length)return 0;
- const frames=kinoveaState.data.frames;let total=0,base=null;
+function kDataSetExposure(ds,kind,side){
+ const r=kDataSetRange(ds),frames=ds?.data?.frames||[];let total=0,base=null,maxPositive=0,minNegative=0,maxAbs=0;
+ if(r.duration<=0)return {ds,seconds:0,pct:0,duration:0,angle:0};
  for(let i=0;i<frames.length-1;i++){
-  const a=frames[i],b=frames[i+1],dt=Math.max(0,Math.min(b.time,r.end)-Math.max(a.time,r.start));if(dt<=0)continue;
+  const x=frames[i],y=frames[i+1],dt=Math.max(0,Math.min(y.time,r.end)-Math.max(x.time,r.start));if(dt<=0)continue;
   let va,vb;
-  if(kind==="shoulder"){va=kSigned(kPoint(a,side+"_hip"),kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),side==="right"?"right":"left");vb=kSigned(kPoint(b,side+"_hip"),kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),side==="right"?"right":"left")}
-  else if(kind==="elbow"){va=kAngle(kPoint(a,side+"_shoulder"),kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"));vb=kAngle(kPoint(b,side+"_shoulder"),kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"))}
-  else{va=kSigned(kPoint(a,side+"_elbow"),kPoint(a,side+"_wrist"),kPoint(a,side+"_index"),side==="right"?"right":"left");vb=kSigned(kPoint(b,side+"_elbow"),kPoint(b,side+"_wrist"),kPoint(b,side+"_index"),side==="right"?"right":"left")}
+  if(kind==="shoulder"){
+   va=kSigned(kDataSetPoint(ds,x,side+"_hip"),kDataSetPoint(ds,x,side+"_shoulder"),kDataSetPoint(ds,x,side+"_elbow"),side==="right"?"right":"left");
+   vb=kSigned(kDataSetPoint(ds,y,side+"_hip"),kDataSetPoint(ds,y,side+"_shoulder"),kDataSetPoint(ds,y,side+"_elbow"),side==="right"?"right":"left");
+  }else if(kind==="elbow"){
+   va=kAngle(kDataSetPoint(ds,x,side+"_shoulder"),kDataSetPoint(ds,x,side+"_elbow"),kDataSetPoint(ds,x,side+"_wrist"));
+   vb=kAngle(kDataSetPoint(ds,y,side+"_shoulder"),kDataSetPoint(ds,y,side+"_elbow"),kDataSetPoint(ds,y,side+"_wrist"));
+  }else{
+   va=kSigned(kDataSetPoint(ds,x,side+"_elbow"),kDataSetPoint(ds,x,side+"_wrist"),kDataSetPoint(ds,x,side+"_index"),side==="right"?"right":"left");
+   vb=kSigned(kDataSetPoint(ds,y,side+"_elbow"),kDataSetPoint(ds,y,side+"_wrist"),kDataSetPoint(ds,y,side+"_index"),side==="right"?"right":"left");
+  }
   if(!Number.isFinite(va)||!Number.isFinite(vb))continue;
   if(base===null)base=va;
   const v=(va+vb)/2-base;
-  if(kind==="shoulder"){if(v>=80||v<-20)total+=dt}else if(Math.abs(v)>60)total+=dt;
+  if(kind==="shoulder"){
+   if(v>=80||v<-20)total+=dt;
+   if(v>=80)maxPositive=Math.max(maxPositive,v);
+   if(v<-20)minNegative=Math.min(minNegative,v);
+  }else{
+   const threshold=kind==="elbow"?60:60;
+   if(Math.abs(v)>threshold)total+=dt;
+   if(Math.abs(v)>(kind==="elbow"?60:45))maxAbs=Math.max(maxAbs,Math.abs(v));
+  }
  }
- return total;
+ const pct=Math.max(0,Math.min(100,100*total/r.duration));
+ const angle=kind==="shoulder"?(maxPositive>0?maxPositive:(minNegative<0?minNegative:0)):maxAbs;
+ return {ds,seconds:total,pct,duration:r.duration,angle};
 }
+function kForcedExposure(kind,side){
+ const p=ensureManualPosture()[kind][side];
+ if(p.source==="manual"){
+  const duration=kManualDuration(),seconds=postureInputSeconds(p.flex,duration,kind);
+  return {ds:null,seconds,pct:duration>0?100*seconds/duration:0,duration,angle:p.flex>0?(kind==="shoulder"?80:kind==="elbow"?60:45):0};
+ }
+ const samples=kKinoveaCandidates(kind,side).map(ds=>kDataSetExposure(ds,kind,side));
+ return samples.sort((x,y)=>y.pct-x.pct)[0]||{ds:null,seconds:0,pct:0,duration:0,angle:0};
+}
+function kForcedSeconds(kind,side){return kForcedExposure(kind,side).seconds}
 function postureTimeLabel(seconds){
  const value=Math.max(0,Number(seconds)||0);
  if(value<60)return fmt(value,2)+" s";
@@ -596,16 +621,17 @@ function kManualRows(kind,side){
  return '<tr><td>'+label+'</td><td>MANUAL</td><td>'+criterion+'</td><td>'+postureTimeLabel(seconds)+'</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>';
 }
 function kAnalysisRows(kind){
- const r=kRange(),rows=[];
+ const rows=[];
  ["right","left"].forEach(side=>{
-  const p=ensureManualPosture()[kind][side],seconds=p.source==="manual"?postureInputSeconds(p.flex,kManualDuration(),kind):kForcedSeconds(kind,side),total=r?.duration||kManualDuration(),pct=total>0?seconds/total*100:0;
+  const p=ensureManualPosture()[kind][side];
   if(p.source==="manual"){rows.push(kManualRows(kind,side));return}
-  if(total<=0)return;
+  const exposure=kForcedExposure(kind,side);if(!exposure.ds||exposure.duration<=0)return;
   const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
   const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
-  rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>KINOVEA</td><td>'+criterion+'</td><td>'+postureTimeLabel(seconds)+'</td><td>'+fmt(pct,2)+' %</td><td>'+fmt(postureScore(table,pct),2)+'</td></tr>');
+  const origin="KINOVEA · "+exposure.ds.fileName+" · "+kViewLabel(exposure.ds.view);
+  rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>'+escK(origin)+'</td><td>'+criterion+'</td><td>'+postureTimeLabel(exposure.seconds)+'</td><td>'+fmt(exposure.pct,2)+' %</td><td>'+fmt(postureScore(table,exposure.pct),2)+'</td></tr>');
  });
- return '<div class="notice"><strong>Criterio:</strong> se calcula el porcentaje de tiempo en postura forzada y se asigna la puntuación correspondiente. El valor de cada articulación se obtiene de forma independiente para DX e IX.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
+ return '<div class="notice"><strong>Criterio:</strong> cada vídeo se calcula de forma independiente. Si existen varias muestras Kinovea válidas para la misma articulación y lado, se utiliza el porcentaje de exposición más desfavorable; los tiempos de vídeos distintos no se suman.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
 }
 function postureModeForKind(kind){
  const state=ensureManualPosture().modes?.[kind];
@@ -637,11 +663,9 @@ function updatePostureModeUI(){
  });
 }
 function kPostureSideScore(kind,side){
- const p=ensureManualPosture()[kind][side],total=kRange()?.duration||kManualDuration();
- const seconds=p.source==="manual"?postureInputSeconds(p.flex,kManualDuration(),kind):kForcedSeconds(kind,side);
- const pct=total>0?seconds/total*100:0;
+ const exposure=kForcedExposure(kind,side);
  const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
- return postureScore(table,pct);
+ return postureScore(table,exposure.pct);
 }
 function kManualControls(kind,side,threshold){
  const p=ensureManualPosture()[kind][side],label=side==="right"?"Derecha":"Izquierda",availability=kKinoveaAvailability(kind,side),canK=availability.state==="ready",mode=postureModeForKind(kind),unidad=mode==="porcentaje"?"% del tiempo":"segundos";
@@ -761,7 +785,7 @@ function renderHandPosture(){
 function postureScores(){
  const duration=kManualDuration()||0,result={};
  ["right","left"].forEach(side=>{
-  const prefix=side==="right"?"dx":"ix",time=document.querySelector('[name="'+prefix+'ManoTiempo"]'),grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulderBase=postureScore(postureShoulderTable,duration?100*kForcedSeconds("shoulder",side)/duration:0),shoulder=document.querySelector('[name="'+prefix+'HombroCabeza"]')?.checked?shoulderBase*2:shoulderBase,elbow=postureScore(postureElbowTable,duration?100*kForcedSeconds("elbow",side)/duration:0),wrist=postureScore(postureWristTable,duration?100*kForcedSeconds("wrist",side)/duration:0),handSeconds=handInputSeconds(prefix+"ManoTiempo",duration),handPct=duration>0?handSeconds/duration*100:0,fingerSeconds=handInputSeconds(prefix+"ManoDedoTiempo",duration),fingerPct=duration>0?fingerSeconds/duration*100:0,hand=postureScore(postureFingerTable,fingerPct)+((grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct)),stereoValue=stereo(prefix);
+  const prefix=side==="right"?"dx":"ix",grip=document.querySelector('[name="'+prefix+'ManoAgarre"]'),shoulderExposure=kForcedExposure("shoulder",side),elbowExposure=kForcedExposure("elbow",side),wristExposure=kForcedExposure("wrist",side),shoulderBase=postureScore(postureShoulderTable,shoulderExposure.pct),shoulder=document.querySelector('[name="'+prefix+'HombroCabeza"]')?.checked?shoulderBase*2:shoulderBase,elbow=postureScore(postureElbowTable,elbowExposure.pct),wrist=postureScore(postureWristTable,wristExposure.pct),handSeconds=handInputSeconds(prefix+"ManoTiempo",duration),handPct=duration>0?handSeconds/duration*100:0,fingerSeconds=handInputSeconds(prefix+"ManoDedoTiempo",duration),fingerPct=duration>0?fingerSeconds/duration*100:0,hand=postureScore(postureFingerTable,fingerPct)+((grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct)),stereoValue=stereo(prefix);
   result[side]={shoulder,elbow,wrist,hand,handGrip:(grip?.value==="none"||grip?.value==="grip")?0:postureScore(postureHandTable,handPct),handFinger:postureScore(postureFingerTable,fingerPct),stereo:stereoValue,base:Math.max(shoulder,elbow,wrist,hand),total:Math.max(shoulder,elbow,wrist,hand)+stereoValue};
  });
  return result;
