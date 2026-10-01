@@ -203,26 +203,14 @@
 .risk-fill-block.purple span,.risk-fill-block.purple output{color:#fff!important}
 .classification-output{display:block;min-width:0;padding:0;border-radius:0;background:transparent!important;text-align:right}
 
-/* Resumen índice de riesgo OCRA — misma línea visual que las demás tablas Word */
-.ocra-risk-summary-table thead th{
- background:#fff!important;
- color:#759CBF!important;
- font-weight:700!important;
- text-align:left!important;
+/* Resumen índice de riesgo OCRA — mismo formato base que las demás tablas */
+.ocra-risk-summary-table{font-family:Arial,sans-serif;font-size:10pt}
+.ocra-risk-summary-table th,.ocra-risk-summary-table td{
+ font-family:Arial,sans-serif;
+ font-size:10pt;
+ line-height:1.15;
+ padding:4pt 6pt;
+ border:0.5pt solid #759CBF;
 }
-.ocra-risk-summary-table .risk-summary-label{
- background:#fff!important;
- color:#759CBF!important;
- font-weight:700!important;
- text-transform:uppercase;
-}
-.ocra-risk-summary-table .risk-summary-ir{
- background:#fff!important;
- color:#000!important;
- text-align:center!important;
- font-weight:700!important;
-}
-.ocra-risk-summary-table td.risk-fill{
- text-align:center!important;
- font-weight:700!important;
-}
+.ocra-risk-summary-table .risk-summary-ir{text-align:center}
+.ocra-risk-summary-table td.risk-fill{text-align:center;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
