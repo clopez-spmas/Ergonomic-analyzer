@@ -161,3 +161,20 @@
  .simulation-hand-side{grid-template-rows:auto!important}
  .simulation-hand-side>label,.simulation-hand-results,.simulation-stereo-score,.simulation-stereo-reasons{min-height:0!important}
 }
+
+/* OCRA · Tablas para informe Word — referencia visual MAPO Analyzer */
+.report-table-selectors{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:16px 0}
+.report-table-selectors label{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid #d9dde3;border-radius:8px;background:#fff;color:#2d3748;font-weight:600}
+.report-table-selectors input{margin:0}
+.report-table-block{margin:24px 0;padding:16px;border:1px solid #d9dde3;border-radius:10px;background:#fff}
+.report-table-block h3{font-family:Arial,sans-serif;font-size:10pt;color:#000;font-weight:700;margin:0 0 10px}
+.ocra-report-table{width:100%;border-collapse:collapse;margin:10px 0 12px;font-family:Arial,sans-serif;font-size:10pt;color:#000;background:#fff}
+.ocra-report-table th,.ocra-report-table td{border:0.5pt solid #759CBF;padding:4pt 6pt;text-align:left;vertical-align:middle;font-family:Arial,sans-serif;font-size:10pt;line-height:1.15}
+.ocra-report-table th{font-weight:700;color:#759CBF;background:#fff}
+.ocra-report-table td{font-weight:400;color:#000}
+.ocra-report-table thead th,.ocra-report-table tbody th{font-weight:700;color:#759CBF}
+.ocra-report-table tbody td:first-child{color:#759CBF;font-weight:700}
+.ocra-report-table .report-total-row td{font-weight:700}
+.report-table-actions{margin-top:6px}
+.report-tables-empty{opacity:.7}
+@media(max-width:760px){.ocra-report-table{font-size:9pt}.ocra-report-table th,.ocra-report-table td{font-size:9pt;padding:4pt}}
