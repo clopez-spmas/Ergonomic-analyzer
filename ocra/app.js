@@ -48,10 +48,16 @@ function initNavigation(){
    renderNavigation();
  }
 
+ function showReportTables(){
+   const reportScreen=document.getElementById("ocraReportTablesScreen");
+   const index=screens.indexOf(reportScreen);
+   if(index>=0)show(index);
+ }
+
  prev.addEventListener("click",()=>navigate(-1));
  next.addEventListener("click",()=>navigate(1));
 
- const controller={show,navigate,showSimulationRecovery,closeSimulationRecovery,get current(){return current}};
+ const controller={show,navigate,showSimulationRecovery,closeSimulationRecovery,showReportTables,get current(){return current}};
  window.OCRA_Navigation=controller;
  renderNavigation();
  return controller;
@@ -1254,6 +1260,7 @@ document.getElementById("saveBtn").addEventListener("click",async()=>{const d=va
 document.getElementById("loadBtn").addEventListener("click",()=>fileInput.click());
 fileInput.addEventListener("change",async()=>{const file=fileInput.files[0];if(!file)return;try{apply(JSON.parse(await file.text()))}catch(e){status.textContent="No se ha podido cargar el estudio. El archivo no tiene un formato OCRA válido."}fileInput.value=""});
 document.getElementById("newBtn").addEventListener("click",()=>{if(!confirm("¿Crear un estudio nuevo? Se perderán los datos no guardados."))return;form.reset();dirty=false;status.textContent="Nuevo estudio iniciado.";window.OCRA_Navigation.show(0);if(simulationState?.initialised)simSetInitialFromStudy();});
+["wordTablesBtn","resultsWordTablesBtn","simulationWordTablesBtn"].forEach(id=>document.getElementById(id)?.addEventListener("click",()=>{renderWordTables();window.OCRA_Navigation?.showReportTables?.()}));
 window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
 
 
