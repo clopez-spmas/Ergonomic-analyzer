@@ -202,3 +202,25 @@
 .risk-fill-block.purple{background:#7030A0!important}
 .risk-fill-block.purple span,.risk-fill-block.purple output{color:#fff!important}
 .classification-output{display:block;min-width:0;padding:0;border-radius:0;background:transparent!important;text-align:right}
+
+/* Resumen índice de riesgo OCRA — formato de informe */
+.ocra-risk-summary-table thead th{
+ background:#759CBF!important;
+ color:#fff!important;
+ font-weight:700!important;
+ text-align:left!important;
+}
+.ocra-risk-summary-table .risk-summary-label{
+ background:#D9E7F5!important;
+ color:#759CBF!important;
+ font-weight:700!important;
+ text-transform:uppercase;
+}
+.ocra-risk-summary-table .risk-summary-ir{
+ text-align:center!important;
+ font-weight:700!important;
+}
+.ocra-risk-summary-table td.risk-fill{
+ text-align:center!important;
+ font-weight:700!important;
+}
