@@ -160,7 +160,7 @@
 
 <section class="screen" data-screen="6">
   <div class="screen-title"><span>7</span><div><h2>Acciones técnicas</h2><p>Introduzca las acciones observadas en un ciclo. El programa calcula las acciones por minuto y la frecuencia.</p></div></div>
-  <div class="side-grid">
+  <div class="side-grid paired-side-grid">
     <fieldset><legend>Derecha (DX)</legend>
       <label>Acciones técnicas por ciclo<input name="dxAcciones" type="number" min="0" step="0.01"></label>
       <label>¿Existen breves interrupciones?<select name="dxInterrupciones"><option value="no">No</option><option value="si">Sí</option></select></label>
@@ -189,7 +189,7 @@
     </div>
     <div class="notice" style="display:block !important;">Seleccione una sola unidad de entrada. El programa utilizará exclusivamente el valor introducido para realizar el cálculo de la puntuación de fuerza.</div>
   </div>
-  <div class="side-grid">
+  <div class="side-grid paired-side-grid">
     <fieldset><legend>Derecha (DX)</legend>
       <label>Fuerza Borg 3–4: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza34" type="number" min="0" step="0.1"></label>
       <label>Fuerza Borg 5–7: <span class="fuerza-unidad">segundos/ciclo</span><input name="dxFuerza57" type="number" min="0" step="0.1"></label>
@@ -287,7 +287,7 @@
     </div>
     <div class="notice">Seleccione una sola unidad de entrada. El programa convertirá el valor al porcentaje de exposición necesario para calcular la puntuación del agarre.</div>
   </div>
-  <div class="side-grid">
+  <div class="side-grid paired-side-grid hand-study-grid">
     <fieldset><legend>Derecha (DX) · D) Mano-dedo</legend>
       <label>Tipo de agarre
         <select name="dxManoAgarre">
@@ -344,7 +344,7 @@
 
 <section class="screen" data-screen="14">
   <div class="screen-title"><span>15</span><div><h2>Estereotipia</h2><p>Complete el bloque E (estereotipia). El valor más alto de A, B, C o D se sumará una sola vez al valor de E.</p></div></div>
-  <div class="side-grid">
+  <div class="side-grid paired-side-grid stereotypy-grid">
     <fieldset><legend>Derecha (DX) · E) Estereotipia</legend>
       <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
       <label class="check-row"><input type="checkbox" name="dxStereoCycle815"> Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior.</label>
@@ -474,13 +474,13 @@
     <div class="notice">Los cambios son temporales. «Restablecer datos iniciales» devuelve la simulación al estado con el que se abrió esta pantalla.</div>
   </div>
 
-  <div class="calculation-box"><strong>Frecuencia</strong><div class="side-grid">
+  <div class="calculation-box"><strong>Frecuencia</strong><div class="side-grid paired-side-grid">
     <fieldset><legend>Derecha (DX)</legend><label>Acciones por ciclo<input id="simActionsDx" type="number" min="0" step="0.01"></label><label>Breves interrupciones<select id="simInterruptionsDx"><option value="no">No</option><option value="si">Sí</option></select></label><div class="result-grid one-column"><div><span>Frecuencia</span><output id="simFreqDx">—</output></div></div></fieldset>
     <fieldset><legend>Izquierda (IX)</legend><label>Acciones por ciclo<input id="simActionsIx" type="number" min="0" step="0.01"></label><label>Breves interrupciones<select id="simInterruptionsIx"><option value="no">No</option><option value="si">Sí</option></select></label><div class="result-grid one-column"><div><span>Frecuencia</span><output id="simFreqIx">—</output></div></div></fieldset>
   </div></div>
 
   <div class="calculation-box"><strong>Fuerza</strong><div class="form-grid"><label>Unidad de entrada<select id="simForceMode"><option value="segundos">Segundos por ciclo</option><option value="porcentaje">% del tiempo de ciclo</option></select></label></div>
-    <div class="side-grid">
+    <div class="side-grid paired-side-grid">
       <fieldset><legend>Derecha (DX)</legend><label>Borg 3–4<input id="simForceDx34" type="number" min="0" step="0.1"></label><label>Borg 5–7<input id="simForceDx57" type="number" min="0" step="0.1"></label><label>Borg 8–10<input id="simForceDx810" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación fuerza</span><output id="simForceResultDx">—</output></div></div></fieldset>
       <fieldset><legend>Izquierda (IX)</legend><label>Borg 3–4<input id="simForceIx34" type="number" min="0" step="0.1"></label><label>Borg 5–7<input id="simForceIx57" type="number" min="0" step="0.1"></label><label>Borg 8–10<input id="simForceIx810" type="number" min="0" step="0.1"></label><div class="result-grid one-column"><div><span>Puntuación fuerza</span><output id="simForceResultIx">—</output></div></div></fieldset>
     </div>
@@ -501,13 +501,13 @@
       <tr><td>Derecha</td><td>Muñeca</td><td><input id="simWristAngleDx" type="number" step="0.1"></td><td><input id="simWristTimeDx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simWristPctInputDx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
       <tr><td>Izquierda</td><td>Muñeca</td><td><input id="simWristAngleIx" type="number" step="0.1"></td><td><input id="simWristTimeIx" type="number" min="0" step="0.1" title="Tiempo de postura en segundos"></td><td><input id="simWristPctInputIx" type="number" min="0" max="100" step="0.1" title="Porcentaje del TNTR"></td></tr>
     </tbody></table></div>
-    <div class="side-grid"><fieldset><legend>Derecha (DX)</legend><label class="check-row"><input id="simHeadDx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureDx">—</output></div></div></fieldset>
+    <div class="side-grid paired-side-grid"><fieldset><legend>Derecha (DX)</legend><label class="check-row"><input id="simHeadDx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureDx">—</output></div></div></fieldset>
       <fieldset><legend>Izquierda (IX)</legend><label class="check-row"><input id="simHeadIx" type="checkbox"> Manos por encima de la cabeza</label><div class="result-grid one-column"><div><span>Postura + estereotipia</span><output id="simPostureIx">—</output></div></div></fieldset></div>
   </div>
 
   <div class="calculation-box simulation-hand-box"><strong>Mano-dedo y estereotipia</strong>
     <div class="form-grid simulation-hand-mode"><label>Unidad de entrada<select id="simHandMode"><option value="segundos">Segundos</option><option value="porcentaje">% del TNTR</option></select></label></div>
-    <div class="side-grid simulation-hand-grid">
+    <div class="side-grid paired-side-grid simulation-hand-grid">
       <fieldset class="simulation-hand-side"><legend>Derecha (DX)</legend>
         <label><span class="simulation-field-label">Tipo de agarre</span><select id="simGripDx"><option value="none">Ninguno</option><option value="pinch">Pinza</option><option value="hook">Agarre en gancho</option><option value="palmar">Agarre palmar</option><option value="grip">Grip · no puntúa</option></select></label>
         <label><span class="simulation-field-label">Tiempo de agarre (<span class="sim-hand-unit">s</span>)</span><input id="simGripTimeDx" type="number" min="0" step="0.1"></label>
@@ -531,7 +531,7 @@
 
   <div class="calculation-box"><strong>Factores complementarios</strong><div class="simulation-complementary-stack"><label>Bloque A<select id="simCompA"></select></label><label>Bloque B<select id="simCompB"></select></label></div></div>
 
-  <div class="calculation-box selected-box"><strong>Resultado de la simulación</strong><div class="side-grid">
+  <div class="calculation-box selected-box"><strong>Resultado de la simulación</strong><div class="side-grid paired-side-grid">
     <fieldset><legend>Derecha (DX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultDx">—</output></div><div><span>Clasificación</span><output id="simClassificationDx">—</output></div></div></fieldset>
     <fieldset><legend>Izquierda (IX)</legend><div class="result-grid one-column"><div><span>Índice OCRA</span><output id="simResultIx">—</output></div><div><span>Clasificación</span><output id="simClassificationIx">—</output></div></div></fieldset>
   </div><div id="simStatus" class="notice"></div></div></section>
