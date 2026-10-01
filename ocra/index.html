@@ -342,23 +342,23 @@
   <div class="screen-title"><span>15</span><div><h2>Estereotipia</h2><p>Complete el bloque E (estereotipia). El valor más alto de A, B, C o D se sumará una sola vez al valor de E.</p></div></div>
   <div class="side-grid paired-side-grid stereotypy-grid">
     <fieldset><legend>Derecha (DX) · E) Estereotipia</legend>
-      <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
-      <label class="check-row"><input type="checkbox" name="dxStereoCycle815"> Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior.</label>
-      <label class="check-row"><input type="checkbox" name="dxStereoStatic"> Postura estática de la extremidad superior durante más del 50 % del ciclo.</label>
-      <label class="check-row"><input type="checkbox" name="dxStereoAlmost"> Movimiento idéntico/repetitivo prácticamente durante todo el tiempo.</label>
-      <label class="check-row"><input type="checkbox" name="dxStereoCycle8"> Ciclo inferior a 8 s en el que predominan las acciones técnicas de la extremidad superior.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoCycleOver15"> Tiempo de ciclo superior a 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoCycle815"> Tiempo de ciclo entre 9 y 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoCycle8"> Tiempo de ciclo igual o inferior a 8 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoHalf"> Repetición de las mismas acciones técnicas la mayoría de las veces (más de la mitad).</label>
+      <label class="check-row"><input type="checkbox" name="dxStereoAlmost"> Repetición de las mismas acciones técnicas casi todo el tiempo.</label>
       <div class="result-grid one-column"><div><span>Puntuación estereotipia DX</span><output id="dxStereoScore">0,00</output></div></div>
     </fieldset>
     <fieldset><legend>Izquierda (IX) · E) Estereotipia</legend>
-      <label class="check-row"><input type="checkbox" name="ixStereoHalf"> Movimientos idénticos o repetitivos de hombro, codo, muñeca o mano durante más de la mitad del tiempo.</label>
-      <label class="check-row"><input type="checkbox" name="ixStereoCycle815"> Ciclo de 8–15 s en el que predominan las acciones técnicas de la extremidad superior.</label>
-      <label class="check-row"><input type="checkbox" name="ixStereoStatic"> Postura estática de la extremidad superior durante más del 50 % del ciclo.</label>
-      <label class="check-row"><input type="checkbox" name="ixStereoAlmost"> Movimiento idéntico/repetitivo prácticamente durante todo el tiempo.</label>
-      <label class="check-row"><input type="checkbox" name="ixStereoCycle8"> Ciclo inferior a 8 s en el que predominan las acciones técnicas de la extremidad superior.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoCycleOver15"> Tiempo de ciclo superior a 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoCycle815"> Tiempo de ciclo entre 9 y 15 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoCycle8"> Tiempo de ciclo igual o inferior a 8 segundos.</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoHalf"> Repetición de las mismas acciones técnicas la mayoría de las veces (más de la mitad).</label>
+      <label class="check-row"><input type="checkbox" name="ixStereoAlmost"> Repetición de las mismas acciones técnicas casi todo el tiempo.</label>
       <div class="result-grid one-column"><div><span>Puntuación estereotipia IX</span><output id="ixStereoScore">0,00</output></div></div>
     </fieldset>
   </div>
-  <div class="notice"><strong>Criterio de estereotipia:</strong> 1,5 puntos si las mismas acciones/posturas se repiten más de la mitad del tiempo o si el ciclo es de 8–15 s con predominio de acciones técnicas; 3 puntos si se repiten casi todo el tiempo o si el ciclo es inferior a 8 s con predominio de acciones técnicas.</div>
+  <div class="notice"><strong>Criterio de estereotipia:</strong> tiempo de ciclo superior a 15 s = 0 puntos; entre 9 y 15 s = 1,5 puntos; igual o inferior a 8 s = 3 puntos. Repetición de las mismas acciones técnicas la mayoría de las veces (más de la mitad) = 1,5 puntos; casi todo el tiempo = 3 puntos.</div>
 </section></section>
 
 <section class="screen" data-screen="14">
@@ -573,6 +573,6 @@
   </div>
 </section>
 </form>
-<script src="app.js?v=20261001-posture-v15-v14"></script>
+<script src="app.js?v=20261001-stereo-v15-v15"></script>
 </body>
 </html>
