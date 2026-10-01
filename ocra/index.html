@@ -243,13 +243,7 @@
   </div>
   <div class="calculation-box">
     <strong>Periodo de análisis</strong>
-    <div class="form-grid kinovea-range-grid">
-      <label>Modo<select id="kinoveaRangeMode"><option value="all">Todo el vídeo</option><option value="interval">Desde un tiempo hasta otro</option><option value="cycles">Número de ciclos visibles en el vídeo</option></select></label>
-      <label id="kinoveaStartField" hidden>Tiempo inicial (s)<input id="kinoveaStart" type="number" min="0" step="0.01" value="0"></label>
-      <label id="kinoveaEndField" hidden>Tiempo final (s)<input id="kinoveaEnd" type="number" min="0" step="0.01" value="0"></label>
-      <label id="kinoveaCyclesField" hidden>Número de ciclos visibles<input id="kinoveaCycles" type="number" min="1" step="1" value="1"></label>
-    </div>
-    <div id="kinoveaRangeSummary" class="notice">Seleccione el modo de análisis. Los campos adicionales aparecerán solo cuando sean necesarios.</div>
+    <div id="kinoveaRangeSummary" class="notice">Cada vídeo se analiza como una muestra independiente. La vista, la tarea/fase, el periodo y el número de ciclos se configuran en el bloque de cada JSON dentro de «Asignación de marcadores».</div>
   </div>
   <div id="kinoveaMapping" class="calculation-box"><strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div></div>
 </section>
@@ -579,6 +573,6 @@
   </div>
 </section>
 </form>
-<script src="app.js?v=20261001-four-word-tables-v12"></script>
+<script src="app.js?v=20261001-kinovea-independent-v13"></script>
 </body>
 </html>
