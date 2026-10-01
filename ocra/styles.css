@@ -103,3 +103,61 @@
  .simulation-field-label{white-space:normal}
  .simulation-stereo-reasons{min-height:0}
 }
+
+/* Alineación consistente de columnas Derecha / Izquierda */
+.paired-side-grid{align-items:stretch}
+.paired-side-grid>fieldset{height:100%;box-sizing:border-box;align-content:start}
+.paired-side-grid>fieldset>label:not(.check-row){min-width:0}
+.paired-side-grid>fieldset>.result-grid{width:100%;box-sizing:border-box}
+
+/* Pantallas estáticas con el mismo contenido DX/IX */
+.paired-side-grid:not(.posture-paired-grid):not(.simulation-hand-grid)>fieldset{
+ display:grid;
+ grid-auto-flow:row;
+ align-content:start;
+}
+.paired-side-grid:not(.posture-paired-grid):not(.simulation-hand-grid)>fieldset>label:not(.check-row){
+ min-height:64px;
+}
+.paired-side-grid:not(.posture-paired-grid):not(.simulation-hand-grid)>fieldset>.result-grid{
+ align-self:stretch;
+}
+.hand-study-grid>fieldset>label:not(.check-row){min-height:78px}
+.stereotypy-grid>fieldset>.check-row{min-height:43px;box-sizing:border-box}
+
+/* Hombro, codo y muñeca: reservar la misma fila aunque un lado use Kinovea */
+.posture-paired-grid>.paired-posture-side{
+ display:grid;
+ grid-template-rows:auto 82px 82px minmax(76px,auto);
+ gap:15px;
+}
+.posture-paired-grid .paired-source-row{min-height:0!important}
+.posture-paired-grid .paired-manual-row{min-height:82px;box-sizing:border-box}
+.posture-paired-grid .paired-manual-row[hidden]{
+ display:block!important;
+ visibility:hidden;
+ pointer-events:none;
+}
+.posture-paired-grid .paired-manual-row label{height:100%;box-sizing:border-box}
+.posture-paired-grid .paired-criterion-row{margin-top:0;min-height:76px;box-sizing:border-box}
+
+/* Simulación mano-dedo: filas equivalentes DX/IX */
+.simulation-hand-side{
+ grid-template-rows:auto 64px 64px minmax(224px,auto) auto minmax(76px,auto) minmax(72px,1fr)!important;
+}
+.simulation-hand-side>label{min-height:64px!important}
+.simulation-hand-results{min-height:224px}
+.simulation-stereo-score{min-height:76px}
+.simulation-stereo-reasons{min-height:72px}
+
+@media(max-width:760px){
+ .paired-side-grid>fieldset>label:not(.check-row),
+ .hand-study-grid>fieldset>label:not(.check-row),
+ .stereotypy-grid>fieldset>.check-row{min-height:0}
+ .posture-paired-grid>.paired-posture-side{grid-template-rows:auto}
+ .posture-paired-grid .paired-manual-row{min-height:0}
+ .posture-paired-grid .paired-manual-row[hidden]{display:none!important}
+ .posture-paired-grid .paired-criterion-row{min-height:0}
+ .simulation-hand-side{grid-template-rows:auto!important}
+ .simulation-hand-side>label,.simulation-hand-results,.simulation-stereo-score,.simulation-stereo-reasons{min-height:0!important}
+}
