@@ -423,64 +423,67 @@ function kRangeLabel(){
  return count?count+" vídeo"+(count===1?"":"s")+" cargado"+(count===1?"":"s")+" · cada muestra utiliza su propio periodo y ciclos.":"Cargue el JSON de Kinovea.";
 }
 function kSetStatus(msg){status.textContent=msg}
+function kViewLabel(view){
+ return ({unspecified:"Sin definir",lateral_right:"Lateral derecho",lateral_left:"Lateral izquierdo",frontal:"Frontal",threequarter_right:"3/4 derecho",threequarter_left:"3/4 izquierdo"})[view]||"Sin definir";
+}
+function kDataSetRangeLabel(ds){
+ const r=kDataSetRange(ds);
+ if(r.mode==="interval")return fmt(r.start,2)+"–"+fmt(r.end,2)+" s · "+fmt(r.duration,2)+" s";
+ if(r.mode==="cycles")return "Todo · "+r.cycles+" ciclos · "+fmt(r.duration/r.cycles,2)+" s/ciclo";
+ return "Todo el vídeo · "+fmt(r.duration,2)+" s";
+}
 function renderKinoveaSelectedTable(){
  const t=document.getElementById("kinoveaDataTable");if(!t)return;
- const sets=kinoveaState.dataSets||[];
+ const sets=(kinoveaState.dataSets||[]).map(kNormaliseDataSet);
  const rows=sets.map((ds,di)=>{
   const selected=KPOINTS.map(([key,label])=>({label,marker:ds.mapping?.[key]})).filter(x=>x.marker).map(x=>x.label+": "+x.marker);
-  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+escK(ds.producer||ds.data?.producer||"Kinovea")+'</td><td>'+escK(ds.kinoveaVersion||"—")+'</td><td>'+fmt(ds.data?.duration||0,2)+' s</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
+  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+escK(kViewLabel(ds.view))+'</td><td>'+escK(ds.task||"—")+'</td><td>'+escK(kDataSetRangeLabel(ds))+'</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
  }).join("");
- t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Origen</th><th>Versión</th><th>Duración</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="notice"><strong>Trazabilidad:</strong> el estudio conserva los datos originales de los archivos Kinovea importados para mantener la trazabilidad del análisis.</div>';
+ t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Vista</th><th>Tarea / fase</th><th>Periodo propio</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="notice"><strong>Trazabilidad:</strong> cada JSON se conserva como una muestra independiente. Los tiempos de vídeos diferentes no se suman entre sí.</div>';
 }
 function renderKinovea(){
  const t=document.getElementById("kinoveaDataTable"),m=document.getElementById("kinoveaMapping");
- if(!kinoveaState.data){
+ if(!(kinoveaState.dataSets||[]).length){
   t.innerHTML='<div class="placeholder">Todavía no hay datos importados.</div>';
   m.innerHTML='<strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div>';
   return;
  }
- m.innerHTML=(kinoveaState.dataSets||[]).map((ds,di)=>{
+ kinoveaState.dataSets.forEach(kNormaliseDataSet);
+ const viewOptions=[["unspecified","Sin definir"],["lateral_right","Lateral derecho"],["lateral_left","Lateral izquierdo"],["frontal","Frontal"],["threequarter_right","3/4 derecho"],["threequarter_left","3/4 izquierdo"]];
+ m.innerHTML=kinoveaState.dataSets.map((ds,di)=>{
   const opts=ds.data.markers.map(x=>'<option value="'+escK(x)+'">'+escK(x)+'</option>').join("");
-  return '<div class="calculation-box"><strong>JSON '+(di+1)+': '+escK(ds.fileName)+'</strong><p>Asigne los marcadores de este archivo a los puntos anatómicos. Puede cargar otro JSON del mismo vídeo con otros marcadores.</p><div class="form-grid">'+KPOINTS.map(([key,label])=>'<label>'+label+'<select data-kset="'+di+'" data-kmap="'+key+'"><option value="">No asignado</option>'+opts+'</select></label>').join("")+'</div></div>'
- }).join("")||'<div class="placeholder">Cargue el JSON de Kinovea.</div>';
+  const range=kDataSetRange(ds),interval=ds.range.mode==="interval",cycles=ds.range.mode==="cycles";
+  return '<div class="calculation-box"><strong>JSON '+(di+1)+': '+escK(ds.fileName)+'</strong>'+
+   '<p>Cada archivo se analiza de forma independiente. Indique la vista y, si procede, la tarea/fase observada.</p>'+
+   '<div class="form-grid">'+
+    '<label>Vista del vídeo<select data-kview="'+di+'">'+viewOptions.map(([v,l])=>'<option value="'+v+'" '+(ds.view===v?"selected":"")+'>'+l+'</option>').join("")+'</select></label>'+
+    '<label>Tarea / fase<input type="text" data-ktask="'+di+'" value="'+escK(ds.task||"")+'" placeholder="Opcional"></label>'+
+    '<label>Periodo de análisis<select data-krange-mode="'+di+'"><option value="all" '+(ds.range.mode==="all"?"selected":"")+'>Todo el vídeo</option><option value="interval" '+(interval?"selected":"")+'>Desde un tiempo hasta otro</option><option value="cycles" '+(cycles?"selected":"")+'>Número de ciclos visibles</option></select></label>'+
+    (interval?'<label>Tiempo inicial (s)<input type="number" min="0" step="0.01" data-krange-start="'+di+'" value="'+range.start+'"></label><label>Tiempo final (s)<input type="number" min="0" step="0.01" data-krange-end="'+di+'" value="'+range.end+'"></label>':"")+
+    (cycles?'<label>Número de ciclos visibles<input type="number" min="1" step="1" data-krange-cycles="'+di+'" value="'+range.cycles+'"></label>':"")+
+   '</div><div class="notice">'+escK(kDataSetRangeLabel(ds))+'</div>'+
+   '<p>Asigne los marcadores de este archivo a los puntos anatómicos.</p><div class="form-grid">'+KPOINTS.map(([key,label])=>'<label>'+label+'<select data-kset="'+di+'" data-kmap="'+key+'"><option value="">No asignado</option>'+opts+'</select></label>').join("")+'</div></div>';
+ }).join("");
  m.querySelectorAll("[data-kmap]").forEach(sel=>{
-  const di=Number(sel.dataset.kset);
-  sel.value=kinoveaState.dataSets[di]?.mapping?.[sel.dataset.kmap]||"";
+  const di=Number(sel.dataset.kset);sel.value=kinoveaState.dataSets[di]?.mapping?.[sel.dataset.kmap]||"";
   sel.onchange=()=>{
-   const v=sel.value,ds=kinoveaState.dataSets[di];
-   const duplicate=v&&Object.entries(ds.mapping||{}).some(([k,x])=>k!==sel.dataset.kmap&&x===v);
+   const v=sel.value,ds=kinoveaState.dataSets[di],duplicate=v&&Object.entries(ds.mapping||{}).some(([k,x])=>k!==sel.dataset.kmap&&x===v);
    if(duplicate){sel.value="";kSetStatus("Ese marcador de Kinovea ya está asignado a otro punto anatómico en este JSON.");return}
-   ds.mapping[sel.dataset.kmap]=v;
-   dirty=true;
-   renderKinoveaSelectedTable();
-   kRenderAnalyses();
+   ds.mapping[sel.dataset.kmap]=v;dirty=true;ensurePostureSourcesAvailable();renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate();
   };
  });
- renderKinoveaSelectedTable();
- kRenderAnalyses();
+ m.querySelectorAll("[data-kview]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.kview)];ds.view=el.value;dirty=true;ensurePostureSourcesAvailable();renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate()});
+ m.querySelectorAll("[data-ktask]").forEach(el=>el.onchange=()=>{kinoveaState.dataSets[Number(el.dataset.ktask)].task=el.value.trim();dirty=true;renderKinoveaSelectedTable();renderKinoveaFileList()});
+ m.querySelectorAll("[data-krange-mode]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.krangeMode)];ds.range.mode=el.value;dirty=true;renderKinovea();safeCalculate()});
+ m.querySelectorAll("[data-krange-start]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.krangeStart)];ds.range.start=kNum(el.value,0);dirty=true;renderKinovea();safeCalculate()});
+ m.querySelectorAll("[data-krange-end]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.krangeEnd)];ds.range.end=kNum(el.value,ds.data?.duration||0);dirty=true;renderKinovea();safeCalculate()});
+ m.querySelectorAll("[data-krange-cycles]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.krangeCycles)];ds.range.cycles=Math.max(1,Math.floor(kNum(el.value,1)));dirty=true;renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate()});
+ renderKinoveaSelectedTable();kRenderAnalyses();renderKRange();
 }
 function renderKRange(){
- const mode=document.getElementById("kinoveaRangeMode");if(!mode)return;
- mode.value=kinoveaState.range.mode;
- document.getElementById("kinoveaStart").value=kinoveaState.range.start??0;
- document.getElementById("kinoveaEnd").value=kinoveaState.range.end??(kinoveaState.data?.duration||0);
- document.getElementById("kinoveaCycles").value=kinoveaState.range.cycles||1;
- const interval=kinoveaState.range.mode==="interval",cycles=kinoveaState.range.mode==="cycles";
- const startField=document.getElementById("kinoveaStartField"),endField=document.getElementById("kinoveaEndField"),cyclesField=document.getElementById("kinoveaCyclesField");
- [startField,endField].forEach(el=>{if(!el)return;el.hidden=!interval;el.style.display=interval?"":"none"});
- if(cyclesField){cyclesField.hidden=!cycles;cyclesField.style.display=cycles?"":"none"};
- document.getElementById("kinoveaRangeSummary").textContent=kRangeLabel();
+ const summary=document.getElementById("kinoveaRangeSummary");if(summary)summary.textContent=kRangeLabel();
 }
-function bindKinovea(){
- const mode=document.getElementById("kinoveaRangeMode");if(!mode)return;
- mode.onchange=()=>{kinoveaState.range.mode=mode.value;renderKRange();kRenderAnalyses();};
- ["kinoveaStart","kinoveaEnd","kinoveaCycles"].forEach(id=>document.getElementById(id).oninput=()=>{
-   kinoveaState.range.start=kNum(document.getElementById("kinoveaStart").value,0);
-   kinoveaState.range.end=kNum(document.getElementById("kinoveaEnd").value,kinoveaState.data?.duration||0);
-   kinoveaState.range.cycles=Math.max(1,Math.floor(kNum(document.getElementById("kinoveaCycles").value,1)));
-   renderKRange();kRenderAnalyses();dirty=true;
- });
-}
+function bindKinovea(){renderKRange();}
 function ensureManualPosture(){
  const p=kinoveaState.postureManual||{};
  p.duration=kNum(p.duration,0);
