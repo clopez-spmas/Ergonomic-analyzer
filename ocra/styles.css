@@ -214,3 +214,9 @@
 }
 .ocra-risk-summary-table .risk-summary-ir{text-align:center}
 .ocra-risk-summary-table td.risk-fill{text-align:center;font-weight:700;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.complementary-help-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:12px}
+.complementary-help-grid section{border:1px solid #d8e0e8;border-radius:8px;background:#fff;padding:14px 16px}
+.complementary-help-grid h4{margin:0 0 10px;color:#005a9c;font-size:14px}
+.complementary-help-grid p{margin:8px 0}
+@media (max-width:760px){.complementary-help-grid{grid-template-columns:1fr}}
