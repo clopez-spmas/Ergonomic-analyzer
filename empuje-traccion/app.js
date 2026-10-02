@@ -355,7 +355,6 @@ function bind(){
  [els.height,els.distance,els.fi,els.fs,els.people].forEach(x=>x.addEventListener("change",updateVisibility));
  document.querySelectorAll("#initial0Measures input,#initial90Measures input,#sustainedMeasures input").forEach(x=>x.addEventListener("input",renderResults));
  $("addTaskBtn").onclick=()=>openEditor();
- $("simulationBtn").onclick=()=>{if(!study.tasks.length){appNotice("Añada al menos una tarea antes de iniciar una simulación.");return}refreshSimulationPicker();els.simPicker.classList.remove("hidden");els.simPicker.scrollIntoView({behavior:"smooth"});};
  $("closeSimulationPickerBtn").onclick=()=>els.simPicker.classList.add("hidden");
  $("openSelectedSimulationBtn").onclick=()=>{const t=study.tasks.find(x=>x.id===els.simTaskSelect.value);if(t){els.simPicker.classList.add("hidden");openEditor(t,true)}};
  $("closeEditorBtn").onclick=closeEditor;$("cancelTaskBtn").onclick=closeEditor;$("saveTaskBtn").onclick=saveTask;$("saveStudyBtn").onclick=download;$("newStudyBtn").onclick=newStudy;$("wordTablesBtn").onclick=openWordTables;$("closeWordTablesBtn").onclick=closeWordTables;$("generateETReportTables").onclick=renderWordTables;els.wordTaskSelect?.addEventListener("change",renderWordTables);document.querySelectorAll("[data-et-report-table]").forEach(x=>x.addEventListener("change",renderWordTables));
