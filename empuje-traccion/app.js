@@ -226,9 +226,9 @@ async function download(){
 function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);study.simulations=study.simulations||{};dirty=false;syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){appNotice("El archivo no contiene un estudio válido de Empuje y Tracción.","Archivo no válido")}};r.readAsText(file)}
 async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}};dirty=false;syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
 function intermediateWordTable(t,rw,rm){
- const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center;font-family:Arial;font-size:10pt">'+fmt(v)+'</td>';
- const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left;font-family:Arial;font-size:10pt"></th><th style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10pt">MUJERES</th><th style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10pt">HOMBRES</th></tr>';
- const row=(label,w,m)=>'<tr><td style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10pt"><b>'+label+'</b></td>'+cell(w)+cell(m)+'</tr>';
+ const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center;font-family:Arial;font-size:10.0pt">'+fmt(v)+'</td>';
+ const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left;font-family:Arial;font-size:10.0pt"></th><th style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10.0pt">MUJERES</th><th style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10.0pt">HOMBRES</th></tr>';
+ const row=(label,w,m)=>'<tr><td style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10.0pt"><b>'+label+'</b></td>'+cell(w)+cell(m)+'</tr>';
  let rows='';
  if(t.mode==="onehand"){
    rows+=row("Límite aplicable inicial (N)",rw.fl0,rm.fl0);
@@ -247,12 +247,12 @@ function intermediateWordTable(t,rw,rm){
    rows+=row("Límite de fuerza inicial FLi (N)",rw.fl0,rm.fl0);
    if(t.distance!=="<5")rows+=row("Límite de fuerza sostenida FLs ("+t.distance+" m) (N)",rw.flS,rm.flS);
  }
- return '<table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt">'+head+rows+'</table>';
+ return '<table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10.0pt">'+head+rows+'</table>';
 }
 function copyTaskResults(){
  const t=formTask(),rw=calculate(t,"women"),rm=calculate(t,"men");
  const make=(title,r)=>{const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir),bg=k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7";return '<tr><td style="border:1px solid #759CBF;padding:6px">'+x.label+'</td><td style="border:1px solid #759CBF;padding:6px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #759CBF;padding:6px;text-align:center;background:'+bg+'"><b>'+k.label+'</b></td></tr>'}).join("");return '<h3>'+title+'</h3><table style="border-collapse:collapse;width:100%"><tr><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">ÍNDICE DE RIESGO</th><th style="border:1px solid #759CBF;padding:6px">NIVEL DE RIESGO</th></tr>'+rows+'</table>'};
- const html='<div style="font-family:Arial;font-size:10pt">'+intermediateWordTable(t,rw,rm)+'<br>'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
+ const html='<div style="font-family:Arial;font-size:10.0pt">'+intermediateWordTable(t,rw,rm)+'<br>'+make("MUJERES",rw)+'<br>'+make("HOMBRES",rm)+'</div>';
  if(![...rowsFor(t,rw),...rowsFor(t,rm)].some(x=>Number.isFinite(x.ir))){appNotice("No hay resultados calculados para copiar.");return}
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});navigator.clipboard.write([item]).then(()=>setStatus("Cálculos intermedios y resultados copiados. Puede pegarlos en Word.")).catch(()=>appNotice("No se pudo copiar automáticamente."));
 }
@@ -280,7 +280,7 @@ function copySummary(){
      '</tr>';
    });
  });
- const html='<div style="font-family:Arial;font-size:10pt"><table style="border-collapse:collapse;width:100%">'+
+ const html='<div style="font-family:Arial;font-size:10.0pt"><table style="border-collapse:collapse;width:100%">'+
  '<tr><th style="border:1px solid #759CBF;padding:6px">Nº</th><th style="border:1px solid #759CBF;padding:6px">Tarea</th><th style="border:1px solid #759CBF;padding:6px">FUERZA</th><th style="border:1px solid #759CBF;padding:6px">IR MUJERES</th><th style="border:1px solid #759CBF;padding:6px">NIVEL</th><th style="border:1px solid #759CBF;padding:6px">IR HOMBRES</th><th style="border:1px solid #759CBF;padding:6px">NIVEL</th></tr>'+rows+'</table></div>';
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});
  navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>appNotice("No se pudo copiar automáticamente."));
@@ -288,8 +288,8 @@ function copySummary(){
 
 function reportBg(k){return k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7"}
 function wordResultTable(title,t,r){
- const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir);return '<tr><td style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>'}).join("");
- return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">FUERZA</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">ÍNDICE DE RIESGO</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
+ const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir);return '<tr><td style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10.0pt"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10.0pt;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>'}).join("");
+ return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10.0pt"><tr><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">FUERZA</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">ÍNDICE DE RIESGO</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
 }
 function wordSimulationTable(title,base,sim,pop){
  const ar=rowsFor(base,calculate(base,pop)),br=rowsFor(sim,calculate(sim,pop));
@@ -297,9 +297,9 @@ function wordSimulationTable(title,base,sim,pop){
  const all=[...ar,...br].filter((x,i,z)=>z.findIndex(y=>key(y)===key(x))===i);
  const rows=all.map(x=>{
    const kx=key(x),old=ar.find(y=>key(y)===kx),neu=br.find(y=>key(y)===kx),ir=neu?.ir,k=risk(ir);
-   return '<tr><td style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt">'+fmt(old?.ir)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt"><b>'+fmt(ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>';
+   return '<tr><td style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10.0pt">'+fmt(old?.ir)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10.0pt"><b>'+fmt(ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10.0pt;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>';
  }).join("");
- return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">FUERZA</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">ESTUDIO</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">SIMULACIÓN</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
+ return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10.0pt"><tr><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">FUERZA</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">ESTUDIO</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">SIMULACIÓN</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10.0pt">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
 }
 function reportBlock(title,html){
  return '<section class="report-copy-block"><div class="report-copy-head"><h3>'+title+'</h3><button type="button" class="et-btn copy-et-report-table">Copiar tabla</button></div><div class="report-copy-content">'+html+'</div></section>';
@@ -310,9 +310,9 @@ function etTableToWordHtml(table){
  clone.setAttribute("cellpadding","0");
  clone.setAttribute("cellspacing","0");
  clone.setAttribute("width","100%");
- clone.style.cssText="width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10pt;color:#000;background:#fff;";
+ clone.style.cssText="width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10.0pt;color:#000;background:#fff;";
  clone.querySelectorAll("tr").forEach(row=>{
-   row.style.cssText="page-break-inside:avoid;mso-yfti-irow:0;font-family:Arial,sans-serif;font-size:10pt;height:auto;mso-height-source:auto;";
+   row.style.cssText="page-break-inside:avoid;mso-yfti-irow:0;font-family:Arial,sans-serif;font-size:10.0pt;height:auto;mso-height-source:auto;";
  });
  clone.querySelectorAll("th,td").forEach(cell=>{
    const isHeader=cell.tagName==="TH";
@@ -321,9 +321,9 @@ function etTableToWordHtml(table){
    cell.setAttribute("valign","middle");
    cell.style.cssText=[
      "font-family:Arial,sans-serif",
-     "font-size:10pt",
-     "mso-ansi-font-size:10pt",
-     "mso-bidi-font-size:10pt",
+     "font-size:10.0pt",
+     "mso-ansi-font-size:10.0pt",
+     "mso-bidi-font-size:10.0pt",
      "line-height:10.5pt",
      "mso-line-height-rule:exactly",
      "color:"+color,
@@ -335,8 +335,14 @@ function etTableToWordHtml(table){
      "text-align:"+(cell.style.textAlign||"left"),
      "font-weight:"+(isHeader?"700":"400")
    ].join(";")+";";
-   cell.querySelectorAll("b,strong,span").forEach(el=>{
-     el.style.cssText="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;"+(el.tagName==="B"||el.tagName==="STRONG"?"font-weight:700;":"");
+   const original=cell.innerHTML;
+   cell.innerHTML='<font face="Arial" size="2" style="font-family:Arial,sans-serif;font-size:10.0pt;mso-ansi-font-size:10.0pt;mso-bidi-font-size:10.0pt;">'+original+'</font>';
+   cell.querySelectorAll("b,strong,span,font").forEach(el=>{
+     el.style.fontFamily="Arial, sans-serif";
+     el.style.fontSize="10.0pt";
+     el.style.setProperty("mso-ansi-font-size","10.0pt");
+     el.style.setProperty("mso-bidi-font-size","10.0pt");
+     if(el.tagName==="B"||el.tagName==="STRONG")el.style.fontWeight="700";
    });
  });
  return clone.outerHTML;
@@ -345,12 +351,12 @@ function etWordClipboardHtml(block){
  const parts=[];
  block.querySelectorAll(".word-table-block").forEach(group=>{
    const heading=group.querySelector("h3");
-   if(heading)parts.push('<p style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;font-weight:700;margin:0 0 4pt 0;">'+escapeHtml(heading.textContent)+'</p>');
+   if(heading)parts.push('<p style="font-family:Arial,sans-serif;font-size:10.0pt;mso-ansi-font-size:10.0pt;mso-bidi-font-size:10.0pt;font-weight:700;margin:0 0 4pt 0;">'+escapeHtml(heading.textContent)+'</p>');
    group.querySelectorAll("table").forEach(table=>parts.push(etTableToWordHtml(table)));
-   parts.push('<p style="font-family:Arial,sans-serif;font-size:10pt;line-height:10.5pt;margin:0;">&nbsp;</p>');
+   parts.push('<p style="font-family:Arial,sans-serif;font-size:10.0pt;line-height:10.5pt;margin:0;">&nbsp;</p>');
  });
  if(!parts.length)block.querySelectorAll("table").forEach(table=>parts.push(etTableToWordHtml(table)));
- return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--@page{size:A4;margin:1.5cm;}body,table,thead,tbody,tr,th,td,p,span,b,strong{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}body{margin:0;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{padding:1.5pt 4pt!important;line-height:10.5pt!important;mso-line-height-rule:exactly;}p{mso-margin-top-alt:0;mso-margin-bottom-alt:0;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;background:#fff;margin:0;">'+parts.join("")+'</body></html>';
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--@page{size:A4;margin:1.5cm;}body,table,thead,tbody,tr,th,td,p,span,b,strong{font-family:Arial,sans-serif!important;font-size:10.0pt!important;mso-ansi-font-size:10.0pt;mso-bidi-font-size:10.0pt;}body{margin:0;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{padding:1.5pt 4pt!important;line-height:10.5pt!important;mso-line-height-rule:exactly;}p{mso-margin-top-alt:0;mso-margin-bottom-alt:0;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10.0pt;mso-ansi-font-size:10.0pt;mso-bidi-font-size:10.0pt;background:#fff;margin:0;">'+parts.join("")+'</body></html>';
 }
 async function copyReportBlock(button){
  const block=button.closest(".report-copy-block")?.querySelector(".report-copy-content");
