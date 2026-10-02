@@ -226,7 +226,7 @@
 </section>
 
 <section class="screen" data-screen="8">
-  <div class="screen-title"><span>9</span><div><h2>Vídeo y seguimiento Kinovea</h2><p>Puede estudiar las posturas mediante los datos de Kinovea o introducirlas manualmente. Si utiliza Kinovea, puede completar manualmente cualquier postura o lado que no tenga todos los marcadores o cuyos datos no sean adecuados.</p></div></div>
+  <div class="screen-title"><span>9</span><div><h2>Vídeos y archivos Kinovea</h2><p>Seleccione los JSON correspondientes a los vídeos que se utilizarán para el estudio postural.</p></div></div>
   <div class="calculation-box">
     <strong>Método de estudio de las posturas</strong>
     <div class="form-grid">
@@ -237,41 +237,45 @@
         </select>
       </label>
     </div>
-    <div class="notice">Si selecciona <strong>Manual</strong>, todas las posturas se introducirán manualmente. Si selecciona <strong>Kinovea</strong>, el programa utilizará Kinovea cuando disponga de todos los marcadores necesarios y permitirá pasar a MANUAL de forma independiente para cualquier lado o postura.</div>
+    <div class="notice">Si selecciona <strong>Manual</strong>, todas las posturas se introducirán manualmente. Si selecciona <strong>Kinovea</strong>, el programa utilizará Kinovea cuando disponga de los marcadores necesarios y permitirá pasar a MANUAL de forma independiente para cualquier lado o postura.</div>
   </div>
   <div class="form-grid">
     <label>JSON de Kinovea (hasta 12 archivos)<small>Seleccione un JSON. Para cargar otro, pulse «Añadir otro JSON». Cada archivo puede estar en una carpeta o ubicación diferente.</small><div id="kinoveaFileInputs" class="form-grid"></div><button type="button" class="toolbar-btn" id="addKinoveaJsonBtn">Añadir otro JSON</button><div id="kinoveaFileList" class="notice">No hay JSON seleccionados.</div></label>
   </div>
   <div class="calculation-box">
     <strong>Periodo de análisis</strong>
-    <div id="kinoveaRangeSummary" class="notice">Cada vídeo se analiza como una muestra independiente. La vista, la tarea/fase, el periodo y el número de ciclos se configuran en el bloque de cada JSON dentro de «Asignación de marcadores».</div>
+    <div id="kinoveaRangeSummary" class="notice">Cada vídeo se analiza como una muestra independiente. La vista, la tarea/fase, el periodo y el número de ciclos se configuran en la pantalla «Asignación de marcadores».</div>
   </div>
+</section>
+
+<section class="screen" data-screen="8b">
+  <div class="screen-title"><span>10</span><div><h2>Asignación de marcadores</h2><p>Configure cada JSON de forma independiente: vista, tarea/fase, periodo de análisis y correspondencia entre los marcadores de Kinovea y los puntos anatómicos.</p></div></div>
   <div id="kinoveaMapping" class="calculation-box"><strong>Asignación de marcadores</strong><div class="placeholder">Cargue el JSON de Kinovea.</div></div>
 </section>
 
 <section class="screen" data-screen="9">
-  <div class="screen-title"><span>10</span><div><h2>Datos importados de Kinovea</h2><p>Comprobación de los datos que el programa ha leído del JSON.</p></div></div>
+  <div class="screen-title"><span>11</span><div><h2>Datos importados de Kinovea</h2><p>Comprobación de los datos que el programa ha leído del JSON.</p></div></div>
   <div id="kinoveaSummary" hidden></div>
   <div id="kinoveaDataTable" class="calculation-box"><div class="placeholder">Todavía no hay datos importados.</div></div>
 </section>
 
 <section class="screen" data-screen="10">
-  <div class="screen-title"><span>11</span><div><h2>Postura de hombro</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
+  <div class="screen-title"><span>12</span><div><h2>Postura de hombro</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
   <div id="ocraShoulderPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
 </section>
 
 <section class="screen" data-screen="11">
-  <div class="screen-title"><span>12</span><div><h2>Postura de codo</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
+  <div class="screen-title"><span>13</span><div><h2>Postura de codo</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
   <div id="ocraElbowPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
 </section>
 
 <section class="screen" data-screen="12">
-  <div class="screen-title"><span>13</span><div><h2>Postura de muñeca</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
+  <div class="screen-title"><span>14</span><div><h2>Postura de muñeca</h2><p>La fuente se selecciona para cada lado. Kinovea se utiliza cuando está disponible y puede sustituirse por datos MANUALES.</p></div></div>
   <div id="ocraWristPanel" class="calculation-box"><div class="placeholder">Puede utilizar datos de Kinovea, introducirlos manualmente o combinar ambas fuentes.</div></div>
 </section>
 
 <section class="screen" data-screen="13">
-  <div class="screen-title"><span>14</span><div><h2>Mano - dedo</h2><p></p></div></div>
+  <div class="screen-title"><span>15</span><div><h2>Mano - dedo</h2><p></p></div></div>
   <div class="calculation-box">
     <strong>Modo de introducción del tiempo de agarre</strong>
     <div class="form-grid">
@@ -335,7 +339,7 @@
 </section>
 
 <section class="screen" data-screen="14">
-  <div class="screen-title"><span>15</span><div><h2>Estereotipia</h2><p></p></div></div>
+  <div class="screen-title"><span>16</span><div><h2>Estereotipia</h2><p></p></div></div>
   <div class="side-grid paired-side-grid stereotypy-grid">
     <fieldset><legend>Derecha (DX) · E) Estereotipia</legend>
       <label class="check-row"><input type="checkbox" name="dxStereoCycleOver15"> Tiempo de ciclo superior a 15 segundos.</label>
@@ -358,7 +362,7 @@
 </section></section>
 
 <section class="screen" data-screen="14">
-  <div class="screen-title"><span>15</span><div><h2>Factor complementario</h2><p>Seleccione una sola respuesta en cada grupo. La selección se utilizará para calcular el factor complementario.</p></div></div>
+  <div class="screen-title"><span>16</span><div><h2>Factor complementario</h2><p>Seleccione una sola respuesta en cada grupo. La selección se utilizará para calcular el factor complementario.</p></div></div>
   <div class="side-grid">
     <fieldset><legend>Bloque A: Factores físico-mecánicos</legend>
       <div class="checklist">
@@ -399,7 +403,7 @@
 </section>
 
 <section class="screen" data-screen="15">
-  <div class="screen-title"><span>16</span><div><h2>Cálculo y resultado final</h2></div></div>
+  <div class="screen-title"><span>17</span><div><h2>Cálculo y resultado final</h2></div></div>
   <div class="final-side-grid">
     <section class="final-side"><h3>Extremidad derecha</h3><div class="result-list">
       <div class="main-result"><span>Frecuencia</span><output id="finalFreqDx">—</output></div>
@@ -455,7 +459,7 @@
 </section>
 </section>
 <section class="screen" data-screen="16">
-  <div class="screen-title"><span>17</span><div><h2>Simulación</h2><p>Modifique temporalmente los factores estudiados para comprobar cómo cambia el índice OCRA. El estudio original no se modifica.</p></div></div>
+  <div class="screen-title"><span>18</span><div><h2>Simulación</h2><p>Modifique temporalmente los factores estudiados para comprobar cómo cambia el índice OCRA. El estudio original no se modifica.</p></div></div>
   <div class="calculation-box simulation-summary-top">
     <strong>Resumen de cambios</strong>
     <div id="simChangesList" class="simulation-changes"><div class="placeholder">No se han realizado cambios.</div></div>
@@ -543,7 +547,7 @@
   </div><div id="simStatus" class="notice"></div></div></section>
 
 <section class="screen" data-screen="18" id="ocraReportTablesScreen">
-  <div class="screen-title"><span>19</span><div><h2>Tablas para informe Word</h2><p>Seleccione de forma independiente la tabla de resultados de la evaluación y la tabla de la simulación. Cada tabla puede copiarse por separado y pegarse directamente en Word.</p></div></div>
+  <div class="screen-title"><span>20</span><div><h2>Tablas para informe Word</h2><p>Seleccione de forma independiente la tabla de resultados de la evaluación y la tabla de la simulación. Cada tabla puede copiarse por separado y pegarse directamente en Word.</p></div></div>
   <div class="report-table-selectors">
     <label><input type="checkbox" data-ocra-report-table="study" checked> Resultados de la evaluación OCRA</label>
     <label><input type="checkbox" data-ocra-report-table="simulation" checked> Resultados de la simulación OCRA</label>
@@ -557,7 +561,7 @@
 </section>
 
 <section class="screen simulation-recovery-screen" data-screen="17" hidden>
-  <div class="screen-title"><span>17</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
+  <div class="screen-title"><span>18</span><div><h2>Pausas y recuperación de la simulación</h2><p>Modifique las pausas del escenario para recalcular las horas sin recuperación adecuada y los factores de recuperación y duración.</p></div></div>
   <div class="simulation-actions"><button type="button" class="toolbar-btn" id="simCloseRecoveryBtn">Volver a la simulación</button></div>
   <div class="calculation-box">
     <strong>Horario simulado</strong>
