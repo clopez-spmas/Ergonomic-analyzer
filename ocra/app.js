@@ -329,16 +329,7 @@ function kDataSetRange(ds){
  if(r.mode==="interval"){start=Math.max(0,Math.min(d,kNum(r.start,0)));end=Math.max(start,Math.min(d,kNum(r.end,d)));}
  return {start,end,duration:Math.max(0,end-start),cycles:Math.max(1,Math.floor(kNum(r.cycles,1))),mode:r.mode||"all"};
 }
-function kViewSupports(kind,side,view){
- const v=view||"unspecified";
- if(v==="unspecified")return true;
- if(v==="lateral_right")return side==="right";
- if(v==="lateral_left")return side==="left";
- if(v==="frontal")return kind==="shoulder"||kind==="wrist";
- if(v==="threequarter_right")return side==="right";
- if(v==="threequarter_left")return side==="left";
- return false;
-}
+function kViewSupports(){ return true; }
 function kDataSetMissingMarkers(ds,kind,side){
  const mapping=ds?.mapping||{};
  return kRequired(kind,side).filter(key=>!mapping[key]);
@@ -451,9 +442,9 @@ function renderKinoveaSelectedTable(){
  const sets=(kinoveaState.dataSets||[]).map(kNormaliseDataSet);
  const rows=sets.map((ds,di)=>{
   const selected=KPOINTS.map(([key,label])=>({label,marker:ds.mapping?.[key]})).filter(x=>x.marker).map(x=>x.label+": "+x.marker);
-  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+escK(kViewLabel(ds.view))+'</td><td>'+escK(ds.task||"—")+'</td><td>'+escK(kDataSetRangeLabel(ds))+'</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
+  return '<tr><td>JSON '+(di+1)+'</td><td>'+escK(ds.fileName)+'</td><td>'+escK(ds.task||"—")+'</td><td>'+escK(kDataSetRangeLabel(ds))+'</td><td>'+(selected.length?selected.map(escK).join("<br>"):"Ninguno")+'</td></tr>';
  }).join("");
- t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Vista</th><th>Tarea / fase</th><th>Periodo propio</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="notice"><strong>Trazabilidad:</strong> cada JSON se conserva como una muestra independiente. Los tiempos de vídeos diferentes no se suman entre sí.</div>';
+ t.innerHTML='<div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Archivo</th><th>JSON</th><th>Tarea / fase</th><th>Periodo propio</th><th>Marcadores seleccionados</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="notice"><strong>Trazabilidad:</strong> cada JSON se conserva como una muestra independiente. Los tiempos de vídeos diferentes no se suman entre sí.</div>';
 }
 function renderKinovea(){
  const t=document.getElementById("kinoveaDataTable"),m=document.getElementById("kinoveaMapping");
@@ -463,7 +454,6 @@ function renderKinovea(){
   return;
  }
  kinoveaState.dataSets.forEach(kNormaliseDataSet);
- const viewOptions=[["unspecified","Sin definir"],["lateral_right","Lateral derecho"],["lateral_left","Lateral izquierdo"],["frontal","Frontal"],["threequarter_right","3/4 derecho"],["threequarter_left","3/4 izquierdo"]];
  m.innerHTML=kinoveaState.dataSets.map((ds,di)=>{
   const range=kDataSetRange(ds),interval=ds.range.mode==="interval",cycles=ds.range.mode==="cycles";
   const jointOptions=KPOINTS.map(([key,label])=>'<option value="'+escK(key)+'">'+escK(label)+'</option>').join("");
@@ -474,12 +464,12 @@ function renderKinovea(){
   return '<div class="calculation-box kinovea-json-card"><div class="kinovea-json-heading"><span>JSON '+(di+1)+'</span><strong>'+escK(ds.fileName)+'</strong></div>'+
    '<p>Cada archivo se analiza de forma independiente. Indique la vista y, si procede, la tarea/fase observada.</p>'+
    '<div class="form-grid">'+
-    '<label>Vista del vídeo<select data-kview="'+di+'">'+viewOptions.map(([v,l])=>'<option value="'+v+'" '+(ds.view===v?"selected":"")+'>'+l+'</option>').join("")+'</select></label>'+
+
     '<label>Tarea / fase<input type="text" data-ktask="'+di+'" value="'+escK(ds.task||"")+'" placeholder="Opcional"></label>'+
     '<label>Periodo de análisis<select data-krange-mode="'+di+'"><option value="all" '+(ds.range.mode==="all"?"selected":"")+'>Todo el vídeo</option><option value="interval" '+(interval?"selected":"")+'>Desde un tiempo hasta otro</option><option value="cycles" '+(cycles?"selected":"")+'>Número de ciclos visibles</option></select></label>'+
     (interval?'<label>Tiempo inicial (s)<input type="number" min="0" step="0.01" data-krange-start="'+di+'" value="'+range.start+'"></label><label>Tiempo final (s)<input type="number" min="0" step="0.01" data-krange-end="'+di+'" value="'+range.end+'"></label>':"")+
     (cycles?'<label>Número de ciclos visibles<input type="number" min="1" step="1" data-krange-cycles="'+di+'" value="'+range.cycles+'"></label>':"")+
-   '</div><div class="notice">'+escK(kDataSetRangeLabel(ds))+' · '+escK(ds.view==="unspecified"?"Seleccione la vista para identificar qué movimientos puede aportar.":"Aporta: "+[kViewMovementLabel("shoulder",ds.view),kViewMovementLabel("elbow",ds.view),kViewMovementLabel("wrist",ds.view)].filter((x,i,a)=>x!=="no automático"&&a.indexOf(x)===i).join("; "))+'</div>'+
+   '</div><div class="notice">'+escK(kDataSetRangeLabel(ds))+'</div>'+
    '<p>Asigne a cada marcador Kinovea el punto anatómico que representa.</p><div class="marker-assignment-list">'+markerRows+'</div></div>';
  }).join("");
  m.querySelectorAll("[data-kmarker]").forEach(sel=>{
@@ -496,7 +486,6 @@ function renderKinovea(){
    });
   };
  });
- m.querySelectorAll("[data-kview]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.kview)];ds.view=el.value;dirty=true;ensurePostureSourcesAvailable();renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate()});
  m.querySelectorAll("[data-ktask]").forEach(el=>el.onchange=()=>{kinoveaState.dataSets[Number(el.dataset.ktask)].task=el.value.trim();dirty=true;renderKinoveaSelectedTable();renderKinoveaFileList()});
  m.querySelectorAll("[data-krange-mode]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.krangeMode)];ds.range.mode=el.value;dirty=true;renderKinovea();safeCalculate()});
  m.querySelectorAll("[data-krange-start]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.krangeStart)];ds.range.start=kNum(el.value,0);dirty=true;renderKinovea();safeCalculate()});
