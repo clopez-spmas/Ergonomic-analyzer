@@ -21,7 +21,7 @@
   <label class="et-btn" for="loadStudyInput">Cargar estudio</label>
   <input id="loadStudyInput" type="file" accept=".json,application/json" hidden>
   <button id="simulationBtn" class="et-btn">Simulación</button>
-  <button id="copySummaryBtn" class="et-btn">Copiar resumen para Word</button>
+  <button id="wordTablesBtn" class="et-btn">Tablas para Word</button>
   <a class="et-link" href="../">← Volver al portal</a>
 </section>
 
@@ -45,7 +45,7 @@
 
 <div id="status" class="status"></div>
 
-<section class="et-card">
+<section id="studyDataCard" class="et-card">
   <div class="et-section-title">
     <h2>Datos generales del estudio</h2>
     <span class="muted">Un estudio corresponde a una empresa y un puesto.</span>
@@ -59,7 +59,7 @@
   </div>
 </section>
 
-<section class="et-card">
+<section id="tasksCard" class="et-card">
   <div class="et-section-title">
     <div>
       <h2>Tareas del puesto</h2>
@@ -195,6 +195,34 @@
     <button id="copyTaskBtn" class="et-btn">Copiar resultados de esta tarea</button>
     <button id="cancelTaskBtn" class="et-btn">Cancelar</button>
   </div>
+</section>
+
+<section id="wordTablesScreen" class="et-card hidden">
+  <div class="et-section-title">
+    <div>
+      <h2>Tablas para informe Word</h2>
+      <div class="muted">Seleccione la tarea y las tablas que desea generar. Cada tabla puede copiarse por separado y pegarse directamente en Word.</div>
+    </div>
+    <button id="closeWordTablesBtn" class="et-btn">Volver al estudio</button>
+  </div>
+
+  <div class="et-grid">
+    <label class="et-field">Tarea
+      <select id="wordTaskSelect"></select>
+    </label>
+  </div>
+
+  <div class="report-table-selectors">
+    <label><input type="checkbox" data-et-report-table="results" checked> Resultados finales</label>
+    <label><input type="checkbox" data-et-report-table="intermediate" checked> Cálculos intermedios</label>
+    <label><input type="checkbox" data-et-report-table="simulation" checked> Resultados de la simulación</label>
+  </div>
+
+  <div class="tables-toolbar">
+    <button type="button" class="et-btn primary" id="generateETReportTables">Generar tablas</button>
+  </div>
+
+  <div id="etReportTables"></div>
 </section>
 </main>
 
