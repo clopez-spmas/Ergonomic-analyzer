@@ -220,3 +220,10 @@
 .complementary-help-grid h4{margin:0 0 10px;color:#005a9c;font-size:14px}
 .complementary-help-grid p{margin:8px 0}
 @media (max-width:760px){.complementary-help-grid{grid-template-columns:1fr}}
+
+/* Kinovea · asignación marcador -> punto anatómico, común con PMF */
+.marker-assignment-list{display:grid;gap:8px;margin-top:12px}
+.marker-row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1.4fr);gap:12px;align-items:center}
+.marker-row label{font-weight:600;color:#2d3748}
+.marker-row select{width:100%}
+@media(max-width:760px){.marker-row{grid-template-columns:1fr}}
