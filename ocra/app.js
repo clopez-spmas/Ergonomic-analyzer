@@ -1171,7 +1171,7 @@ function simRenderChanged(){
   simShoulderAngleDx:"Ángulo hombro DX",simShoulderTimeDx:"Tiempo hombro DX",simShoulderPctInputDx:"% hombro DX",simShoulderAngleIx:"Ángulo hombro IX",simShoulderTimeIx:"Tiempo hombro IX",simShoulderPctInputIx:"% hombro IX",
   simElbowAngleDx:"Ángulo codo DX",simElbowTimeDx:"Tiempo codo DX",simElbowPctInputDx:"% codo DX",simElbowAngleIx:"Ángulo codo IX",simElbowTimeIx:"Tiempo codo IX",simElbowPctInputIx:"% codo IX",
   simWristAngleDx:"Ángulo muñeca DX",simWristTimeDx:"Tiempo muñeca DX",simWristPctInputDx:"% muñeca DX",simWristAngleIx:"Ángulo muñeca IX",simWristTimeIx:"Tiempo muñeca IX",simWristPctInputIx:"% muñeca IX",
-  simHeadDx:"Manos sobre cabeza DX",simHeadIx:"Manos sobre cabeza IX",simHandMode:"Unidad mano-dedo",
+  simHandMode:"Unidad mano-dedo",
   simStereoHalfDx:"Movimientos repetitivos > mitad DX",simStereoHalfIx:"Movimientos repetitivos > mitad IX",
   simStereoCycle815Dx:"Ciclo 8–15 s DX",simStereoCycle815Ix:"Ciclo 8–15 s IX",
   simStereoStaticDx:"Postura estática >50 % DX",simStereoStaticIx:"Postura estática >50 % IX",
