@@ -56,3 +56,27 @@ select{font:inherit;padding:9px 10px;border:1px solid #cbd5e0;border-radius:8px;
 .data-panel{margin-top:20px}.data-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.data-block{margin-top:18px;padding:16px;border:1px solid #d8e0e8;border-radius:10px;background:#fff}.data-block h3{margin:0 0 10px;color:#005a9c}.data-block .analysis-help{margin-bottom:12px}@media(max-width:760px){.data-summary-grid{grid-template-columns:1fr}}
 
 .manual-entry{margin-top:18px}.manual-card{border:1px solid #d8dee8;border-radius:12px;padding:16px;margin:12px 0;background:#fff}.manual-card h4{margin:0 0 12px}.manual-entry input{width:100%}
+
+
+/* Posturas forzadas v2 */
+.hidden{display:none!important}
+.panel-heading,.criterion-head,.report-copy-head{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.sample-card,.criterion-card,.detail-card,.report-copy-block{background:#fff;border:1px solid #d7e0e8;border-radius:12px;padding:16px;margin:14px 0}
+.sample-card>div{display:flex;flex-direction:column;gap:4px}
+.dual-result-head,.result-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.dual-result-head span{font-weight:700;color:#355c7d}
+.result-pair>div{padding:12px;border-radius:10px;display:flex;flex-direction:column;gap:6px}
+.risk-ok{background:#e8f5e9!important}
+.risk-no{background:#fde8e8!important}
+.criterion-output{margin-top:12px}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:16px}
+.mapping-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.mapping-grid label,.analysis-grid label{display:flex;flex-direction:column;gap:5px}
+.report-options{margin-bottom:12px}
+.screen-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.sim-change{font-size:.9rem;color:#5b6770;margin:8px 0}
+.app-dialog{max-width:760px;width:min(92vw,760px);border:0;border-radius:14px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.app-dialog::backdrop{background:rgba(20,32,45,.45)}
+.dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+small{color:#667784}
+@media(max-width:720px){.dual-result-head,.result-pair{grid-template-columns:1fr}.panel-heading,.criterion-head,.report-copy-head{align-items:flex-start;flex-direction:column}}
