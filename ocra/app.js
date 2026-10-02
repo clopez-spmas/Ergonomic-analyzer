@@ -469,7 +469,7 @@ function renderKinovea(){
   const jointOptions=KPOINTS.map(([key,label])=>'<option value="'+escK(key)+'">'+escK(label)+'</option>').join("");
   const markerRows=(ds.data.markers||[]).map(marker=>{
     const selected=Object.entries(ds.mapping||{}).find(([,value])=>value===marker)?.[0]||"";
-    return '<div class="marker-row"><label><span class="kinovea-marker-label">Marcador Kinovea</span><strong class="kinovea-marker-name">'+escK(marker)+'</strong></label><select data-kset="'+di+'" data-kmarker="'+escK(marker)+'"><option value="">-- no asignar --</option>'+jointOptions+'</select></div>';
+    return '<div class="marker-row"><label>Marcador '+escK(marker)+'</label><select data-kset="'+di+'" data-kmarker="'+escK(marker)+'"><option value="">-- no asignar --</option>'+jointOptions+'</select></div>';
   }).join("");
   return '<div class="calculation-box kinovea-json-card"><div class="kinovea-json-heading"><span>JSON '+(di+1)+'</span><strong>'+escK(ds.fileName)+'</strong></div>'+
    '<p>Cada archivo se analiza de forma independiente. Indique la vista y, si procede, la tarea/fase observada.</p>'+
