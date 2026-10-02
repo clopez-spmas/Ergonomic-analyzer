@@ -226,9 +226,9 @@ async function download(){
 function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);study.simulations=study.simulations||{};dirty=false;syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){appNotice("El archivo no contiene un estudio válido de Empuje y Tracción.","Archivo no válido")}};r.readAsText(file)}
 async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}};dirty=false;syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
 function intermediateWordTable(t,rw,rm){
- const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center">'+fmt(v)+'</td>';
- const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left"></th><th style="border:1px solid #759CBF;padding:6px">MUJERES</th><th style="border:1px solid #759CBF;padding:6px">HOMBRES</th></tr>';
- const row=(label,w,m)=>'<tr><td style="border:1px solid #759CBF;padding:6px"><b>'+label+'</b></td>'+cell(w)+cell(m)+'</tr>';
+ const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center;font-family:Arial;font-size:10pt">'+fmt(v)+'</td>';
+ const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left;font-family:Arial;font-size:10pt"></th><th style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10pt">MUJERES</th><th style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10pt">HOMBRES</th></tr>';
+ const row=(label,w,m)=>'<tr><td style="border:1px solid #759CBF;padding:6px;font-family:Arial;font-size:10pt"><b>'+label+'</b></td>'+cell(w)+cell(m)+'</tr>';
  let rows='';
  if(t.mode==="onehand"){
    rows+=row("Límite aplicable inicial (N)",rw.fl0,rm.fl0);
@@ -247,7 +247,7 @@ function intermediateWordTable(t,rw,rm){
    rows+=row("Límite de fuerza inicial FLi (N)",rw.fl0,rm.fl0);
    if(t.distance!=="<5")rows+=row("Límite de fuerza sostenida FLs ("+t.distance+" m) (N)",rw.flS,rm.flS);
  }
- return '<table style="border-collapse:collapse;width:100%">'+head+rows+'</table>';
+ return '<table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt">'+head+rows+'</table>';
 }
 function copyTaskResults(){
  const t=formTask(),rw=calculate(t,"women"),rm=calculate(t,"men");
@@ -288,8 +288,8 @@ function copySummary(){
 
 function reportBg(k){return k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7"}
 function wordResultTable(title,t,r){
- const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir);return '<tr><td style="border:1px solid #222;padding:8px">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>'}).join("");
- return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px">FUERZA</th><th style="border:1px solid #222;padding:8px">ÍNDICE DE RIESGO</th><th style="border:1px solid #222;padding:8px">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
+ const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir);return '<tr><td style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>'}).join("");
+ return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">FUERZA</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">ÍNDICE DE RIESGO</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
 }
 function wordSimulationTable(title,base,sim,pop){
  const ar=rowsFor(base,calculate(base,pop)),br=rowsFor(sim,calculate(sim,pop));
@@ -297,9 +297,9 @@ function wordSimulationTable(title,base,sim,pop){
  const all=[...ar,...br].filter((x,i,z)=>z.findIndex(y=>key(y)===key(x))===i);
  const rows=all.map(x=>{
    const kx=key(x),old=ar.find(y=>key(y)===kx),neu=br.find(y=>key(y)===kx),ir=neu?.ir,k=risk(ir);
-   return '<tr><td style="border:1px solid #222;padding:8px">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center">'+fmt(old?.ir)+'</td><td style="border:1px solid #222;padding:8px;text-align:center"><b>'+fmt(ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>';
+   return '<tr><td style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt">'+fmt(old?.ir)+'</td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt"><b>'+fmt(ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;font-family:Arial;font-size:10pt;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>';
  }).join("");
- return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px">FUERZA</th><th style="border:1px solid #222;padding:8px">ESTUDIO</th><th style="border:1px solid #222;padding:8px">SIMULACIÓN</th><th style="border:1px solid #222;padding:8px">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
+ return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">FUERZA</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">ESTUDIO</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">SIMULACIÓN</th><th style="border:1px solid #222;padding:8px;font-family:Arial;font-size:10pt">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
 }
 function reportBlock(title,html){
  return '<section class="report-copy-block"><div class="report-copy-head"><h3>'+title+'</h3><button type="button" class="et-btn copy-et-report-table">Copiar tabla</button></div><div class="report-copy-content">'+html+'</div></section>';
