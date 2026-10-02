@@ -224,7 +224,7 @@ function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.pars
 async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
 function intermediateWordTable(t,rw,rm){
  const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center">'+fmt(v)+'</td>';
- const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left">CÁLCULOS INTERMEDIOS</th><th style="border:1px solid #759CBF;padding:6px">MUJERES</th><th style="border:1px solid #759CBF;padding:6px">HOMBRES</th></tr>';
+ const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left"></th><th style="border:1px solid #759CBF;padding:6px">MUJERES</th><th style="border:1px solid #759CBF;padding:6px">HOMBRES</th></tr>';
  const row=(label,w,m)=>'<tr><td style="border:1px solid #759CBF;padding:6px"><b>'+label+'</b></td>'+cell(w)+cell(m)+'</tr>';
  let rows='';
  if(t.mode==="onehand"){
