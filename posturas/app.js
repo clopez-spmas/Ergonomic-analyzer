@@ -21,7 +21,7 @@ const CRITERIA=[
 
 function initCriterion(c){
  if(study.criteria[c.id])return;
- study.criteria[c.id]={source:"manual",angle:0,staticSeconds:0,dynamicMovements:0,criticalPercent:0,trunkSupport:false,headSupport:false,posture:"standing",ischialSupport:false,trunkBackInclined:false,lumbarConvex:false,plantarAngle:0,dorsiflexAngle:0,durationLimitMinutes:0,neckFlex:0,autoFrequency:null,autoOrigin:"",autoNote:""};
+ study.criteria[c.id]={source:"manual",angle:0,staticSeconds:0,dynamicMovements:0,criticalPercent:0,trunkSupport:false,headSupport:false,posture:"standing",ischialSupport:false,trunkBackInclined:false,lumbarConvex:false,plantarAngle:0,dorsiflexAngle:0,durationLimitMinutes:0,neckFlex:0,dynamicAngle:0,autoFrequency:null,autoOrigin:"",autoNote:""};
 }
 CRITERIA.forEach(initCriterion);
 
@@ -111,7 +111,8 @@ function evalDynamic(id,c){
  }
  if(id.startsWith("knee")){
   const limit=c.posture==="seated"?40:135;
-  return result(a>=limit&&f>=2,"Ángulo "+fmt(a,1)+"° · "+fmt(f)+" mov/min.",{angle:a,frequency:f,limit});
+  const dynamicAngle=Number.isFinite(Number(c.dynamicAngle))?num(c.dynamicAngle):a;
+  return result(dynamicAngle>=limit&&f>=2,"Flexión dinámica "+fmt(dynamicAngle,1)+"° · "+fmt(f)+" mov/min.",{angle:dynamicAngle,frequency:f,limit});
  }
  if(id.startsWith("ankle")){
   const d=num(c.dorsiflexAngle),pl=num(c.plantarAngle);
@@ -139,7 +140,7 @@ function criterionCard(def){
  if(def.id==="headFlex")html+='<label class="check-row"><input data-field="headSupport" type="checkbox" '+(c.headSupport?"checked":"")+'> Soporte completo de cabeza</label><label>Flexo-extensión de cuello β-α (°)<input data-field="neckFlex" type="number" step="0.1" value="'+c.neckFlex+'"></label>';
  if(def.id==="trunkFlex")html+='<label>Duración máxima aceptable del gráfico (min)<input data-field="durationLimitMinutes" type="number" min="0" step="0.01" value="'+c.durationLimitMinutes+'"><small>Campo provisional mientras integramos la curva exacta del manual.</small></label>';
  if(def.id==="lumbarConvex")html+='<label class="check-row"><input data-field="lumbarConvex" type="checkbox" '+(c.lumbarConvex?"checked":"")+'> Existe postura convexa lumbar</label>';
- if(def.id.startsWith("knee"))html+='<label>Postura<select data-field="posture"><option value="standing" '+(c.posture==="standing"?"selected":"")+'>De pie</option><option value="seated" '+(c.posture==="seated"?"selected":"")+'>Sentado</option><option value="squat" '+(c.posture==="squat"?"selected":"")+'>Cuclillas</option></select></label><label class="check-row"><input data-field="ischialSupport" type="checkbox" '+(c.ischialSupport?"checked":"")+'> Apoyo isquiotibial</label><label class="check-row"><input data-field="trunkBackInclined" type="checkbox" '+(c.trunkBackInclined?"checked":"")+'> Tronco posteriormente inclinado</label>';
+ if(def.id.startsWith("knee"))html+='<label>Postura<select data-field="posture"><option value="standing" '+(c.posture==="standing"?"selected":"")+'>De pie</option><option value="seated" '+(c.posture==="seated"?"selected":"")+'>Sentado</option><option value="squat" '+(c.posture==="squat"?"selected":"")+'>Cuclillas</option></select></label><label>Flexión dinámica desde referencia (°)<input data-field="dynamicAngle" type="number" min="0" step="0.1" value="'+c.dynamicAngle+'"><small>Manual: use 40° como límite sentado y 135° de pie.</small></label><label class="check-row"><input data-field="ischialSupport" type="checkbox" '+(c.ischialSupport?"checked":"")+'> Apoyo isquiotibial</label><label class="check-row"><input data-field="trunkBackInclined" type="checkbox" '+(c.trunkBackInclined?"checked":"")+'> Tronco posteriormente inclinado</label>';
  if(def.id.startsWith("ankle"))html+='<label>Dorsiflexión (°)<input data-field="dorsiflexAngle" type="number" min="0" step="0.1" value="'+c.dorsiflexAngle+'"></label><label>Flexión plantar (°)<input data-field="plantarAngle" type="number" min="0" step="0.1" value="'+c.plantarAngle+'"></label>';
  if(c.source==="kinovea"){const auto=autoPreview(def.id,c);html+='<div class="kinovea-auto">'+(auto?'<strong>Cálculo automático Kinovea</strong><span>Origen: '+esc(auto.origin)+'</span><span>Tiempo estático acumulado: '+fmt(auto.staticSeconds,2)+' s · movimientos: '+auto.moves+' · frecuencia: '+fmt(auto.frequency,2)+' mov/min · tiempo crítico: '+fmt(auto.criticalPercent,2)+'%</span>':'<strong>Kinovea seleccionado</strong><span>Faltan una vista compatible o marcadores necesarios para este criterio.</span>')+'</div>'}html+='</div><div class="criterion-output" data-output></div></article>';return html;
 }
@@ -331,9 +332,10 @@ function analyseSeries(id,c,s){
  if(episodeStart!==null){const dur=rows.at(-1).time-episodeStart;if(dur>4){staticSeconds+=dur;maxEpisode=Math.max(maxEpisode,dur)}}
  const observedMinutes=Math.max(.000001,r.duration/60);
  const frequency=moves/observedMinutes,criticalPercent=Math.max(0,Math.min(100,100*criticalTime/r.duration));
- const out={source:"kinovea",angle:representative.value,staticSeconds,dynamicMovements:moves,criticalPercent,autoFrequency:frequency,autoOrigin:(s.jsonName||"JSON Kinovea")+" · "+s.view,autoNote:"",trunkSupport:c.trunkSupport,headSupport:c.headSupport,posture:c.posture,ischialSupport:c.ischialSupport,trunkBackInclined:c.trunkBackInclined,lumbarConvex:c.lumbarConvex,durationLimitMinutes:c.durationLimitMinutes,neckFlex:Number.isFinite(representative.neckFlex)?representative.neckFlex:c.neckFlex,dorsiflexAngle:Number.isFinite(representative.dorsiflex)?representative.dorsiflex:c.dorsiflexAngle,plantarAngle:Number.isFinite(representative.plantar)?representative.plantar:c.plantarAngle};
+ const out={source:"kinovea",angle:representative.value,staticSeconds,dynamicMovements:moves,criticalPercent,autoFrequency:frequency,autoOrigin:(s.jsonName||"JSON Kinovea")+" · "+s.view,autoNote:"",trunkSupport:c.trunkSupport,headSupport:c.headSupport,posture:c.posture,ischialSupport:c.ischialSupport,trunkBackInclined:c.trunkBackInclined,lumbarConvex:c.lumbarConvex,durationLimitMinutes:c.durationLimitMinutes,neckFlex:Number.isFinite(representative.neckFlex)?representative.neckFlex:c.neckFlex,dynamicAngle:c.dynamicAngle,dorsiflexAngle:Number.isFinite(representative.dorsiflex)?representative.dorsiflex:c.dorsiflexAngle,plantarAngle:Number.isFinite(representative.plantar)?representative.plantar:c.plantarAngle};
  if(id.startsWith("knee")){
   out.angle=c.posture==="seated"?representative.value:num(representative.standingFlex);
+  out.dynamicAngle=c.posture==="seated"?num(representative.seatedFlex):num(representative.standingFlex);
   out.jointAngle=representative.value;out.standingFlex=num(representative.standingFlex);out.seatedFlex=num(representative.seatedFlex);
  }
  return {c:out,frequency,criticalPercent,staticSeconds,maxEpisode,moves,origin:out.autoOrigin};
