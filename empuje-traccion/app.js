@@ -5,8 +5,8 @@ const DIST=[["<5",null,null],[5,.27,.18],[6,.294,.196],[7,.318,.212],[8,.342,.22
 const FS=[[10,.49],[9,.488],[8,.486],[7,.484],[6,.482],[5,.48],[4,.47],[3,.4642857143],[2.9,.4585714286],[2.8,.4528571429],[2.7,.4471428571],[2.6,.4414285714],[2.5,.4357142857],[2.4,.43],[2.3,.425],[2.2,.42],[2.1,.415],[2,.41],[1.9,.405],[1.8,.4],[1.7,.395],[1.6,.39],[1.5,.385],[1.4,.38],[1.3,.375],[1.2,.37],[1.1,.365],[1,.36],[.9,.348],[.8,.336],[.7,.324],[.6,.312],[.5,.3],[.4,.2733333333],[.3,.2466666667],[.2,.22],[.1,.18],[.075,.16],[.05,.14],[.025,.11],[.02,.1],[1/60,.09],[1/70,.0866666667],[1/80,.0833333333],[1/90,.08],[.01,.0766666667],[1/110,.0733333333],[1/120,.07],[1/130,.0683333333],[1/140,.0666666667],[1/150,.065],[1/160,.0633333333],[1/170,.0616666667],[1/180,.06],[1/190,.0583333333],[.005,.0566666667],[1/210,.055],[1/220,.0533333333],[1/230,.0516666667],[1/240,.05],[.004,.0491666667],[1/260,.0483333333],[1/270,.0475],[1/280,.0466666667],[1/290,.0458333333],[1/300,.045],[1/310,.0441666667],[1/320,.0433333333],[1/330,.0425],[1/340,.0416666667],[1/350,.0408333333],[1/360,.04]];
 const FLS_PULL=[[1.4,190,300],[1.35,190,300],[1.3,190,300],[1.25,190,300],[1.2,190,300],[1.15,190,300],[1.1,310,490],[1.05,310,490],[1,310,490],[.95,310,490],[.9,330,520],[.85,330,520],[.8,330,520],[.75,330,520],[.7,330,520],[.65,330,520],[.6,330,520],[.55,330,520],[.5,330,520],[.45,330,520],[.4,330,520],[.35,330,520],[.3,330,520],[.25,330,520],[.2,330,520],[.15,330,520],[.1,330,520]];
 const $=id=>document.getElementById(id), q=n=>document.querySelector('input[name="'+n+'"]:checked');
-const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status"),simChangesBlock:$("simulationChangesBlock"),simChangesList:$("simulationChangesList"),resultsHeading:$("resultsHeading"),simPicker:$("simulationPicker"),simTaskSelect:$("simulationTaskSelect"),dialog:$("appDialog"),dialogTitle:$("appDialogTitle"),dialogMessage:$("appDialogMessage"),dialogOk:$("appDialogOk"),dialogCancel:$("appDialogCancel")};
-let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]}, editing=null, simBase=null;
+const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status"),simChangesBlock:$("simulationChangesBlock"),simChangesList:$("simulationChangesList"),resultsHeading:$("resultsHeading"),simPicker:$("simulationPicker"),simTaskSelect:$("simulationTaskSelect"),wordScreen:$("wordTablesScreen"),wordTaskSelect:$("wordTaskSelect"),wordHost:$("etReportTables"),studyDataCard:$("studyDataCard"),tasksCard:$("tasksCard"),dialog:$("appDialog"),dialogTitle:$("appDialogTitle"),dialogMessage:$("appDialogMessage"),dialogOk:$("appDialogOk"),dialogCancel:$("appDialogCancel")};
+let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}}, editing=null, simBase=null;
 const fmt=n=>Number.isFinite(n)?n.toFixed(2).replace(".",","):"—";
 const actionText=a=>a==="push"?"Empujar":"Tirar";
 const risk=ir=>!Number.isFinite(ir)?{label:"No calculable",cls:"risk-na"}:ir<.85?{label:"Aceptable",cls:"risk-green"}:ir<=1?{label:"Leve",cls:"risk-yellow"}:{label:"Presente",cls:"risk-red"};
@@ -154,8 +154,12 @@ function summaryPopulationCell(t,pop){
  }).join("")+'</div>';
 }
 function refreshSimulationPicker(){
- if(!els.simTaskSelect)return;
- els.simTaskSelect.innerHTML=study.tasks.map(t=>'<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>').join("");
+ if(els.simTaskSelect)els.simTaskSelect.innerHTML=study.tasks.map(t=>'<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>').join("");
+ if(els.wordTaskSelect){
+   const current=els.wordTaskSelect.value;
+   els.wordTaskSelect.innerHTML=study.tasks.map(t=>'<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>').join("");
+   if(study.tasks.some(t=>t.id===current))els.wordTaskSelect.value=current;
+ }
 }
 function renderTasks(){
  els.rows.innerHTML="";
@@ -178,7 +182,13 @@ async function saveTask(){
  if(!t.initial0.length){await appNotice("Introduzca al menos una medición de fuerza inicial a 0°.");return}
  if(t.has90&&!t.initial90.length){await appNotice("La tarea indica que aplica 90°. Introduzca al menos una medición a 90°.");return}
  if(t.distance!=="<5"&&!t.sustained.length){await appNotice("Para distancias de 5 m o más introduzca al menos una medición de fuerza sostenida.");return}
- if(simBase){setStatus("Simulación calculada. La tarea original no se ha modificado.");return}
+ if(simBase){
+   study.simulations=study.simulations||{};
+   study.simulations[simBase.id]={base:JSON.parse(JSON.stringify(simBase)),current:JSON.parse(JSON.stringify(t))};
+   setStatus("Simulación calculada y disponible en Tablas para Word.");
+   renderWordTables();
+   return
+ }
  const idx=study.tasks.findIndex(x=>x.id===t.id);if(idx>=0)study.tasks[idx]=t;else{if(study.tasks.length>=50)return;study.tasks.push(t)}renderTasks();closeEditor();setStatus("Tarea guardada.");
 }
 async function download(){
@@ -210,8 +220,8 @@ async function download(){
    setStatus("No se ha podido guardar el estudio.");
  }
 }
-function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){appNotice("El archivo no contiene un estudio válido de Empuje y Tracción.","Archivo no válido")}};r.readAsText(file)}
-async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[]};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
+function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);study.simulations=study.simulations||{};syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){appNotice("El archivo no contiene un estudio válido de Empuje y Tracción.","Archivo no válido")}};r.readAsText(file)}
+async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
 function intermediateWordTable(t,rw,rm){
  const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center">'+fmt(v)+'</td>';
  const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left">CÁLCULOS INTERMEDIOS</th><th style="border:1px solid #759CBF;padding:6px">MUJERES</th><th style="border:1px solid #759CBF;padding:6px">HOMBRES</th></tr>';
@@ -272,6 +282,73 @@ function copySummary(){
  const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([document.createRange().createContextualFragment(html).textContent],{type:"text/plain"})});
  navigator.clipboard.write([item]).then(()=>setStatus("Resumen copiado. Puede pegarlo en Word.")).catch(()=>appNotice("No se pudo copiar automáticamente."));
 }
+
+function reportBg(k){return k.cls==="risk-green"?"#c6efce":k.cls==="risk-yellow"?"#fff2cc":k.cls==="risk-red"?"#ea9999":"#edf2f7"}
+function wordResultTable(title,t,r){
+ const rows=rowsFor(t,r).map(x=>{const k=risk(x.ir);return '<tr><td style="border:1px solid #222;padding:8px">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center"><b>'+fmt(x.ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>'}).join("");
+ return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px">FUERZA</th><th style="border:1px solid #222;padding:8px">ÍNDICE DE RIESGO</th><th style="border:1px solid #222;padding:8px">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
+}
+function wordSimulationTable(title,base,sim,pop){
+ const ar=rowsFor(base,calculate(base,pop)),br=rowsFor(sim,calculate(sim,pop));
+ const key=x=>x.label.includes("90°")?"initial90":x.label.includes("sostenida")?"sustained":"initial0";
+ const all=[...ar,...br].filter((x,i,z)=>z.findIndex(y=>key(y)===key(x))===i);
+ const rows=all.map(x=>{
+   const kx=key(x),old=ar.find(y=>key(y)===kx),neu=br.find(y=>key(y)===kx),ir=neu?.ir,k=risk(ir);
+   return '<tr><td style="border:1px solid #222;padding:8px">'+escapeHtml(x.label)+'</td><td style="border:1px solid #222;padding:8px;text-align:center">'+fmt(old?.ir)+'</td><td style="border:1px solid #222;padding:8px;text-align:center"><b>'+fmt(ir)+'</b></td><td style="border:1px solid #222;padding:8px;text-align:center;background:'+reportBg(k)+'"><b>'+k.label+'</b></td></tr>';
+ }).join("");
+ return '<div class="word-table-block"><h3>'+title+'</h3><table style="border-collapse:collapse;width:100%;font-family:Arial;font-size:10pt"><tr><th style="border:1px solid #222;padding:8px">FUERZA</th><th style="border:1px solid #222;padding:8px">ESTUDIO</th><th style="border:1px solid #222;padding:8px">SIMULACIÓN</th><th style="border:1px solid #222;padding:8px">NIVEL DE RIESGO</th></tr>'+rows+'</table></div>';
+}
+function reportBlock(title,html){
+ return '<section class="report-copy-block"><div class="report-copy-head"><h3>'+title+'</h3><button type="button" class="et-btn copy-et-report-table">Copiar tabla</button></div><div class="report-copy-content">'+html+'</div></section>';
+}
+async function copyReportBlock(button){
+ const block=button.closest(".report-copy-block")?.querySelector(".report-copy-content");
+ if(!block)return;
+ const html='<div style="font-family:Arial;font-size:10pt">'+block.innerHTML+'</div>';
+ const plain=block.innerText;
+ try{
+   const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([plain],{type:"text/plain"})});
+   await navigator.clipboard.write([item]);setStatus("Tabla copiada. Puede pegarla en Word.");
+ }catch(e){appNotice("No se pudo copiar automáticamente.")}
+}
+function renderWordTables(){
+ if(!els.wordHost)return;
+ const task=study.tasks.find(t=>t.id===els.wordTaskSelect?.value)||study.tasks[0];
+ if(!task){els.wordHost.innerHTML='<div class="placeholder">No hay tareas disponibles.</div>';return}
+ const selected=[...document.querySelectorAll("[data-et-report-table]")].filter(x=>x.checked).map(x=>x.dataset.etReportTable);
+ const blocks=[];
+ if(selected.includes("results")){
+   const rw=calculate(task,"women"),rm=calculate(task,"men");
+   blocks.push(reportBlock("Resultados finales",wordResultTable("MUJERES",task,rw)+wordResultTable("HOMBRES",task,rm)));
+ }
+ if(selected.includes("intermediate")){
+   const rw=calculate(task,"women"),rm=calculate(task,"men");
+   blocks.push(reportBlock("Cálculos intermedios",intermediateWordTable(task,rw,rm)));
+ }
+ if(selected.includes("simulation")){
+   const saved=study.simulations?.[task.id];
+   if(saved)blocks.push(reportBlock("Resultados de la simulación",wordSimulationTable("MUJERES",saved.base,saved.current,"women")+wordSimulationTable("HOMBRES",saved.base,saved.current,"men")));
+   else blocks.push('<section class="report-copy-block"><div class="report-copy-head"><h3>Resultados de la simulación</h3></div><div class="placeholder">No hay una simulación calculada para esta tarea.</div></section>');
+ }
+ els.wordHost.innerHTML=blocks.join("")||'<div class="placeholder">Seleccione al menos una tabla.</div>';
+ els.wordHost.querySelectorAll(".copy-et-report-table").forEach(b=>b.addEventListener("click",()=>copyReportBlock(b)));
+}
+function openWordTables(){
+ if(!study.tasks.length){appNotice("Añada al menos una tarea antes de generar tablas para Word.");return}
+ refreshSimulationPicker();
+ els.studyDataCard.classList.add("hidden");
+ els.tasksCard.classList.add("hidden");
+ els.editor.classList.add("hidden");
+ els.simPicker.classList.add("hidden");
+ els.wordScreen.classList.remove("hidden");
+ renderWordTables();
+ els.wordScreen.scrollIntoView({behavior:"smooth"});
+}
+function closeWordTables(){
+ els.wordScreen.classList.add("hidden");
+ els.studyDataCard.classList.remove("hidden");
+ els.tasksCard.classList.remove("hidden");
+}
 function bind(){
  ["company","area","job","studyDate","studyNotes"].forEach(id=>$(id).addEventListener("input",syncStudyFromHeader));
  document.querySelectorAll('input[name="mode"],input[name="has90"],input[name="action"]').forEach(x=>x.addEventListener("change",updateVisibility));
@@ -281,7 +358,7 @@ function bind(){
  $("simulationBtn").onclick=()=>{if(!study.tasks.length){appNotice("Añada al menos una tarea antes de iniciar una simulación.");return}refreshSimulationPicker();els.simPicker.classList.remove("hidden");els.simPicker.scrollIntoView({behavior:"smooth"});};
  $("closeSimulationPickerBtn").onclick=()=>els.simPicker.classList.add("hidden");
  $("openSelectedSimulationBtn").onclick=()=>{const t=study.tasks.find(x=>x.id===els.simTaskSelect.value);if(t){els.simPicker.classList.add("hidden");openEditor(t,true)}};
- $("closeEditorBtn").onclick=closeEditor;$("cancelTaskBtn").onclick=closeEditor;$("saveTaskBtn").onclick=saveTask;$("copyTaskBtn").onclick=copyTaskResults;$("saveStudyBtn").onclick=download;$("newStudyBtn").onclick=newStudy;$("copySummaryBtn").onclick=copySummary;
+ $("closeEditorBtn").onclick=closeEditor;$("cancelTaskBtn").onclick=closeEditor;$("saveTaskBtn").onclick=saveTask;$("copyTaskBtn").onclick=copyTaskResults;$("saveStudyBtn").onclick=download;$("newStudyBtn").onclick=newStudy;$("wordTablesBtn").onclick=openWordTables;$("closeWordTablesBtn").onclick=closeWordTables;$("generateETReportTables").onclick=renderWordTables;els.wordTaskSelect?.addEventListener("change",renderWordTables);document.querySelectorAll("[data-et-report-table]").forEach(x=>x.addEventListener("change",renderWordTables));
  $("loadStudyInput").onchange=e=>{if(e.target.files[0])load(e.target.files[0]);e.target.value=""};
  els.rows.onclick=e=>{const b=e.target.closest("button");if(!b)return;const id=b.dataset.edit||b.dataset.sim||b.dataset.dup||b.dataset.del,t=study.tasks.find(x=>x.id===id);if(!t)return;if(b.dataset.edit)openEditor(t);else if(b.dataset.sim)openEditor(t,true);else if(b.dataset.dup){if(study.tasks.length>=50)return;const c=JSON.parse(JSON.stringify(t));c.id=crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random();c.name=t.name+" (copia)";study.tasks.push(c);renderTasks()}else if(b.dataset.del){appConfirm("¿Eliminar la tarea '"+t.name+"'?").then(ok=>{if(ok){study.tasks=study.tasks.filter(x=>x.id!==id);renderTasks()}})}};
 }
