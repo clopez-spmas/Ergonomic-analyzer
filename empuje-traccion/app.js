@@ -6,7 +6,7 @@ const FS=[[10,.49],[9,.488],[8,.486],[7,.484],[6,.482],[5,.48],[4,.47],[3,.46428
 const FLS_PULL=[[1.4,190,300],[1.35,190,300],[1.3,190,300],[1.25,190,300],[1.2,190,300],[1.15,190,300],[1.1,310,490],[1.05,310,490],[1,310,490],[.95,310,490],[.9,330,520],[.85,330,520],[.8,330,520],[.75,330,520],[.7,330,520],[.65,330,520],[.6,330,520],[.55,330,520],[.5,330,520],[.45,330,520],[.4,330,520],[.35,330,520],[.3,330,520],[.25,330,520],[.2,330,520],[.15,330,520],[.1,330,520]];
 const $=id=>document.getElementById(id), q=n=>document.querySelector('input[name="'+n+'"]:checked');
 const els={company:$("company"),area:$("area"),job:$("job"),date:$("studyDate"),notes:$("studyNotes"),rows:$("taskRows"),counter:$("taskCounter"),empty:$("emptyTasks"),editor:$("editorCard"),title:$("editorTitle"),name:$("taskName"),desc:$("taskDescription"),peopleWrap:$("peopleWrap"),people:$("peopleCount"),height:$("height"),distance:$("distance"),fi:$("freqInitial"),fs:$("freqSustained"),fsWrap:$("freqSustainedWrap"),m0:$("initial0Measures"),m90:$("initial90Measures"),m90b:$("initial90Block"),ms:$("sustainedMeasures"),msb:$("sustainedBlock"),women:$("womenResults"),men:$("menResults"),resultTables:$("resultTables"),resultMessage:$("resultMessage"),calc:$("calcContent"),calcDetails:$("calcDetails"),warning:$("methodWarning"),simBanner:$("simBanner"),status:$("status"),simChangesBlock:$("simulationChangesBlock"),simChangesList:$("simulationChangesList"),resultsHeading:$("resultsHeading"),simPicker:$("simulationPicker"),simTaskSelect:$("simulationTaskSelect"),wordScreen:$("wordTablesScreen"),wordTaskSelect:$("wordTaskSelect"),wordHost:$("etReportTables"),studyDataCard:$("studyDataCard"),tasksCard:$("tasksCard"),dialog:$("appDialog"),dialogTitle:$("appDialogTitle"),dialogMessage:$("appDialogMessage"),dialogOk:$("appDialogOk"),dialogCancel:$("appDialogCancel")};
-let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}}, editing=null, simBase=null;
+let study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}}, editing=null, simBase=null, dirty=false;
 const fmt=n=>Number.isFinite(n)?n.toFixed(2).replace(".",","):"—";
 const actionText=a=>a==="push"?"Empujar":"Tirar";
 const risk=ir=>!Number.isFinite(ir)?{label:"No calculable",cls:"risk-na"}:ir<.85?{label:"Aceptable",cls:"risk-green"}:ir<=1?{label:"Leve",cls:"risk-yellow"}:{label:"Presente",cls:"risk-red"};
@@ -36,7 +36,7 @@ function initSelects(){
  els.height.value="";els.distance.value="";els.fi.value="";els.fs.value="";
 }
 function buildMeasures(el){el.innerHTML="";for(let i=1;i<=5;i++){const l=document.createElement("label");l.innerHTML='Medición '+i+'<input type="number" min="0" step="0.1" inputmode="decimal">';el.appendChild(l)}}
-function syncStudyFromHeader(){study.company=els.company.value.trim();study.area=els.area.value.trim();study.job=els.job.value.trim();study.date=els.date.value;study.notes=els.notes.value.trim()}
+function syncStudyFromHeader(){study.company=els.company.value.trim();study.area=els.area.value.trim();study.job=els.job.value.trim();study.date=els.date.value;study.notes=els.notes.value.trim();dirty=true}
 function syncHeader(){els.company.value=study.company||"";els.area.value=study.area||"";els.job.value=study.job||"";els.date.value=study.date||"";els.notes.value=study.notes||""}
 function radio(name,val){const e=document.querySelector('input[name="'+name+'"][value="'+val+'"]');if(e)e.checked=true}
 function getFB(action,pop,h){const row=HEIGHTS.find(x=>x[0]===h);if(!row)return null;const idx=action==="push"?(pop==="women"?1:2):(pop==="women"?3:4);return Number.isFinite(row[idx])?row[idx]:null}
@@ -185,11 +185,12 @@ async function saveTask(){
  if(simBase){
    study.simulations=study.simulations||{};
    study.simulations[simBase.id]={base:JSON.parse(JSON.stringify(simBase)),current:JSON.parse(JSON.stringify(t))};
+   dirty=true;
    setStatus("Simulación calculada y disponible en Tablas para Word.");
    renderWordTables();
    return
  }
- const idx=study.tasks.findIndex(x=>x.id===t.id);if(idx>=0)study.tasks[idx]=t;else{if(study.tasks.length>=50)return;study.tasks.push(t)}renderTasks();closeEditor();setStatus("Tarea guardada.");
+ const idx=study.tasks.findIndex(x=>x.id===t.id);if(idx>=0)study.tasks[idx]=t;else{if(study.tasks.length>=50)return;study.tasks.push(t)}dirty=true;renderTasks();closeEditor();setStatus("Tarea guardada.");
 }
 async function download(){
  syncStudyFromHeader();
@@ -205,6 +206,7 @@ async function download(){
      const writable=await handle.createWritable();
      await writable.write(blob);
      await writable.close();
+     dirty=false;
      setStatus("Estudio guardado correctamente en la ubicación seleccionada.");
    }else{
      const a=document.createElement("a");
@@ -212,6 +214,7 @@ async function download(){
      a.download=suggested;
      a.click();
      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+     dirty=false;
      setStatus("Estudio guardado. El navegador ha utilizado su carpeta de descargas predeterminada.");
    }
  }catch(error){
@@ -220,8 +223,8 @@ async function download(){
    setStatus("No se ha podido guardar el estudio.");
  }
 }
-function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);study.simulations=study.simulations||{};syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){appNotice("El archivo no contiene un estudio válido de Empuje y Tracción.","Archivo no válido")}};r.readAsText(file)}
-async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}};syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
+function load(file){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.tasks))throw 0;study=d;study.tasks=study.tasks.slice(0,50);study.simulations=study.simulations||{};dirty=false;syncHeader();renderTasks();closeEditor();setStatus("Estudio cargado.")}catch(e){appNotice("El archivo no contiene un estudio válido de Empuje y Tracción.","Archivo no válido")}};r.readAsText(file)}
+async function newStudy(){if(study.tasks.length&&!(await appConfirm("¿Crear un estudio nuevo? Se perderán los cambios no guardados.")))return;study={version:1,company:"",area:"",job:"",date:new Date().toISOString().slice(0,10),notes:"",tasks:[],simulations:{}};dirty=false;syncHeader();renderTasks();closeEditor();setStatus("Nuevo estudio preparado.")}
 function intermediateWordTable(t,rw,rm){
  const cell=v=>'<td style="border:1px solid #759CBF;padding:6px;text-align:center">'+fmt(v)+'</td>';
  const head='<tr><th style="border:1px solid #759CBF;padding:6px;text-align:left"></th><th style="border:1px solid #759CBF;padding:6px">MUJERES</th><th style="border:1px solid #759CBF;padding:6px">HOMBRES</th></tr>';
@@ -351,15 +354,17 @@ function closeWordTables(){
 }
 function bind(){
  ["company","area","job","studyDate","studyNotes"].forEach(id=>$(id).addEventListener("input",syncStudyFromHeader));
- document.querySelectorAll('input[name="mode"],input[name="has90"],input[name="action"]').forEach(x=>x.addEventListener("change",updateVisibility));
- [els.height,els.distance,els.fi,els.fs,els.people].forEach(x=>x.addEventListener("change",updateVisibility));
- document.querySelectorAll("#initial0Measures input,#initial90Measures input,#sustainedMeasures input").forEach(x=>x.addEventListener("input",renderResults));
+ document.querySelectorAll('input[name="mode"],input[name="has90"],input[name="action"]').forEach(x=>x.addEventListener("change",()=>{dirty=true;updateVisibility()}));
+ [els.height,els.distance,els.fi,els.fs,els.people].forEach(x=>x.addEventListener("change",()=>{dirty=true;updateVisibility()}));
+ document.querySelectorAll("#initial0Measures input,#initial90Measures input,#sustainedMeasures input").forEach(x=>x.addEventListener("input",()=>{dirty=true;renderResults()}));
  $("addTaskBtn").onclick=()=>openEditor();
  $("closeSimulationPickerBtn").onclick=()=>els.simPicker.classList.add("hidden");
  $("openSelectedSimulationBtn").onclick=()=>{const t=study.tasks.find(x=>x.id===els.simTaskSelect.value);if(t){els.simPicker.classList.add("hidden");openEditor(t,true)}};
  $("closeEditorBtn").onclick=closeEditor;$("cancelTaskBtn").onclick=closeEditor;$("saveTaskBtn").onclick=saveTask;$("saveStudyBtn").onclick=download;$("newStudyBtn").onclick=newStudy;$("wordTablesBtn").onclick=openWordTables;$("closeWordTablesBtn").onclick=closeWordTables;$("generateETReportTables").onclick=renderWordTables;els.wordTaskSelect?.addEventListener("change",renderWordTables);document.querySelectorAll("[data-et-report-table]").forEach(x=>x.addEventListener("change",renderWordTables));
  $("loadStudyInput").onchange=e=>{if(e.target.files[0])load(e.target.files[0]);e.target.value=""};
- els.rows.onclick=e=>{const b=e.target.closest("button");if(!b)return;const id=b.dataset.edit||b.dataset.sim||b.dataset.dup||b.dataset.del,t=study.tasks.find(x=>x.id===id);if(!t)return;if(b.dataset.edit)openEditor(t);else if(b.dataset.sim)openEditor(t,true);else if(b.dataset.dup){if(study.tasks.length>=50)return;const c=JSON.parse(JSON.stringify(t));c.id=crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random();c.name=t.name+" (copia)";study.tasks.push(c);renderTasks()}else if(b.dataset.del){appConfirm("¿Eliminar la tarea '"+t.name+"'?").then(ok=>{if(ok){study.tasks=study.tasks.filter(x=>x.id!==id);renderTasks()}})}};
+ ["taskName","taskDescription"].forEach(id=>$(id)?.addEventListener("input",()=>{dirty=true}));
+ els.rows.onclick=e=>{const b=e.target.closest("button");if(!b)return;const id=b.dataset.edit||b.dataset.sim||b.dataset.dup||b.dataset.del,t=study.tasks.find(x=>x.id===id);if(!t)return;if(b.dataset.edit)openEditor(t);else if(b.dataset.sim)openEditor(t,true);else if(b.dataset.dup){if(study.tasks.length>=50)return;const c=JSON.parse(JSON.stringify(t));c.id=crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random();c.name=t.name+" (copia)";study.tasks.push(c);dirty=true;renderTasks()}else if(b.dataset.del){appConfirm("¿Eliminar la tarea '"+t.name+"'?").then(ok=>{if(ok){study.tasks=study.tasks.filter(x=>x.id!==id);dirty=true;renderTasks()}})}};
 }
-initSelects();buildMeasures(els.m0);buildMeasures(els.m90);buildMeasures(els.ms);study.date=new Date().toISOString().slice(0,10);syncHeader();bind();renderTasks();
+window.addEventListener("beforeunload",e=>{if(dirty){e.preventDefault();e.returnValue=true}});
+initSelects();buildMeasures(els.m0);buildMeasures(els.m90);buildMeasures(els.ms);study.date=new Date().toISOString().slice(0,10);syncHeader();dirty=false;bind();renderTasks();
 })();
