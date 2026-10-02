@@ -465,8 +465,12 @@ function renderKinovea(){
  kinoveaState.dataSets.forEach(kNormaliseDataSet);
  const viewOptions=[["unspecified","Sin definir"],["lateral_right","Lateral derecho"],["lateral_left","Lateral izquierdo"],["frontal","Frontal"],["threequarter_right","3/4 derecho"],["threequarter_left","3/4 izquierdo"]];
  m.innerHTML=kinoveaState.dataSets.map((ds,di)=>{
-  const opts=ds.data.markers.map(x=>'<option value="'+escK(x)+'">'+escK(x)+'</option>').join("");
   const range=kDataSetRange(ds),interval=ds.range.mode==="interval",cycles=ds.range.mode==="cycles";
+  const jointOptions=KPOINTS.map(([key,label])=>'<option value="'+escK(key)+'">'+escK(label)+'</option>').join("");
+  const markerRows=(ds.data.markers||[]).map(marker=>{
+    const selected=Object.entries(ds.mapping||{}).find(([,value])=>value===marker)?.[0]||"";
+    return '<div class="marker-row"><label>'+escK(marker)+'</label><select data-kset="'+di+'" data-kmarker="'+escK(marker)+'"><option value="">-- no asignar --</option>'+jointOptions+'</select></div>';
+  }).join("");
   return '<div class="calculation-box"><strong>JSON '+(di+1)+': '+escK(ds.fileName)+'</strong>'+
    '<p>Cada archivo se analiza de forma independiente. Indique la vista y, si procede, la tarea/fase observada.</p>'+
    '<div class="form-grid">'+
@@ -476,14 +480,20 @@ function renderKinovea(){
     (interval?'<label>Tiempo inicial (s)<input type="number" min="0" step="0.01" data-krange-start="'+di+'" value="'+range.start+'"></label><label>Tiempo final (s)<input type="number" min="0" step="0.01" data-krange-end="'+di+'" value="'+range.end+'"></label>':"")+
     (cycles?'<label>Número de ciclos visibles<input type="number" min="1" step="1" data-krange-cycles="'+di+'" value="'+range.cycles+'"></label>':"")+
    '</div><div class="notice">'+escK(kDataSetRangeLabel(ds))+' · '+escK(ds.view==="unspecified"?"Seleccione la vista para identificar qué movimientos puede aportar.":"Aporta: "+[kViewMovementLabel("shoulder",ds.view),kViewMovementLabel("elbow",ds.view),kViewMovementLabel("wrist",ds.view)].filter((x,i,a)=>x!=="no automático"&&a.indexOf(x)===i).join("; "))+'</div>'+
-   '<p>Asigne los marcadores de este archivo a los puntos anatómicos.</p><div class="form-grid">'+KPOINTS.map(([key,label])=>'<label>'+label+'<select data-kset="'+di+'" data-kmap="'+key+'"><option value="">No asignado</option>'+opts+'</select></label>').join("")+'</div></div>';
+   '<p>Asigne a cada marcador Kinovea el punto anatómico que representa.</p><div class="marker-assignment-list">'+markerRows+'</div></div>';
  }).join("");
- m.querySelectorAll("[data-kmap]").forEach(sel=>{
-  const di=Number(sel.dataset.kset);sel.value=kinoveaState.dataSets[di]?.mapping?.[sel.dataset.kmap]||"";
+ m.querySelectorAll("[data-kmarker]").forEach(sel=>{
+  const di=Number(sel.dataset.kset),ds=kinoveaState.dataSets[di],marker=sel.dataset.kmarker;
+  sel.value=Object.entries(ds.mapping||{}).find(([,value])=>value===marker)?.[0]||"";
   sel.onchange=()=>{
-   const v=sel.value,ds=kinoveaState.dataSets[di],duplicate=v&&Object.entries(ds.mapping||{}).some(([k,x])=>k!==sel.dataset.kmap&&x===v);
-   if(duplicate){sel.value="";kSetStatus("Ese marcador de Kinovea ya está asignado a otro punto anatómico en este JSON.");return}
-   ds.mapping[sel.dataset.kmap]=v;dirty=true;ensurePostureSourcesAvailable();renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate();
+   const joint=sel.value;
+   Object.keys(ds.mapping||{}).forEach(key=>{if(ds.mapping[key]===marker)ds.mapping[key]=""});
+   if(joint)ds.mapping[joint]=marker;
+   dirty=true;ensurePostureSourcesAvailable();renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate();
+   m.querySelectorAll('[data-kset="'+di+'"][data-kmarker]').forEach(other=>{
+     const mk=other.dataset.kmarker;
+     other.value=Object.entries(ds.mapping||{}).find(([,value])=>value===mk)?.[0]||"";
+   });
   };
  });
  m.querySelectorAll("[data-kview]").forEach(el=>el.onchange=()=>{const ds=kinoveaState.dataSets[Number(el.dataset.kview)];ds.view=el.value;dirty=true;ensurePostureSourcesAvailable();renderKinoveaSelectedTable();kRenderAnalyses();safeCalculate()});
