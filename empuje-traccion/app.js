@@ -304,15 +304,54 @@ function wordSimulationTable(title,base,sim,pop){
 function reportBlock(title,html){
  return '<section class="report-copy-block"><div class="report-copy-head"><h3>'+title+'</h3><button type="button" class="et-btn copy-et-report-table">Copiar tabla</button></div><div class="report-copy-content">'+html+'</div></section>';
 }
+function etWordClipboardHtml(block){
+ const clone=block.cloneNode(true);
+ clone.querySelectorAll("table").forEach(table=>{
+   table.setAttribute("border","0");
+   table.setAttribute("cellpadding","0");
+   table.setAttribute("cellspacing","0");
+   table.setAttribute("width","100%");
+   table.style.cssText+=";width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10pt;";
+ });
+ clone.querySelectorAll("tr").forEach(row=>{
+   row.style.cssText+=";page-break-inside:avoid;height:auto;mso-height-source:auto;font-family:Arial,sans-serif;font-size:10pt;";
+ });
+ clone.querySelectorAll("th,td").forEach(cell=>{
+   cell.style.setProperty("font-family","Arial, sans-serif","important");
+   cell.style.setProperty("font-size","10pt","important");
+   cell.style.setProperty("mso-ansi-font-size","10pt");
+   cell.style.setProperty("mso-bidi-font-size","10pt");
+   cell.style.setProperty("line-height","10.5pt","important");
+   cell.style.setProperty("mso-line-height-rule","exactly");
+   cell.style.setProperty("mso-padding-alt","1.5pt 4pt 1.5pt 4pt");
+   cell.setAttribute("valign","middle");
+ });
+ clone.querySelectorAll("p,span,b,strong,div,h1,h2,h3,h4").forEach(el=>{
+   el.style.setProperty("font-family","Arial, sans-serif","important");
+   el.style.setProperty("font-size","10pt","important");
+   el.style.setProperty("mso-ansi-font-size","10pt");
+   el.style.setProperty("mso-bidi-font-size","10pt");
+ });
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--body,table,thead,tbody,tr,th,td,p,span,b,strong,div,h1,h2,h3,h4{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{line-height:10.5pt!important;mso-line-height-rule:exactly;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;margin:0;">'+clone.innerHTML+'</body></html>';
+}
 async function copyReportBlock(button){
  const block=button.closest(".report-copy-block")?.querySelector(".report-copy-content");
  if(!block)return;
- const html='<div style="font-family:Arial;font-size:10pt">'+block.innerHTML+'</div>';
- const plain=block.innerText;
+ const html=etWordClipboardHtml(block),plain=block.innerText;
+ const done=()=>setStatus("Tabla copiada en Arial 10 pt. Puede pegarla en Word.");
+ const fallback=()=>{
+   const holder=document.createElement("div");
+   holder.contentEditable="true";holder.style.position="fixed";holder.style.left="-9999px";holder.innerHTML=html;
+   document.body.appendChild(holder);
+   const range=document.createRange();range.selectNodeContents(holder);
+   const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);
+   document.execCommand("copy");sel.removeAllRanges();holder.remove();done();
+ };
  try{
-   const item=new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([plain],{type:"text/plain"})});
-   await navigator.clipboard.write([item]);setStatus("Tabla copiada. Puede pegarla en Word.");
- }catch(e){appNotice("No se pudo copiar automáticamente.")}
+   if(navigator.clipboard&&window.ClipboardItem){
+     await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([plain],{type:"text/plain"})})]).then(done).catch(fallback);
+   }else fallback();
+ }catch(e){fallback()}
 }
 function renderWordTables(){
  if(!els.wordHost)return;
