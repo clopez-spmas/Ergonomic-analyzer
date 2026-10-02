@@ -304,35 +304,53 @@ function wordSimulationTable(title,base,sim,pop){
 function reportBlock(title,html){
  return '<section class="report-copy-block"><div class="report-copy-head"><h3>'+title+'</h3><button type="button" class="et-btn copy-et-report-table">Copiar tabla</button></div><div class="report-copy-content">'+html+'</div></section>';
 }
-function etWordClipboardHtml(block){
- const clone=block.cloneNode(true);
- clone.querySelectorAll("table").forEach(table=>{
-   table.setAttribute("border","0");
-   table.setAttribute("cellpadding","0");
-   table.setAttribute("cellspacing","0");
-   table.setAttribute("width","100%");
-   table.style.cssText+=";width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10pt;";
- });
+function etTableToWordHtml(table){
+ const clone=table.cloneNode(true);
+ clone.setAttribute("border","0");
+ clone.setAttribute("cellpadding","0");
+ clone.setAttribute("cellspacing","0");
+ clone.setAttribute("width","100%");
+ clone.style.cssText="width:100%;border-collapse:collapse;border-spacing:0;mso-table-lspace:0pt;mso-table-rspace:0pt;font-family:Arial,sans-serif;font-size:10pt;color:#000;background:#fff;";
  clone.querySelectorAll("tr").forEach(row=>{
-   row.style.cssText+=";page-break-inside:avoid;height:auto;mso-height-source:auto;font-family:Arial,sans-serif;font-size:10pt;";
+   row.style.cssText="page-break-inside:avoid;mso-yfti-irow:0;font-family:Arial,sans-serif;font-size:10pt;height:auto;mso-height-source:auto;";
  });
  clone.querySelectorAll("th,td").forEach(cell=>{
-   cell.style.setProperty("font-family","Arial, sans-serif","important");
-   cell.style.setProperty("font-size","10pt","important");
-   cell.style.setProperty("mso-ansi-font-size","10pt");
-   cell.style.setProperty("mso-bidi-font-size","10pt");
-   cell.style.setProperty("line-height","10.5pt","important");
-   cell.style.setProperty("mso-line-height-rule","exactly");
-   cell.style.setProperty("mso-padding-alt","1.5pt 4pt 1.5pt 4pt");
+   const isHeader=cell.tagName==="TH";
+   const bg=cell.style.backgroundColor||"#FFFFFF";
+   const color=cell.style.color||"#000000";
    cell.setAttribute("valign","middle");
+   cell.style.cssText=[
+     "font-family:Arial,sans-serif",
+     "font-size:10pt",
+     "mso-ansi-font-size:10pt",
+     "mso-bidi-font-size:10pt",
+     "line-height:10.5pt",
+     "mso-line-height-rule:exactly",
+     "color:"+color,
+     "background-color:"+bg,
+     "border:0.5pt solid #759CBF",
+     "padding:1.5pt 4pt",
+     "mso-padding-alt:1.5pt 4pt 1.5pt 4pt",
+     "vertical-align:middle",
+     "text-align:"+(cell.style.textAlign||"left"),
+     "font-weight:"+(isHeader?"700":"400")
+   ].join(";")+";";
+   cell.querySelectorAll("b,strong,span").forEach(el=>{
+     el.style.cssText="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;"+(el.tagName==="B"||el.tagName==="STRONG"?"font-weight:700;":"");
+   });
  });
- clone.querySelectorAll("p,span,b,strong,div,h1,h2,h3,h4").forEach(el=>{
-   el.style.setProperty("font-family","Arial, sans-serif","important");
-   el.style.setProperty("font-size","10pt","important");
-   el.style.setProperty("mso-ansi-font-size","10pt");
-   el.style.setProperty("mso-bidi-font-size","10pt");
+ return clone.outerHTML;
+}
+function etWordClipboardHtml(block){
+ const parts=[];
+ block.querySelectorAll(".word-table-block").forEach(group=>{
+   const heading=group.querySelector("h3");
+   if(heading)parts.push('<p style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;font-weight:700;margin:0 0 4pt 0;">'+escapeHtml(heading.textContent)+'</p>');
+   group.querySelectorAll("table").forEach(table=>parts.push(etTableToWordHtml(table)));
+   parts.push('<p style="font-family:Arial,sans-serif;font-size:10pt;line-height:10.5pt;margin:0;">&nbsp;</p>');
  });
- return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--body,table,thead,tbody,tr,th,td,p,span,b,strong,div,h1,h2,h3,h4{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{line-height:10.5pt!important;mso-line-height-rule:exactly;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;margin:0;">'+clone.innerHTML+'</body></html>';
+ if(!parts.length)block.querySelectorAll("table").forEach(table=>parts.push(etTableToWordHtml(table)));
+ return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style><!--@page{size:A4;margin:1.5cm;}body,table,thead,tbody,tr,th,td,p,span,b,strong{font-family:Arial,sans-serif!important;font-size:10pt!important;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;}body{margin:0;}table{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;width:100%;}tr{page-break-inside:avoid;height:auto;mso-height-source:auto;}th,td{padding:1.5pt 4pt!important;line-height:10.5pt!important;mso-line-height-rule:exactly;}p{mso-margin-top-alt:0;mso-margin-bottom-alt:0;}--></style></head><body style="font-family:Arial,sans-serif;font-size:10pt;mso-ansi-font-size:10pt;mso-bidi-font-size:10pt;background:#fff;margin:0;">'+parts.join("")+'</body></html>';
 }
 async function copyReportBlock(button){
  const block=button.closest(".report-copy-block")?.querySelector(".report-copy-content");
