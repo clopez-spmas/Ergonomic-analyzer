@@ -49,63 +49,34 @@
 </section>
 
 <section class="screen" data-screen="1">
-  <div class="screen-title"><span>2</span><div><h2>Organización del trabajo</h2><p>Datos de la jornada representativa y de su distribución temporal.</p></div></div>
+  <div class="screen-title"><span>2</span><div><h2>Jornada y tiempos de trabajo</h2><p>Defina el horario de presencia y, si procede, el trabajo no repetitivo. Las pausas se introducen en la pantalla siguiente.</p></div></div>
   <div class="form-grid">
     <label>Duración del turno oficial (min)<input name="turnoOficial" type="number" min="0" step="1"></label>
-    <label>Duración efectiva del turno en el puesto (min)<input name="turnoEfectivoManual" type="number" min="0" step="1"></label>
+    <label>Duración efectiva del turno (solo si no se indican horas)<input name="turnoEfectivoManual" type="number" min="0" step="1"></label>
     <label>Hora de inicio en el puesto<input name="horaInicio" type="time"></label>
     <label>Hora de finalización en el puesto<input name="horaFin" type="time"></label>
-    <label>N.º de pausas efectivas ≥ 8 min<input name="numPausas" type="number" min="0" step="1"></label>
-    <label>Tiempo efectivo de pausas, sin comida (min)<input name="tiempoPausas" type="number" min="0" step="1"></label>
-    <label>Pausa para comer efectiva incluida en el turno (min)<input name="pausaComer" type="number" min="0" step="1"></label>
     <label>Trabajo no repetitivo estimado (min)<input name="noRepetitivo" type="number" min="0" step="1"></label>
-    <label>Descripción de pausas y distribución<textarea name="descripcionTurno" rows="5"></textarea></label>
+    <label>Descripción de la jornada<textarea name="descripcionTurno" rows="5"></textarea></label>
+  </div>
+  <input name="numPausas" type="hidden">
+  <input name="tiempoPausas" type="hidden">
+  <input name="pausaComer" type="hidden">
+  <div class="calculation-box">
+    <strong>Base temporal de la jornada</strong>
+    <div class="result-grid">
+      <div><span>Duración entre inicio y fin</span><output id="duracionPresencia">—</output> min</div>
+    </div>
+    <div id="fuenteDuracionJornada" class="notice">Introduzca hora de inicio y fin para calcular automáticamente la duración de presencia.</div>
   </div>
 </section>
 
 <section class="screen" data-screen="2">
-  <div class="screen-title"><span>3</span><div><h2>Tiempo neto de trabajo repetitivo (TNTR)</h2><p>El programa calcula el tiempo neto a partir de la organización indicada.</p></div></div>
-  <div class="calculation-box">
-    <strong>TNTR</strong>
-    <div class="formula">TNTR = turno efectivo − pausas − comida − trabajo no repetitivo</div>
-    <div class="result-grid">
-      <div><span>Turno efectivo</span><output id="turnoEfectivo">—</output> min</div>
-      <div><span>Pausas sin comida</span><output id="tntrPausas">—</output> min</div>
-      <div><span>Comida</span><output id="tntrComida">—</output> min</div>
-      <div><span>Trabajo no repetitivo</span><output id="tntrNoRep">—</output> min</div>
-      <div><span>TNTR</span><output id="tiempoNeto">—</output> min</div>
-    </div>
-  </div>
-  <div class="notice">El TNTR se utiliza para los cálculos posteriores. Los tiempos de inicio tardío, salida anticipada o interrupciones no consideradas recuperación no se contabilizan como tiempo de recuperación.</div>
-</section>
-
-<section class="screen" data-screen="3">
-  <div class="screen-title"><span>4</span><div><h2>Ciclos</h2><p>Se introduce un único ciclo observado y el número efectivo de ciclos del turno.</p></div></div>
-  <div class="form-grid">
-    <label>Ciclos programados<input name="ciclosProgramados" type="number" min="0" step="1"></label>
-    <label>Ciclos efectivos en el turno<input name="ciclosEfectivos" type="number" min="0" step="1"></label>
-    <label>Tiempo de ciclo observado (segundos)<input name="cicloObservado" type="number" min="0" step="0.1"></label>
-    <label>Descripción del ciclo<textarea name="descripcionCiclo" rows="5"></textarea></label>
-  </div>
-  <div class="calculation-box">
-    <strong>Comprobación del ciclo</strong>
-    <div class="result-grid">
-      <div><span>Tiempo de ciclo calculado</span><output id="cicloNeto">—</output> s</div>
-      <div id="criterioCicloNota" class="notice" style="grid-column:1 / -1; display:block !important;"></div>
-      <div><span>Diferencia respecto al observado</span><output id="diferenciaCiclo">—</output> %</div>
-      <div><span>Minutos no justificados</span><output id="minNoJustificados">—</output> min</div>
-      <div><span>Concordancia</span><output id="alertaCiclo">—</output></div>
-    </div>
-  </div>
-</section>
-
-<section class="screen" data-screen="4">
-  <div class="screen-title"><span>5</span><div><h2>Recuperación</h2><p>Introduzca todas las pausas habituales de la jornada. El horario se toma de la pantalla «Organización del trabajo».</p></div></div>
+  <div class="screen-title"><span>3</span><div><h2>Pausas y recuperación</h2><p>Introduzca todas las pausas habituales y la comida. Estos datos alimentan automáticamente el TNTR y el cálculo de recuperación.</p></div></div>
 
   <div class="calculation-box">
     <strong>Horario que se analizará</strong>
     <div class="recovery-info">
-      <p>El horario de inicio y finalización utilizado para el cálculo es el indicado en «Organización del trabajo».</p>
+      <p>El horario de inicio y finalización utilizado para el cálculo es el indicado en «Jornada y tiempos de trabajo».</p>
       <p><strong>Duración mínima de una pausa válida: 8 minutos</strong></p>
       <p>Para el cálculo de la recuperación, una pausa solo se considera válida cuando tiene una duración mínima de 8 minutos. Este valor es fijo y no puede modificarse.</p>
     </div>
@@ -130,7 +101,6 @@
       <div><span>Horas sin recuperación adecuada</span><output id="recAutomatico">—</output></div>
       <div><span>Multiplicador de recuperación</span><output id="recMultAutomatico">—</output></div>
     </div>
-
   </div>
 
   <details class="help-panel">
@@ -148,6 +118,42 @@
       <p>Las pausas situadas en la hora previa a una comida válida o en la última hora del turno no añaden una hora adicional de recuperación. El procedimiento admite múltiples pausas de diferente duración y horario.</p>
     </div>
   </details>
+</section>
+
+<section class="screen" data-screen="3">
+  <div class="screen-title"><span>4</span><div><h2>Tiempo neto de trabajo repetitivo (TNTR)</h2><p>El programa calcula el tiempo neto una vez descontadas pausas, comida y trabajo no repetitivo.</p></div></div>
+  <div class="calculation-box">
+    <strong>TNTR</strong>
+    <div class="formula">TNTR = duración de presencia − pausas − comida − trabajo no repetitivo</div>
+    <div class="result-grid">
+      <div><span>Base temporal utilizada</span><output id="turnoEfectivo">—</output> min</div>
+      <div><span>Pausas sin comida</span><output id="tntrPausas">—</output> min</div>
+      <div><span>Comida</span><output id="tntrComida">—</output> min</div>
+      <div><span>Trabajo no repetitivo</span><output id="tntrNoRep">—</output> min</div>
+      <div><span>TNTR</span><output id="tiempoNeto">—</output> min</div>
+    </div>
+  </div>
+  <div class="notice">Cuando se han indicado hora de inicio y fin, esa franja completa es la base temporal. Las pausas y la comida se descuentan después, evitando descontarlas dos veces.</div>
+</section>
+
+<section class="screen" data-screen="4">
+  <div class="screen-title"><span>5</span><div><h2>Ciclos</h2><p>Compruebe la coherencia entre el TNTR, los ciclos efectivos y el tiempo de ciclo observado.</p></div></div>
+  <div class="form-grid">
+    <label>Ciclos programados<input name="ciclosProgramados" type="number" min="0" step="1"></label>
+    <label>Ciclos efectivos en el turno<input name="ciclosEfectivos" type="number" min="0" step="1"></label>
+    <label>Tiempo de ciclo observado (segundos)<input name="cicloObservado" type="number" min="0" step="0.1"></label>
+    <label>Descripción del ciclo<textarea name="descripcionCiclo" rows="5"></textarea></label>
+  </div>
+  <div class="calculation-box">
+    <strong>Comprobación del ciclo</strong>
+    <div class="result-grid">
+      <div><span>Tiempo de ciclo calculado</span><output id="cicloNeto">—</output> s</div>
+      <div id="criterioCicloNota" class="notice" style="grid-column:1 / -1; display:block !important;"></div>
+      <div><span>Diferencia respecto al observado</span><output id="diferenciaCiclo">—</output> %</div>
+      <div><span>Minutos no justificados</span><output id="minNoJustificados">—</output> min</div>
+      <div><span>Concordancia</span><output id="alertaCiclo">—</output></div>
+    </div>
+  </div>
 </section>
 
 <section class="screen" data-screen="5">
