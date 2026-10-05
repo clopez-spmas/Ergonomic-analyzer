@@ -174,13 +174,15 @@ function calculateRecoverySchedule(state){
    addResidual(from,cursor);
  };
  if(primaryMeal){
-   const preFrom=s,preTo=Math.max(s,Math.min(e,primaryMeal.start-60));
+   /* Pauses and meal are normalised to minutes relative to shift start.
+      Keep the recovery scan in the same relative coordinate system. */
+   const preFrom=0,preTo=Math.max(0,Math.min(duration,primaryMeal.start-60));
    if(preTo>preFrom)scanSequence(preFrom,preTo);
-   const postFrom=Math.min(e,Math.max(s,primaryMeal.end)),postTo=Math.max(postFrom,e-60);
+   const postFrom=Math.min(duration,Math.max(0,primaryMeal.end)),postTo=Math.max(postFrom,duration-60);
    if(postTo>postFrom)scanSequence(postFrom,postTo);
  }else{
-   const to=Math.max(s,e-60);
-   if(to>s)scanSequence(s,to);
+   const to=Math.max(0,duration-60);
+   if(to>0)scanSequence(0,to);
  }
  return {hours:Math.max(0,no),valid:true,reason:"",duration,meal:primaryMeal,pauses:normalised,steps,recoveredRanges};
 }
