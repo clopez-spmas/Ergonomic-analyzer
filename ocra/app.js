@@ -313,13 +313,13 @@ function kRequired(kind,side){
 }
 function kNormaliseDataSet(ds){
  if(!ds)return ds;
- ds.view=ds.view||"unspecified";
  ds.task=String(ds.task||"");
  ds.range={mode:"all",start:0,end:ds.data?.duration||0,cycles:1,...(ds.range||{})};
  ds.range.start=Math.max(0,kNum(ds.range.start,0));
  ds.range.end=Math.max(ds.range.start,kNum(ds.range.end,ds.data?.duration||0));
  ds.range.cycles=Math.max(1,Math.floor(kNum(ds.range.cycles,1)));
  ds.mapping=ds.mapping||{};
+ if(Object.prototype.hasOwnProperty.call(ds,"view"))delete ds.view;
  return ds;
 }
 function kDataSetRange(ds){
@@ -329,16 +329,15 @@ function kDataSetRange(ds){
  if(r.mode==="interval"){start=Math.max(0,Math.min(d,kNum(r.start,0)));end=Math.max(start,Math.min(d,kNum(r.end,d)));}
  return {start,end,duration:Math.max(0,end-start),cycles:Math.max(1,Math.floor(kNum(r.cycles,1))),mode:r.mode||"all"};
 }
-function kViewSupports(){ return true; }
 function kDataSetMissingMarkers(ds,kind,side){
  const mapping=ds?.mapping||{};
  return kRequired(kind,side).filter(key=>!mapping[key]);
 }
 function kKinoveaCandidates(kind,side){
- return (kinoveaState.dataSets||[]).map(kNormaliseDataSet).filter(ds=>kViewSupports(kind,side,ds.view)&&!kDataSetMissingMarkers(ds,kind,side).length&&kDataSetRange(ds).duration>0);
+ return (kinoveaState.dataSets||[]).map(kNormaliseDataSet).filter(ds=>!kDataSetMissingMarkers(ds,kind,side).length&&kDataSetRange(ds).duration>0);
 }
 function kMissingMarkers(kind,side){
- const sets=(kinoveaState.dataSets||[]).filter(ds=>kViewSupports(kind,side,ds.view));
+ const sets=(kinoveaState.dataSets||[]);
  if(!sets.length)return kRequired(kind,side);
  const available=new Set();
  sets.forEach(ds=>Object.entries(ds.mapping||{}).forEach(([key,value])=>{if(value)available.add(key)}));
@@ -414,23 +413,6 @@ function kRangeLabel(){
  return count?count+" vídeo"+(count===1?"":"s")+" cargado"+(count===1?"":"s")+" · cada muestra utiliza su propio periodo y ciclos.":"Cargue el JSON de Kinovea.";
 }
 function kSetStatus(msg){status.textContent=msg}
-function kViewLabel(view){
- return ({unspecified:"Sin definir",lateral_right:"Lateral derecho",lateral_left:"Lateral izquierdo",frontal:"Frontal",threequarter_right:"3/4 derecho",threequarter_left:"3/4 izquierdo"})[view]||"Sin definir";
-}
-function kViewMovementLabel(kind,view){
- if(view==="frontal"){
-  if(kind==="shoulder")return "abducción de hombro";
-  if(kind==="wrist")return "desviación radial/ulnar de muñeca";
-  return "no automático";
- }
- if(view==="lateral_right"||view==="lateral_left"){
-  if(kind==="shoulder")return "flexión/extensión de hombro";
-  if(kind==="elbow")return "flexión/extensión de codo";
-  if(kind==="wrist")return "flexión/extensión de muñeca";
- }
- if(view==="threequarter_right"||view==="threequarter_left")return "muestra complementaria";
- return "criterio postural";
-}
 function kDataSetRangeLabel(ds){
  const r=kDataSetRange(ds);
  if(r.mode==="interval")return fmt(r.start,2)+"–"+fmt(r.end,2)+" s · "+fmt(r.duration,2)+" s";
@@ -462,7 +444,7 @@ function renderKinovea(){
     return '<div class="marker-row"><label>Marcador '+escK(marker)+'</label><select data-kset="'+di+'" data-kmarker="'+escK(marker)+'"><option value="">-- no asignar --</option>'+jointOptions+'</select></div>';
   }).join("");
   return '<div class="calculation-box kinovea-json-card"><div class="kinovea-json-heading"><span>JSON '+(di+1)+'</span><strong>'+escK(ds.fileName)+'</strong></div>'+
-   '<p>Cada archivo se analiza de forma independiente. Indique la vista y, si procede, la tarea/fase observada.</p>'+
+   '<p>Cada archivo se analiza de forma independiente. Indique, si procede, la tarea/fase observada.</p>'+
    '<div class="form-grid">'+
 
     '<label>Tarea / fase<input type="text" data-ktask="'+di+'" value="'+escK(ds.task||"")+'" placeholder="Opcional"></label>'+
@@ -595,29 +577,19 @@ function kDataSetExposure(ds,kind,side){
   if(base===null)base=va;
   const v=(va+vb)/2-base,view=ds.view||"unspecified";
   if(kind==="shoulder"){
-   if(view==="frontal"){
-    if(Math.abs(v)>=80)total+=dt;
-    if(Math.abs(v)>=80)maxAbs=Math.max(maxAbs,Math.abs(v));
-   }else{
-    if(v>=80||v<-20)total+=dt;
-    if(v>=80)maxPositive=Math.max(maxPositive,v);
-    if(v<-20)minNegative=Math.min(minNegative,v);
-   }
+   if(v>=80||v<-20)total+=dt;
+   if(v>=80)maxPositive=Math.max(maxPositive,v);
+   if(v<-20)minNegative=Math.min(minNegative,v);
   }else if(kind==="elbow"){
    if(Math.abs(v)>60)total+=dt;
    if(Math.abs(v)>60)maxAbs=Math.max(maxAbs,Math.abs(v));
   }else{
-   if(view==="frontal"){
-    if(v>15||v<-20)total+=dt;
-    if(v>15||v<-20)maxAbs=Math.max(maxAbs,Math.abs(v));
-   }else{
-    if(Math.abs(v)>60)total+=dt;
-    if(Math.abs(v)>45)maxAbs=Math.max(maxAbs,Math.abs(v));
-   }
+   if(Math.abs(v)>60)total+=dt;
+   if(Math.abs(v)>45)maxAbs=Math.max(maxAbs,Math.abs(v));
   }
  }
  const pct=Math.max(0,Math.min(100,100*total/r.duration));
- const angle=kind==="shoulder"?(ds.view==="frontal"?maxAbs:(maxPositive>0?maxPositive:(minNegative<0?minNegative:0))):maxAbs;
+ const angle=kind==="shoulder"?(maxPositive>0?maxPositive:(minNegative<0?minNegative:0)):maxAbs;
  return {ds,seconds:total,pct,duration:r.duration,angle};
 }
 function kForcedExposure(kind,side){
@@ -831,7 +803,7 @@ function renderKinoveaFileList(){
  const files=(kinoveaState.dataSets||[]).map(kNormaliseDataSet);
  const tasks=[...new Set(files.map(x=>x.task.trim()).filter(Boolean))];
  el.innerHTML=files.length
-  ? "<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li><span>"+(i+1)+". "+escK(x.fileName)+" · "+escK(kViewLabel(x.view))+(x.task?" · "+escK(x.task):"")+"</span> <button type=\"button\" class=\"toolbar-btn\" data-remove-kinovea=\""+i+"\">Eliminar</button></li>").join("")+"</ul>"+(tasks.length>1?'<div class="notice"><strong>Revisión:</strong> se han indicado varias tareas/fases. Confirme que las muestras que se van a integrar corresponden a la misma tarea evaluada.</div>':"")
+  ? "<strong>JSON cargados: "+files.length+"</strong><ul>"+files.map((x,i)=>"<li><span>"+(i+1)+". "+escK(x.fileName)+(x.task?" · "+escK(x.task):"")+"</span> <button type=\"button\" class=\"toolbar-btn\" data-remove-kinovea=\""+i+"\">Eliminar</button></li>").join("")+"</ul>"+(tasks.length>1?'<div class="notice"><strong>Revisión:</strong> se han indicado varias tareas/fases. Confirme que las muestras que se van a integrar corresponden a la misma tarea evaluada.</div>':"")
   : "No hay JSON seleccionados.";
  el.querySelectorAll("[data-remove-kinovea]").forEach(btn=>btn.addEventListener("click",()=>{
   const index=Number(btn.dataset.removeKinovea);
@@ -858,7 +830,7 @@ async function loadKinoveaJson(file){
  kinoveaState.dataSets=kinoveaState.dataSets||[];
  const hash=await sha256Hex(txt);
  if(kinoveaState.dataSets.some(x=>x.sha256===hash))return;
- const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{},view:"unspecified",task:"",range:{mode:"all",start:0,end:data.duration,cycles:1}};
+ const ds={id:"kinovea_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,8),fileName:file.name,importedAt:new Date().toISOString(),producer:data.producer,kinoveaVersion:(data.producer||"").match(/Kinovea[.\s_-]*([0-9.]+)/i)?.[1]||null,sha256:hash,rawJson:raw,data,mapping:{},task:"",range:{mode:"all",start:0,end:data.duration,cycles:1}};
  kinoveaState.dataSets.push(ds);
  kinoveaState.data=kinoveaState.data||data;
  kinoveaState.jsonFiles=kinoveaState.dataSets.map(x=>x.fileName);
