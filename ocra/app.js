@@ -319,7 +319,6 @@ function kNormaliseDataSet(ds){
  ds.range.end=Math.max(ds.range.start,kNum(ds.range.end,ds.data?.duration||0));
  ds.range.cycles=Math.max(1,Math.floor(kNum(ds.range.cycles,1)));
  ds.mapping=ds.mapping||{};
- if(Object.prototype.hasOwnProperty.call(ds,"view"))delete ds.view;
  return ds;
 }
 function kDataSetRange(ds){
@@ -575,7 +574,7 @@ function kDataSetExposure(ds,kind,side){
   }
   if(!Number.isFinite(va)||!Number.isFinite(vb))continue;
   if(base===null)base=va;
-  const v=(va+vb)/2-base,view=ds.view||"unspecified";
+  const v=(va+vb)/2-base;
   if(kind==="shoulder"){
    if(v>=80||v<-20)total+=dt;
    if(v>=80)maxPositive=Math.max(maxPositive,v);
@@ -625,7 +624,7 @@ function kAnalysisRows(kind){
   const exposure=kForcedExposure(kind,side);if(!exposure.ds||exposure.duration<=0)return;
   const table=kind==="shoulder"?postureShoulderTable:kind==="elbow"?postureElbowTable:postureWristTable;
   const criterion=kind==="shoulder"?"Flexión ≥80° o abducción ≥80° o extensión >20°":kind==="elbow"?"Flexo-extensión >60° o prono-supinación >60°":"Flexión/extensión >45° o desviación radial >15° / ulnar >20°";
-  const origin="KINOVEA · "+exposure.ds.fileName+" · "+kViewLabel(exposure.ds.view)+" · "+kViewMovementLabel(kind,exposure.ds.view);
+  const origin="KINOVEA · "+exposure.ds.fileName;
   rows.push('<tr><td>'+(side==="right"?"Derecha":"Izquierda")+'</td><td>'+escK(origin)+'</td><td>'+criterion+'</td><td>'+postureTimeLabel(exposure.seconds)+'</td><td>'+fmt(exposure.pct,2)+' %</td><td>'+fmt(postureScore(table,exposure.pct),2)+'</td></tr>');
  });
  return '<div class="notice"><strong>Criterio:</strong> cada vídeo se calcula de forma independiente. Si existen varias muestras Kinovea válidas para la misma articulación y lado, se utiliza el porcentaje de exposición más desfavorable; los tiempos de vídeos distintos no se suman.</div><div class="result-table-wrap"><table class="compact-table"><thead><tr><th>Extremidad</th><th>Origen</th><th>Criterio de postura forzada</th><th>Tiempo</th><th>% tiempo</th><th>Puntuación</th></tr></thead><tbody>'+(rows.length?rows.join(""):'<tr><td colspan="6">No hay datos de postura todavía.</td></tr>')+'</tbody></table></div>';
