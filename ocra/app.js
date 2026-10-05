@@ -116,6 +116,19 @@ function recoveryMinutesToTime(total){
  const t=((Math.round(total)%1440)+1440)%1440;
  return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
 }
+function shiftSpanMinutes(){
+ const start=recoveryTimeToMinutes(form.elements.horaInicio?.value||"");
+ const rawEnd=recoveryTimeToMinutes(form.elements.horaFin?.value||"");
+ if(start===null||rawEnd===null)return 0;
+ let end=rawEnd;
+ if(end<=start)end+=1440;
+ return Math.max(0,end-start);
+}
+function shiftBaseMinutes(){
+ const span=shiftSpanMinutes();
+ if(span>0)return span;
+ return n("turnoEfectivoManual")||n("turnoOficial");
+}
 function recoveryNormalise(){
  recoveryState.pauses=Array.isArray(recoveryState.pauses)?recoveryState.pauses:[];
  recoveryState.minPause=8;
@@ -557,7 +570,7 @@ const postureWristTable=[[0,0],[5,0],[10,.5],[15,1],[20,1.5],[25,2],[36,2.5],[41
 const postureElbowTable=[[0,0],[5,0],[10,.5],[15,1],[20,1.5],[25,2],[36,2.5],[41,2.8],[46,3.5],[50,3.5],[51,3.5],[56,4],[61,4.5],[66,5],[71,5.5],[76,6.3],[81,7.5],[86,7.9],[91,8],[100,8]];
 const postureShoulderTable=[[0,0],[2.5,.5],[5,1],[7.5,1.5],[10,2],[12,2.5],[14,3],[16,3.5],[18,4],[20,4.5],[22,5],[24,5.5],[25,6],[28,6.5],[31,7],[34,7.5],[37,8],[40,9],[43,10],[46,11],[50,12],[54,13],[58,14],[62,15],[66,16],[70,17],[74,18],[78,19],[82,20],[86,21],[90,22],[94,23],[100,24]];
 function postureScore(table,pct){return lookup(table,Math.max(0,Math.min(100,pct)))}
-function kManualDuration(){const p=ensureManualPosture(),r=kRange();if(postureStudyMode()==="manual"||!r){const tntr=n("turnoEfectivoManual")||n("turnoOficial"),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),net=Math.max(0,tntr-pauses-meal-nonRep);return net>0?net*60:p.duration}return r.duration}
+function kManualDuration(){const p=ensureManualPosture(),r=kRange();if(postureStudyMode()==="manual"||!r){const base=shiftBaseMinutes(),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),net=Math.max(0,base-pauses-meal-nonRep);return net>0?net*60:p.duration}return r.duration}
 function kDataSetExposure(ds,kind,side){
  const r=kDataSetRange(ds),frames=ds?.data?.frames||[];let total=0,base=null,maxPositive=0,minNegative=0,maxAbs=0;
  if(r.duration<=0)return {ds,seconds:0,pct:0,duration:0,angle:0};
@@ -843,16 +856,11 @@ async function loadKinoveaJson(file){
 
 function calculate(){
  updateHandModeUI();
- const official=n("turnoOficial"),manualEff=n("turnoEfectivoManual");
- const startMin=recoveryTimeToMinutes(form.elements.horaInicio?.value||""),endRaw=recoveryTimeToMinutes(form.elements.horaFin?.value||"");
- let scheduleDuration=0;
- if(startMin!==null&&endRaw!==null){
-   let endMin=endRaw;
-   if(endMin<=startMin)endMin+=1440;
-   scheduleDuration=Math.max(0,endMin-startMin);
- }
- const eff=manualEff||official||scheduleDuration,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
+ const eff=shiftBaseMinutes(),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  document.getElementById("turnoEfectivo").textContent=fmt(eff,1);document.getElementById("tntrPausas").textContent=fmt(pauses,1);document.getElementById("tntrComida").textContent=fmt(meal,1);document.getElementById("tntrNoRep").textContent=fmt(nonRep,1);document.getElementById("tiempoNeto").textContent=fmt(tntr,1);document.getElementById("duracionTNTR").textContent=fmt(tntr,1);
+ const span=shiftSpanMinutes(),presence=document.getElementById("duracionPresencia"),source=document.getElementById("fuenteDuracionJornada");
+ if(presence)presence.textContent=span>0?fmt(span,1):"—";
+ if(source)source.innerHTML=span>0?"<strong>Base temporal utilizada:</strong> intervalo entre hora de inicio y fin ("+fmt(span,0)+" min). Las pausas y la comida se descuentan después.":"<strong>Base temporal utilizada:</strong> duración efectiva/oficial indicada, al no disponer de un horario completo.";
  recoveryState.start=form.elements.horaInicio?.value||recoveryState.start||"";
  recoveryState.end=form.elements.horaFin?.value||recoveryState.end||"";
  recoveryState.minPause=8;
@@ -969,7 +977,7 @@ function simActualTNTR(){
  const el=document.getElementById("tiempoNeto"),v=Number(String(el?.textContent||"").replace(",","."));return Number.isFinite(v)?v:0;
 }
 function simActualRecoveryHours(){
- const eff=n("turnoEfectivoManual")||n("turnoOficial"),meal=n("pausaComer");
+ const eff=shiftBaseMinutes(),meal=n("pausaComer");
  const r=recoveryState.lastResult;
  return r?.valid&&Number.isFinite(r.hours)?r.hours:recoveryHours(eff,n("numPausas"),meal);
 }
@@ -1005,7 +1013,7 @@ function simPostureRepresentativeAngle(kind,side){
 }
 function simSetInitialFromStudy(){
  simRenderStereoReasons("Dx","dx");simRenderStereoReasons("Ix","ix");
- const baseline={},official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
+ const baseline={},eff=shiftBaseMinutes(),pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  const originalHandMode=document.getElementById("manoModo")?.value==="porcentaje"?"porcentaje":"segundos";
  simSet("simTNTR",tntr);simSet("simHandMode",originalHandMode);updateSimHandModeUI();simSetText("simShiftDuration",eff);simSetText("simNonRep",nonRep);simSet("simCycles",n("ciclosEfectivos"));simSet("simObservedCycle",n("cicloObservado"));simSet("simActionsDx",n("dxAcciones"));simSet("simActionsIx",n("ixAcciones"));simSet("simInterruptionsDx",form.elements.dxInterrupciones?.value||"si");simSet("simInterruptionsIx",form.elements.ixInterrupciones?.value||"si");simSet("simForceMode",document.getElementById("fuerzaModo")?.value||"segundos");
  ["Dx","Ix"].forEach(side=>{const p=side.toLowerCase();simSet("simForce"+side+"34",n(p+"Fuerza34"));simSet("simForce"+side+"57",n(p+"Fuerza57"));simSet("simForce"+side+"810",n(p+"Fuerza810"));simSet("simFingerTime"+side,n(p+"ManoDedoTiempo"));simSet("simGrip"+side,form.elements[p+"ManoAgarre"]?.value||"none");simSet("simGripTime"+side,n(p+"ManoTiempo"));const bodySide=p==="dx"?"right":"left";["shoulder","elbow","wrist"].forEach(kind=>{const key=kind.charAt(0).toUpperCase()+kind.slice(1),t=simPostureTime(kind,bodySide);simSet("sim"+key+"Time"+side,t);simSet("sim"+key+"Angle"+side,t>0?simPostureRepresentativeAngle(kind,bodySide):0)})});
@@ -1197,7 +1205,7 @@ function simRecoveryApplyStoredResult(){
    simRecoveryState.lastResult=result;
  }
  const tntr=Number.isFinite(simRecoveryState.initialTNTR)?simRecoveryState.initialTNTR:simActualTNTR();
- const shift=Number.isFinite(simRecoveryState.initialShiftDuration)?simRecoveryState.initialShiftDuration:(n("turnoEfectivoManual")||n("turnoOficial"));
+ const shift=Number.isFinite(simRecoveryState.initialShiftDuration)?simRecoveryState.initialShiftDuration:shiftBaseMinutes();
  const nonRep=Number.isFinite(simRecoveryState.initialNonRep)?simRecoveryState.initialNonRep:n("noRepetitivo");
  simSet("simTNTR",fmt(tntr,1));
  simSetText("simShiftDuration",fmt(shift,1));
@@ -1269,7 +1277,7 @@ function simRecoveryInitFromStudy(){
    lastResult:sourceResult,
    inherited:true,
    initialTNTR:simActualTNTR(),
-   initialShiftDuration:n("turnoEfectivoManual")||n("turnoOficial"),
+   initialShiftDuration:shiftBaseMinutes(),
    initialNonRep:n("noRepetitivo")
  };
  simSet("simRecoveryStart",simRecoveryState.start);
