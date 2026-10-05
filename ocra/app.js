@@ -843,7 +843,15 @@ async function loadKinoveaJson(file){
 
 function calculate(){
  updateHandModeUI();
- const official=n("turnoOficial"),eff=n("turnoEfectivoManual")||official,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
+ const official=n("turnoOficial"),manualEff=n("turnoEfectivoManual");
+ const startMin=recoveryTimeToMinutes(form.elements.horaInicio?.value||""),endRaw=recoveryTimeToMinutes(form.elements.horaFin?.value||"");
+ let scheduleDuration=0;
+ if(startMin!==null&&endRaw!==null){
+   let endMin=endRaw;
+   if(endMin<=startMin)endMin+=1440;
+   scheduleDuration=Math.max(0,endMin-startMin);
+ }
+ const eff=manualEff||official||scheduleDuration,pauses=n("tiempoPausas"),meal=n("pausaComer"),nonRep=n("noRepetitivo"),tntr=Math.max(0,eff-pauses-meal-nonRep);
  document.getElementById("turnoEfectivo").textContent=fmt(eff,1);document.getElementById("tntrPausas").textContent=fmt(pauses,1);document.getElementById("tntrComida").textContent=fmt(meal,1);document.getElementById("tntrNoRep").textContent=fmt(nonRep,1);document.getElementById("tiempoNeto").textContent=fmt(tntr,1);document.getElementById("duracionTNTR").textContent=fmt(tntr,1);
  recoveryState.start=form.elements.horaInicio?.value||recoveryState.start||"";
  recoveryState.end=form.elements.horaFin?.value||recoveryState.end||"";
