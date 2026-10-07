@@ -30,7 +30,7 @@
     }
 
     document.addEventListener("DOMContentLoaded",()=>{
-        document.getElementById("homeBtn")?.addEventListener("click",()=>showScreen(0));
+        document.getElementById("homeBtn")?.addEventListener("click",()=>{if(window.confirm("¿Volver al inicio? Si existen cambios sin guardar, guarde el estudio antes de continuar.")) window.location.href="../";});
         document.getElementById("prevBtn")?.addEventListener("click",()=>showScreen(currentScreen-1));
         document.getElementById("nextBtn")?.addEventListener("click",()=>showScreen(currentScreen+1));
         document.getElementById("loadProjectButton")?.addEventListener("click",()=>document.getElementById("loadProjectInput")?.click());
