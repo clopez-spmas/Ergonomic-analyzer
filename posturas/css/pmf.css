@@ -1,0 +1,237 @@
+
+/* ===== PMF alineado visualmente con OCRA Analyzer ===== */
+body{margin:0;padding:30px;font-family:"Segoe UI",Arial,Helvetica,sans-serif;background:#eef2f7;color:#2d3748}
+.pmf-shell,.ocra-shell{max-width:1100px;margin:0 auto}
+.ocra-header,.screen,.study-toolbar{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.ocra-header{text-align:center}
+.ocra-header .brand{color:#005a9c;font-size:14px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px}
+.ocra-header h1{margin:0 0 8px;color:#005a9c}
+.ocra-header p{margin:8px 0 0;color:#718096;line-height:1.5}
+.screen-nav{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.screen-counter{flex:1;text-align:center;color:#718096;font-weight:700}
+.nav-primary,.nav-secondary,.toolbar-btn{font:inherit;padding:10px 12px;border-radius:8px;font-weight:700;cursor:pointer}
+.nav-primary{border:1px solid #0078d4;background:#0078d4;color:#fff}
+.nav-primary:hover{background:#005a9c;border-color:#005a9c}
+.nav-secondary,.toolbar-btn{border:1px solid #0078d4;background:#fff;color:#005a9c}
+.nav-secondary:hover,.toolbar-btn:hover{background:#f7fafc;color:#005a9c}
+.nav-primary:disabled,.nav-secondary:disabled,.toolbar-btn:disabled{opacity:.45;cursor:not-allowed}
+.study-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px}
+.status{min-height:24px;margin:6px 0 14px;color:#005a9c;font-size:14px}
+.status:empty{display:none}
+.screen{display:none;padding:24px}
+.screen.active{display:block}
+.screen-title{display:flex;gap:15px;align-items:flex-start;margin-bottom:22px}
+.screen-title>span{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#0078d4;color:#fff;font-weight:800;flex:0 0 38px}
+.screen-title h2{margin:0;color:#005a9c}
+.screen-title p{margin:5px 0 0;color:#718096;line-height:1.45}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.form-grid label{display:flex;flex-direction:column;gap:7px;color:#2d3748;font-weight:600;font-size:14px}
+.form-grid label:has(textarea){grid-column:1/-1}
+input,select,textarea{font:inherit;padding:10px 12px;border:1px solid #cbd5e0;border-radius:8px;color:#2d3748;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid #0078d4;border-color:#0078d4}
+.calculation-box{margin-top:22px;padding:18px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:10px}
+.calculation-box>strong{color:#005a9c}
+.notice{margin-top:20px;padding:14px;border-left:4px solid #0078d4;background:#f7fafc;color:#2d3748;border-radius:0 8px 8px 0}
+.placeholder{min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #cbd5e0;border-radius:10px;background:#f8fafc;color:#718096;padding:30px}
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{border:1px solid #d8e0e8;padding:8px;text-align:left;vertical-align:top}
+th{background:#f1f5f9;color:#005a9c}
+.video-count-configuration{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.video-count-configuration label{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #d8e0e8;border-radius:8px;padding:8px 10px}
+.video-inputs-container{display:grid;gap:14px;margin-top:18px}
+.pmf-video-card{background:#f7fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px}
+.pmf-video-card h3{margin:0 0 10px;color:#005a9c}
+.pmf-analysis-launch{margin-top:16px}
+.pmf-beta-banner{margin:0 0 20px;padding:10px 14px;text-align:center;background:#fff3cd;border:1px solid #e4c76a;border-radius:10px;color:#6b5700}
+.pmf-beta-banner strong{display:block;font-size:15px}
+.pmf-beta-banner span{display:block;margin-top:2px;font-size:13px}
+.pmf-summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.pmf-summary-cards>div{padding:13px;background:#fff;border:1px solid #e2e8f0;border-radius:8px}
+.pmf-summary-cards span{display:block;color:#718096;font-size:13px;margin-bottom:7px}
+.pmf-summary-cards strong{font-size:20px;font-weight:800;color:#005a9c}
+.pmf-section-status{display:flex;justify-content:space-between;gap:15px;padding:13px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:14px}
+.pmf-section-status span{color:#718096}
+.pmf-section-status strong{color:#005a9c}
+.pmf-result-card{padding:14px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px}
+.pmf-result-card-head{display:flex;justify-content:space-between;gap:12px;color:#718096;font-size:13px}
+.pmf-result-card-head strong{color:#005a9c}
+.pmf-result-card h3{margin:10px 0 7px;color:#005a9c}
+.pmf-result-card p{margin:0;line-height:1.5}
+.pmf-result-metrics{margin-top:10px;padding:10px;background:#f7fafc;border-radius:7px;color:#526477;font-size:13px}
+.pmf-note{color:#718096;font-size:13px;line-height:1.5}
+.pmf-manual-control{margin-top:12px;padding:12px;background:#fff7e6;border:1px solid #ead3a0;border-radius:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mapping-container{margin-top:16px}
+.marker-row{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1.4fr);gap:12px;align-items:center;margin:8px 0}
+.marker-row label{font-weight:600}
+.marker-row select{width:100%}
+.mapping-buttons{display:flex;gap:10px;margin-top:18px}
+@media(max-width:760px){
+ body{padding:15px}
+ .form-grid,.pmf-summary-cards{grid-template-columns:1fr}
+ .screen-nav{flex-wrap:wrap}
+ .screen-counter{order:-1;flex-basis:100%}
+ .pmf-shell,.ocra-shell{width:min(100% - 20px,1100px)}
+ .screen{padding:18px}
+ .marker-row{grid-template-columns:1fr}
+}
+
+/* PMF · fuente manual/Kinovea y unidades de tiempo */
+.pmf-study-controls{margin:0 0 22px;padding:18px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:10px}
+.pmf-study-controls>.form-grid{margin-bottom:16px}
+.pmf-study-controls .result-table-wrap{margin-top:14px}
+.pmf-study-controls .compact-table label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:#526477}
+.pmf-study-controls .compact-table input{width:100%;min-width:110px}
+.pmf-study-controls .notice{margin-top:14px}
+
+/* Ayudas desplegables de postura, mismo patrón que OCRA */
+.help-panel{margin-top:10px;border:1px solid #d8e0e8;border-radius:10px;background:#f8fafc}
+.help-panel summary{padding:11px 13px;cursor:pointer;font-weight:700;color:#005a9c}
+.help-content{padding:0 13px 13px;color:#526477;line-height:1.5}
+.help-content p{margin:9px 0}
+
+/* Matriz visual de resultados por movimiento */
+.pmf-results-matrix{table-layout:fixed}
+.pmf-results-matrix th:first-child,.pmf-results-matrix td:first-child{width:22%}
+.pmf-results-matrix th:nth-child(2),.pmf-results-matrix th:nth-child(3),
+.pmf-results-matrix td:nth-child(2),.pmf-results-matrix td:nth-child(3){width:39%}
+.pmf-table-result{padding:10px 0;border-bottom:1px solid #e8edf2}
+.pmf-table-result:last-child{border-bottom:0}
+.pmf-result-status{display:inline-block;margin-bottom:6px;font-size:14px}
+.pmf-result-reason{font-size:13px;line-height:1.4;color:#526477}
+.pmf-result-metrics{margin-top:6px;font-size:12px;line-height:1.45;color:#718096}
+.pmf-result-empty{color:#94a3b8;font-weight:700}
+@media(max-width:760px){
+  .pmf-results-matrix{table-layout:auto}
+  .pmf-results-matrix th,.pmf-results-matrix td{min-width:180px}
+  .pmf-results-matrix th:first-child,.pmf-results-matrix td:first-child{min-width:150px}
+}
+
+/* Alineación uniforme de controles editables en tablas PMF */
+.pmf-study-controls .compact-table th,
+.pmf-study-controls .compact-table td{vertical-align:top}
+.pmf-cell-stack{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:8px;
+  margin:0;
+}
+.pmf-study-controls .compact-table .pmf-cell-stack label{
+  display:grid;
+  grid-template-rows:minmax(34px,auto) 40px;
+  align-items:start;
+  gap:6px;
+  margin:0;
+  line-height:1.25;
+}
+/* La primera fila de controles debe arrancar a la misma altura en todas
+   las columnas, aunque el texto de la etiqueta ocupe una, dos o tres líneas. */
+.pmf-study-controls .compact-table .pmf-cell-stack > label:first-child{
+  grid-template-rows:54px 40px;
+}
+.pmf-cell-stack label > input,
+.pmf-cell-stack label > select{
+  align-self:end;
+}
+.pmf-study-controls .compact-table input,
+.pmf-study-controls .compact-table select{
+  box-sizing:border-box;
+  width:100%;
+  min-height:40px;
+  height:40px;
+  margin:0;
+}
+.pmf-study-controls .compact-table td{
+  padding-top:10px;
+}
+.pmf-kinovea-note{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  box-sizing:border-box;
+  margin:40px 0 0;
+  padding:0 12px;
+  border-left:3px solid #1683d8;
+}
+.pmf-cell-static-text{
+  min-height:62px;
+  padding-top:40px;
+}
+
+
+/* Esquemas visuales dentro de la ayuda PMF */
+.pmf-help-image-wrap{
+  margin:14px 0 16px;
+  text-align:center;
+}
+.pmf-help-image{
+  display:block;
+  width:100%;
+  max-width:900px;
+  height:auto;
+  margin:0 auto;
+  border:1px solid #d7e2ec;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(15,43,70,.08);
+}
+
+
+/* Pantalla 9 · Simulación de mejoras */
+.pmf-simulation{display:grid;gap:16px}
+.pmf-sim-card{padding:18px;background:#fff;border:1px solid #d8e0e8;border-radius:10px}
+.pmf-sim-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.pmf-sim-head h3{margin:4px 0 0;color:#005a9c}
+.pmf-sim-head>div>strong{color:#718096;font-size:13px}
+.pmf-sim-compare{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pmf-sim-compare>div{min-width:120px;padding:10px 12px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:8px}
+.pmf-sim-compare span{display:block;color:#718096;font-size:12px}
+.pmf-sim-compare strong{display:block;margin-top:3px;color:#005a9c}
+.pmf-sim-arrow{font-size:22px;color:#718096}
+.pmf-sim-reason{margin:14px 0;color:#526477;font-size:13px;line-height:1.45}
+.pmf-sim-controls{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px;margin:14px 0}
+.pmf-sim-controls label{display:flex;flex-direction:column;gap:6px;color:#526477;font-size:12px;font-weight:600}
+.pmf-sim-reset{margin-top:4px}
+.pmf-sim-summary{padding:18px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:10px}
+.pmf-sim-summary h3{margin:0 0 12px;color:#005a9c}
+.pmf-sim-summary ul{margin:0;padding-left:22px}
+.pmf-sim-summary li{margin:8px 0;line-height:1.45}
+@media(max-width:760px){
+  .pmf-sim-head{flex-direction:column}
+  .pmf-sim-controls{grid-template-columns:1fr}
+}
+
+
+/* Página de tablas listas para copiar a Word */
+.pmf-word-tables{display:flex;flex-direction:column;gap:24px}
+.pmf-word-block{padding:18px;background:#fff;border:1px solid #d8e0e8;border-radius:10px}
+.pmf-word-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.pmf-word-heading h3{margin:0;color:#005a9c}
+.pmf-word-copy-target{overflow-x:auto}
+.pmf-word-copy-target table{table-layout:fixed}
+.pmf-word-copy-target th,.pmf-word-copy-target td{vertical-align:top}
+@media(max-width:760px){
+  .pmf-word-heading{align-items:flex-start;flex-direction:column}
+  .pmf-word-copy-target table{min-width:760px}
+}
+
+
+/* Resumen de resultados por segmento corporal */
+.pmf-segment-summary-table{table-layout:fixed}
+.pmf-segment-summary-table th:first-child,.pmf-segment-summary-table td:first-child{width:28%}
+.pmf-segment-summary-table th:nth-child(2),.pmf-segment-summary-table th:nth-child(3),
+.pmf-segment-summary-table td:nth-child(2),.pmf-segment-summary-table td:nth-child(3){width:36%}
+.pmf-segment-summary-table td{vertical-align:top}
+.pmf-summary-acceptable{background:#c6efce;color:#006100}
+.pmf-summary-not-acceptable{background:#ffc7ce;color:#9c0006}
+.pmf-summary-pending{background:#ffeb9c;color:#9c6500}
+.pmf-summary-not-evaluated{background:#f3f4f6;color:#475569}
+.pmf-summary-reasons{margin-top:6px;line-height:1.4;font-weight:400}
+
+
+/* Jerarquía segmento > postura/movimiento en resumen */
+.pmf-summary-segment-row td:first-child{background:#eaf2fb}
+.pmf-summary-segment{font-weight:700}
+.pmf-summary-movement{padding-left:22px!important;background:#fff}
+.pmf-summary-movement-row td{border-top:1px solid #e5e7eb}

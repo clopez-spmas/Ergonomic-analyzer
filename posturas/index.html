@@ -3,117 +3,126 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<title>Posturas forzadas · Ergonomic Analyzer</title>
-<link rel="stylesheet" href="styles.css">
+<title>Posturas Forzadas · Ergonomic Analyzer</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/pmf.css">
 </head>
 <body>
-<main class="posturas-shell">
-<header class="posturas-header">
-  <div class="brand">ERGONOMIC ANALYZER · POSTURAS FORZADAS</div>
-  <h1>Posturas forzadas</h1>
-  <p>Evaluación simultánea de posturas forzadas estáticas y dinámicas. Extremidades superiores excluidas: se evalúan mediante OCRA.</p>
-</header>
+<main class="ocra-shell pmf-shell">
 
-<div class="study-toolbar">
-  <button type="button" class="toolbar-btn" id="homeButton">← Volver al portal</button>
-  <button type="button" class="toolbar-btn" id="newStudyButton">Nuevo estudio</button>
-  <button type="button" class="toolbar-btn" id="saveStudyButton">Guardar estudio</button>
-  <button type="button" class="toolbar-btn" id="loadStudyButton">Cargar estudio</button>
-  <button type="button" class="toolbar-btn" id="wordTablesButton">Tablas para Word</button>
-  <input type="file" id="studyFileInput" accept=".json,application/json" hidden>
-  <span id="status" class="status" aria-live="polite">Complete la identificación del estudio.</span>
+<div class="pmf-beta-banner">
+  <strong>VERSIÓN EN PRUEBAS</strong>
+  <span>No utilizar para OCRA ni para evaluaciones ergonómicas definitivas.</span>
 </div>
 
-<section class="screen active" data-screen="0">
-  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev disabled>Anterior</button><div class="screen-counter">Pantalla 1 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
-  <div class="screen-title"><span>1</span><div><h2>Identificación del estudio</h2><p>Un estudio corresponde a una tarea concreta.</p></div></div>
-  <div class="form-grid">
-    <label>Empresa<input id="company" type="text"></label>
-    <label>Centro / departamento<input id="department" type="text"></label>
-    <label>Puesto<input id="workstation" type="text"></label>
-    <label>Tarea<input id="task" type="text"></label>
-    <label>Fecha<input id="studyDate" type="date"></label>
-    <label>Duración de la tarea (min)<input id="taskDuration" type="number" min="0.01" step="0.01"></label>
-    <label class="full-width">Descripción<textarea id="description" rows="4"></textarea></label>
+<header class="ocra-header">
+  <div class="brand">ERGONOMIC ANALYZER · POSTURAS FORZADAS</div>
+  <h1>Posturas Forzadas</h1>
+</header>
+
+<nav class="screen-nav" aria-label="Navegación del estudio">
+  <button type="button" id="homeBtn" class="nav-secondary">Inicio</button>
+  <div class="screen-counter" id="screenCounter">Pantalla 1 de 11</div>
+  <button type="button" id="prevBtn" class="nav-secondary">Anterior</button>
+  <button type="button" id="nextBtn" class="nav-primary">Siguiente</button>
+</nav>
+
+<section class="study-toolbar">
+  <button type="button" id="saveProjectButton" class="toolbar-btn">Guardar estudio</button>
+  <button type="button" id="loadProjectButton" class="toolbar-btn">Cargar estudio</button>
+  <button type="button" id="newStudyButton" class="toolbar-btn">Nuevo estudio</button>
+  <button type="button" id="simulationBtn" class="toolbar-btn">Ir a simulación</button>
+  <button type="button" id="wordTablesBtn" class="toolbar-btn">Tablas para Word</button>
+  <button type="button" id="instructionsBtn" class="toolbar-btn" title="Abrir instrucciones de uso">Instrucciones de uso</button>
+  <input id="loadProjectInput" type="file" accept=".json,application/json" hidden>
+</section>
+<div id="projectStatus" class="status" role="status" aria-live="polite"></div>
+
+<section class="screen active" data-screen="0" data-page-name="identification">
+  <div class="screen-title"><span>1</span><div><h2>Identificación del estudio</h2><p>Datos básicos para identificar la evaluación y la tarea analizada.</p></div></div>
+  <div class="form-grid pmf-grid">
+    <label>Empresa<input id="projectCompany" type="text" autocomplete="off"></label>
+    <label>Centro / puesto<input id="projectWorkstation" type="text" autocomplete="off"></label>
+    <label>Tarea evaluada<input id="projectTask" type="text" autocomplete="off"></label>
+    <label>Observaciones<textarea id="projectNotes" rows="4"></textarea></label>
   </div>
 </section>
 
-<section class="screen" data-screen="1">
-  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 2 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
-  <div class="screen-title"><span>2</span><div><h2>Vídeos y datos Kinovea</h2><p>Cada vídeo es una muestra independiente. Puede trabajar sin Kinovea o combinar Kinovea y entrada manual por criterio.</p></div></div>
-  <div class="notice"><strong>Criterio de integración:</strong> si existen varias muestras válidas para un mismo criterio, se utilizará la situación más desfavorable. Los tiempos de vídeos distintos no se suman entre sí.</div>
-  <div class="analysis-panel">
-    <div class="panel-heading"><h3>Muestras Kinovea</h3><button class="nav-primary" type="button" id="addSampleButton">Añadir muestra</button></div>
-    <div id="samplesHost"><div class="placeholder">No hay muestras cargadas.</div></div>
+<section class="screen" data-screen="1" data-page-name="videos">
+  <div class="screen-title"><span>2</span><div><h2>Vídeos y archivos Kinovea</h2><p>Seleccione los JSON correspondientes a los vídeos de una misma tarea.</p></div></div>
+  <div class="calculation-box">
+    <strong>Número de vídeos</strong>
+    <div class="video-count-configuration" id="videoCountConfiguration"></div>
   </div>
+  <div id="videoInputsContainer" class="video-inputs-container"></div>
+  <div class="notice">Cada vídeo puede aportar únicamente los marcadores necesarios para una parte del análisis. No es necesario disponer de todos los segmentos corporales en un mismo vídeo.</div>
 </section>
 
-<section class="screen" data-screen="2">
-  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 3 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
-  <div class="screen-title"><span>3</span><div><h2>Tronco</h2><p>La fuente se selecciona de forma independiente para cada criterio.</p></div></div>
-  <div id="trunkHost"></div>
-</section>
-
-<section class="screen" data-screen="3">
-  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 4 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
-  <div class="screen-title"><span>4</span><div><h2>Cabeza y cuello</h2><p>Evaluación independiente de posturas estáticas y dinámicas.</p></div></div>
-  <div id="headHost"></div>
-</section>
-
-<section class="screen" data-screen="4">
-  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 5 de 6</div><button type="button" class="nav-primary" data-next>Siguiente</button></div>
-  <div class="screen-title"><span>5</span><div><h2>Extremidades inferiores</h2><p>Rodilla y tobillo, diferenciando derecha e izquierda.</p></div></div>
-  <div id="lowerHost"></div>
-</section>
-
-<section class="screen" data-screen="5">
-  <div class="screen-nav"><button type="button" class="nav-secondary" data-prev>Anterior</button><div class="screen-counter">Pantalla 6 de 6</div><button type="button" class="nav-primary" id="recalculateButton">Recalcular</button></div>
-  <div class="screen-title"><span>6</span><div><h2>Resultados</h2><p>Resumen por sección corporal y detalle de criterios.</p></div></div>
-  <div id="resultsHost"></div>
-  <div class="screen-actions"><button type="button" class="nav-primary" id="simulationButton">Abrir simulación</button></div>
-</section>
-
-<section id="simulationScreen" class="screen standalone hidden">
-  <div class="screen-title"><span>S</span><div><h2>Simulación</h2><p>Modifique únicamente variables de cálculo. La fuente de datos no cambia.</p></div></div>
-  <div id="simulationHost"></div>
-  <div class="screen-actions"><button type="button" class="nav-primary" id="saveSimulationButton">Guardar simulación</button><button type="button" class="nav-secondary" id="closeSimulationButton">Volver</button></div>
-</section>
-
-<section id="wordTablesScreen" class="screen standalone hidden">
-  <div class="screen-title"><span>W</span><div><h2>Tablas para informe Word</h2><p>Copie cada bloque de forma independiente.</p></div></div>
-  <div class="checklist report-options">
-    <label class="check-row"><input type="checkbox" data-report="summary" checked> Resumen estática / dinámica</label>
-    <label class="check-row"><input type="checkbox" data-report="detail" checked> Resultados detallados</label>
-    <label class="check-row"><input type="checkbox" data-report="intermediate" checked> Cálculos intermedios</label>
-    <label class="check-row"><input type="checkbox" data-report="simulation"> Comparativa de simulación</label>
+<section class="screen" data-screen="2" data-page-name="markers">
+  <div class="screen-title"><span>3</span><div><h2>Asignación de marcadores</h2><p>Asigne los marcadores Kinovea a los puntos anatómicos disponibles en cada vídeo.</p></div></div>
+  <div class="calculation-box">
+    <strong>Análisis Kinovea</strong>
+    <div class="notice">La asignación es independiente para cada vídeo y se guarda dentro del estudio.</div>
+    <div class="pmf-analysis-launch"><button id="runPMFAnalysisButton" class="nav-primary" type="button">Iniciar asignación y analizar</button></div>
   </div>
-  <button type="button" class="nav-primary" id="generateReportButton">Generar tablas</button>
-  <div id="wordTablesHost"></div>
-  <div class="screen-actions"><button type="button" class="nav-secondary" id="closeWordTablesButton">Volver</button></div>
+  <div id="markerMappingContainer" class="calculation-box"><div class="placeholder">Pulse «Iniciar asignación y analizar» cuando haya cargado los JSON.</div></div>
 </section>
+
+<section class="screen" data-screen="3" data-page-name="summary">
+  <div class="screen-title"><span>4</span><div><h2>Datos importados de Kinovea</h2><p>Resumen de los vídeos, JSON, marcadores y datos procesados incorporados al estudio.</p></div></div>
+  <div id="videoJsonSummary" class="calculation-box"><div class="placeholder">Todavía no hay datos importados.</div></div>
+</section>
+
+<section class="screen" data-screen="4" data-page-name="trunk">
+  <div class="screen-title"><span>5</span><div><h2>Tronco</h2><p>Flexión/extensión, inclinación lateral y rotación axial.</p></div></div>
+  <div id="results_trunk" class="calculation-box pmf-section-results"><div class="placeholder">Pendiente de análisis.</div></div>
+</section>
+
+<section class="screen" data-screen="5" data-page-name="head_neck">
+  <div class="screen-title"><span>6</span><div><h2>Cabeza y cuello</h2><p>Flexión/extensión, lateralización y rotación axial.</p></div></div>
+  <div id="results_head_neck" class="calculation-box pmf-section-results"><div class="placeholder">Pendiente de análisis.</div></div>
+</section>
+
+<section class="screen" data-screen="6" data-page-name="lower_right">
+  <div class="screen-title"><span>7</span><div><h2>Extremidad inferior derecha</h2><p>Valoración independiente de rodilla y tobillo derechos.</p></div></div>
+  <div id="results_lower_right" class="calculation-box pmf-section-results"><div class="placeholder">Pendiente de análisis.</div></div>
+</section>
+
+<section class="screen" data-screen="7" data-page-name="lower_left">
+  <div class="screen-title"><span>8</span><div><h2>Extremidad inferior izquierda</h2><p>Valoración independiente de rodilla y tobillo izquierdos.</p></div></div>
+  <div id="results_lower_left" class="calculation-box pmf-section-results"><div class="placeholder">Pendiente de análisis.</div></div>
+</section>
+
+<section class="screen" data-screen="8" data-page-name="results_summary">
+  <div class="screen-title"><span>9</span><div><h2>Resultados</h2><p>Resumen del resultado estático y dinámico de cada segmento corporal.</p></div></div>
+  <div id="segmentResultsSummary" class="calculation-box pmf-segment-summary"><div class="placeholder">Todavía no hay resultados disponibles.</div></div>
+</section>
+
+<section class="screen" data-screen="9" data-page-name="simulation">
+  <div class="screen-title"><span>10</span><div><h2>Simulación de mejoras</h2><p>Modifique las condiciones de cada postura y compare el resultado actual con el simulado. El estudio original no se modifica.</p></div></div>
+  <div id="simulationContent" class="pmf-simulation"><div class="placeholder">Todavía no hay resultados evaluados para simular.</div></div>
+</section>
+
+<section class="screen" data-screen="10" data-page-name="word_tables">
+  <div class="screen-title"><span>11</span><div><h2>Tablas para Word</h2><p>Tablas independientes por segmento corporal y resultados de la simulación, preparadas para copiar y pegar en Word.</p></div></div>
+  <div id="wordTablesContent" class="pmf-word-tables"><div class="placeholder">Todavía no hay resultados disponibles.</div></div>
+</section>
+
 </main>
 
-<dialog id="sampleDialog" class="app-dialog">
-<form method="dialog" id="sampleForm">
-  <h3>Nueva muestra Kinovea</h3>
-  <label>Vista<select id="sampleView"><option value="profile-right">Perfil derecho</option><option value="profile-left">Perfil izquierdo</option><option value="front">Frente</option><option value="back">Espalda</option><option value="three-quarter-right">3/4 derecho</option><option value="three-quarter-left">3/4 izquierdo</option></select></label>
-  <label>La persona mira hacia<select id="sampleDirection"><option value="right">la derecha</option><option value="left">la izquierda</option></select></label>
-  <label>Vídeo<input type="file" id="sampleVideo" accept="video/*"></label>
-  <label>JSON Kinovea<input type="file" id="sampleJson" accept=".json,application/json"></label>
-  <label>Ámbito<select id="sampleRangeMode"><option value="all">Todo el vídeo</option><option value="interval">Intervalo</option><option value="cycles">Número de ciclos</option></select></label>
-  <div class="analysis-grid">
-    <label>Inicio (s)<input id="sampleStart" type="number" min="0" step="0.001" value="0"></label>
-    <label>Fin (s)<input id="sampleEnd" type="number" min="0" step="0.001" value="0"></label>
-    <label>Ciclos<input id="sampleCycles" type="number" min="1" step="1" value="1"></label>
-  </div>
-  <div class="dialog-actions"><button value="cancel" class="nav-secondary">Cancelar</button><button type="button" id="saveSampleButton" class="nav-primary">Añadir</button></div>
-</form>
-</dialog>
-
-<dialog id="appDialog" class="app-dialog"><div id="appDialogText"></div><div class="dialog-actions"><button class="nav-primary" id="appDialogOk">Aceptar</button></div></dialog>
-
-<script src="app.js"></script>
+<script src="js/kinovea.js"></script>
+<script src="js/models.js"></script>
+<script src="js/geometry.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/markerMapping.js"></script>
+<script src="js/biomechanical_adapter.js"></script>
+<script src="js/biomechanics.js"></script>
+<script src="js/pmf_storage.js"></script>
+<script src="js/pmf_criteria.js"></script>
+<script src="js/pmf_engine.js"></script>
+<script src="js/pmf_signed_biomechanics.js"></script>
+<script src="js/pmf_selftest.js"></script>
+<script src="js/pmf_navigation.js"></script>
+<script src="js/pmf_app.js"></script>
 </body>
 </html>

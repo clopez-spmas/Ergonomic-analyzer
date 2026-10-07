@@ -1,0 +1,346 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 3 /Kids [5 0 R 7 0 R 9 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3808 >>
+stream
+BT
+/F2 20 Tf
+1 0 0 1 50 790 Tm
+(Instrucciones de uso) Tj
+/F2 13 Tf
+1 0 0 1 50 767 Tm
+(Programa de an\341lisis de posturas forzadas) Tj
+/F2 13 Tf
+1 0 0 1 50 735 Tm
+(1. Finalidad del programa) Tj
+/F1 10.5 Tf
+1 0 0 1 50 713 Tm
+(Este programa permite analizar posturas forzadas y movimientos forzados por segmentos) Tj
+/F1 10.5 Tf
+1 0 0 1 50 697 Tm
+(corporales, utilizando dos v\355as de trabajo: Manual y Kinovea, cuando la postura o el) Tj
+/F1 10.5 Tf
+1 0 0 1 50 681 Tm
+(movimiento pueden estudiarse adecuadamente mediante marcadores. El an\341lisis se realiza) Tj
+/F1 10.5 Tf
+1 0 0 1 50 665 Tm
+(por segmento corporal y por postura/movimiento, de forma independiente.) Tj
+/F1 10 Tf
+1 0 0 1 50 649 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 629 Tm
+(2. Antes de comenzar) Tj
+/F1 10.5 Tf
+1 0 0 1 50 607 Tm
+(Antes de iniciar el an\341lisis: 1\) Defina qu\351 postura o movimiento desea estudiar. 2\)) Tj
+/F1 10.5 Tf
+1 0 0 1 50 591 Tm
+(Elija la vista de v\355deo m\341s adecuada. 3\) Coloque solo los marcadores necesarios para esa) Tj
+/F1 10.5 Tf
+1 0 0 1 50 575 Tm
+(postura o movimiento. 4\) Si lo necesita, puede procesar el mismo v\355deo varias veces en) Tj
+/F1 10.5 Tf
+1 0 0 1 50 559 Tm
+(Kinovea, usando distintos marcadores para distintos an\341lisis. No es necesario colocar) Tj
+/F1 10.5 Tf
+1 0 0 1 50 543 Tm
+(todos los marcadores en todos los v\355deos.) Tj
+/F1 10 Tf
+1 0 0 1 50 527 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 507 Tm
+(3. V\355as de an\341lisis disponibles) Tj
+/F1 10.5 Tf
+1 0 0 1 50 485 Tm
+(Manual: seleccione esta opci\363n cuando no disponga de datos Kinovea, la postura no pueda) Tj
+/F1 10.5 Tf
+1 0 0 1 50 469 Tm
+(valorarse adecuadamente con Kinovea o prefiera introducir directamente el dato) Tj
+/F1 10.5 Tf
+1 0 0 1 50 453 Tm
+(observado. Kinovea: seleccione esta opci\363n cuando disponga de v\355deo adecuado, haya) Tj
+/F1 10.5 Tf
+1 0 0 1 50 437 Tm
+(colocado los marcadores necesarios y la postura o el movimiento puedan calcularse) Tj
+/F1 10.5 Tf
+1 0 0 1 50 421 Tm
+(correctamente a partir de esos marcadores.) Tj
+/F1 10 Tf
+1 0 0 1 50 405 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 385 Tm
+(4. Preparaci\363n del v\355deo) Tj
+/F1 10.5 Tf
+1 0 0 1 50 363 Tm
+(Utilice una grabaci\363n estable; procure que el segmento corporal se vea con claridad;) Tj
+/F1 10.5 Tf
+1 0 0 1 50 347 Tm
+(evite ocultaciones; elija la vista que mejor muestre el movimiento o la postura; si un) Tj
+/F1 10.5 Tf
+1 0 0 1 50 331 Tm
+(v\355deo no sirve para una postura concreta, puede analizar esa postura manualmente.) Tj
+/F1 10 Tf
+1 0 0 1 50 315 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 295 Tm
+(5. Vistas recomendadas) Tj
+/F1 10.5 Tf
+1 0 0 1 50 273 Tm
+(Vista lateral: \372til para flexi\363n / extensi\363n. Vista frontal o posterior: \372til para) Tj
+/F1 10.5 Tf
+1 0 0 1 50 257 Tm
+(inclinaci\363n lateral. Vista 3/4: \372til para giro. En extremidades inferiores: rodilla,) Tj
+/F1 10.5 Tf
+1 0 0 1 50 241 Tm
+(vista lateral; tobillo, vista lateral.) Tj
+/F1 10 Tf
+1 0 0 1 50 225 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 205 Tm
+(6. Marcadores: criterio general) Tj
+/F1 10.5 Tf
+1 0 0 1 50 183 Tm
+(Los marcadores deben colocarse solo cuando sean necesarios. Espalda / tronco: flexi\363n /) Tj
+/F1 10.5 Tf
+1 0 0 1 50 167 Tm
+(extensi\363n: hombro + cadera; inclinaci\363n lateral: hombros + caderas; giro: hombros +) Tj
+/F1 10.5 Tf
+1 0 0 1 50 151 Tm
+(caderas; postura convexa lumbar: valoraci\363n visual / manual. Cabeza y cuello: flexi\363n /) Tj
+/F1 10.5 Tf
+1 0 0 1 50 135 Tm
+(extensi\363n: punto anterior de cabeza + punto posterior de cabeza + cuello;) Tj
+/F1 10.5 Tf
+1 0 0 1 50 119 Tm
+(lateralizaci\363n: cuello + punto anterior de cabeza + punto posterior de cabeza; giro:) Tj
+/F1 10.5 Tf
+1 0 0 1 50 103 Tm
+(oreja derecha + oreja izquierda. Extremidades inferiores: rodilla: cadera + rodilla +) Tj
+/F1 10.5 Tf
+1 0 0 1 50 87 Tm
+(tobillo; tobillo: rodilla + tobillo + pie.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 3550 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 50 790 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 770 Tm
+(7. An\341lisis por segmentos corporales) Tj
+/F1 10.5 Tf
+1 0 0 1 50 748 Tm
+(El programa organiza el an\341lisis por segmentos corporales. Dentro de cada segmento, cada) Tj
+/F1 10.5 Tf
+1 0 0 1 50 732 Tm
+(postura o movimiento se estudia de forma independiente. Actualmente permite trabajar) Tj
+/F1 10.5 Tf
+1 0 0 1 50 716 Tm
+(sobre Espalda / tronco, Cabeza y cuello, Extremidad inferior derecha y Extremidad) Tj
+/F1 10.5 Tf
+1 0 0 1 50 700 Tm
+(inferior izquierda.) Tj
+/F1 10 Tf
+1 0 0 1 50 684 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 664 Tm
+(8. Unidad de tiempo) Tj
+/F1 10.5 Tf
+1 0 0 1 50 642 Tm
+(Seg\372n la postura, el tiempo puede introducirse como segundos o porcentaje del tiempo) Tj
+/F1 10.5 Tf
+1 0 0 1 50 626 Tm
+(analizado en el que se mantiene la postura. Utilice la misma unidad de tiempo en toda la) Tj
+/F1 10.5 Tf
+1 0 0 1 50 610 Tm
+(valoraci\363n de esa pantalla.) Tj
+/F1 10 Tf
+1 0 0 1 50 594 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 574 Tm
+(9. Posturas est\341ticas y din\341micas) Tj
+/F1 10.5 Tf
+1 0 0 1 50 552 Tm
+(Se considera postura forzada est\341tica cuando la postura se mantiene durante m\341s de 4) Tj
+/F1 10.5 Tf
+1 0 0 1 50 536 Tm
+(segundos. En los movimientos din\341micos, la frecuencia se clasifica en menos de 2) Tj
+/F1 10.5 Tf
+1 0 0 1 50 520 Tm
+(movimientos por minuto o 2 o m\341s movimientos por minuto.) Tj
+/F1 10 Tf
+1 0 0 1 50 504 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 484 Tm
+(10. An\341lisis manual) Tj
+/F1 10.5 Tf
+1 0 0 1 50 462 Tm
+(Cuando elija an\341lisis manual, introduzca el \341ngulo o intervalo solicitado; introduzca el) Tj
+/F1 10.5 Tf
+1 0 0 1 50 446 Tm
+(tiempo correspondiente; si procede, indique la frecuencia; y, si la pantalla lo) Tj
+/F1 10.5 Tf
+1 0 0 1 50 430 Tm
+(solicita, confirme variables complementarias como apoyo, postura de referencia, tronco) Tj
+/F1 10.5 Tf
+1 0 0 1 50 414 Tm
+(posteriormente inclinado o apoyo de los huesos de la pelvis sobre los que nos sentamos.) Tj
+/F1 10 Tf
+1 0 0 1 50 398 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 378 Tm
+(11. An\341lisis con Kinovea) Tj
+/F1 10.5 Tf
+1 0 0 1 50 356 Tm
+(Cargue el/los JSON correspondientes. Asigne los marcadores necesarios. Revise que los) Tj
+/F1 10.5 Tf
+1 0 0 1 50 340 Tm
+(marcadores seleccionados corresponden al segmento y postura a estudiar. El programa) Tj
+/F1 10.5 Tf
+1 0 0 1 50 324 Tm
+(utilizar\341 los datos disponibles para calcular la postura o el movimiento. Si una postura) Tj
+/F1 10.5 Tf
+1 0 0 1 50 308 Tm
+(no puede valorarse adecuadamente mediante Kinovea, utilice la opci\363n Manual.) Tj
+/F1 10 Tf
+1 0 0 1 50 292 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 272 Tm
+(12. Criterio importante sobre un mismo v\355deo) Tj
+/F1 10.5 Tf
+1 0 0 1 50 250 Tm
+(Un mismo v\355deo puede servir para varios an\341lisis, pero no siempre conviene usar todos) Tj
+/F1 10.5 Tf
+1 0 0 1 50 234 Tm
+(los marcadores a la vez. Puede cargar el mismo v\355deo, procesarlo varias veces y asignar) Tj
+/F1 10.5 Tf
+1 0 0 1 50 218 Tm
+(en cada ocasi\363n solo los marcadores necesarios para ese an\341lisis concreto.) Tj
+/F1 10 Tf
+1 0 0 1 50 202 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 182 Tm
+(13. Ayudas incluidas en el programa) Tj
+/F1 10.5 Tf
+1 0 0 1 50 160 Tm
+(En distintas pantallas el programa incorpora ayudas desplegables con ejemplos pr\341cticos) Tj
+/F1 10.5 Tf
+1 0 0 1 50 144 Tm
+(de las posturas, aclaraciones sobre c\363mo observarlas y, en algunos casos, explicaci\363n de) Tj
+/F1 10.5 Tf
+1 0 0 1 50 128 Tm
+(c\363mo medir el \341ngulo manualmente.) Tj
+/F1 10 Tf
+1 0 0 1 50 112 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 92 Tm
+(14. Guardar y cargar estudios) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 1317 >>
+stream
+BT
+/F1 10.5 Tf
+1 0 0 1 50 790 Tm
+(El programa permite guardar el estudio, cargar un estudio ya iniciado y continuar) Tj
+/F1 10.5 Tf
+1 0 0 1 50 774 Tm
+(posteriormente el trabajo sin tener que empezar de nuevo. Adem\341s, el archivo puede) Tj
+/F1 10.5 Tf
+1 0 0 1 50 758 Tm
+(conservar los datos relevantes usados en el an\341lisis.) Tj
+/F1 10 Tf
+1 0 0 1 50 742 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 722 Tm
+(15. Recomendaciones de uso) Tj
+/F1 10.5 Tf
+1 0 0 1 50 700 Tm
+(Estudie una postura cada vez; no cargue m\341s marcadores de los necesarios; elija siempre) Tj
+/F1 10.5 Tf
+1 0 0 1 50 684 Tm
+(la vista m\341s clara; si Kinovea no resulta \372til para una postura, use Manual; revise los) Tj
+/F1 10.5 Tf
+1 0 0 1 50 668 Tm
+(datos antes de pasar a la siguiente pantalla; utilice las ayudas del programa cuando) Tj
+/F1 10.5 Tf
+1 0 0 1 50 652 Tm
+(tenga dudas.) Tj
+/F1 10 Tf
+1 0 0 1 50 636 Tm
+() Tj
+/F2 13 Tf
+1 0 0 1 50 616 Tm
+(16. Resumen pr\341ctico) Tj
+/F1 10.5 Tf
+1 0 0 1 50 594 Tm
+(1\) Elija la postura o movimiento. 2\) Elija la vista adecuada. 3\) Coloque solo los) Tj
+/F1 10.5 Tf
+1 0 0 1 50 578 Tm
+(marcadores necesarios. 4\) Decida si analizar\341 con Manual o Kinovea. 5\) Introduzca o) Tj
+/F1 10.5 Tf
+1 0 0 1 50 562 Tm
+(revise los datos. 6\) Contin\372e con la siguiente postura.) Tj
+/F1 10 Tf
+1 0 0 1 50 546 Tm
+() Tj
+ET
+endstream
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000224 00000 n 
+0000000326 00000 n 
+0000000462 00000 n 
+0000004321 00000 n 
+0000004457 00000 n 
+0000008058 00000 n 
+0000008195 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+9564
+%%EOF
