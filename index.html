@@ -4,12 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ergonomic Analyzer</title>
-<link rel="stylesheet" href="css/styles.css?v=20261113-selector-directo">
+<link rel="stylesheet" href="css/styles.css?v=20261113-flujo-portal">
 </head>
 <body>
 <main class="container">
 
-<section id="methodScreen" class="access-screen card method-screen">
+<section id="welcomeScreen" class="access-screen card">
+  <div class="access-hero">
+    <span class="access-badge">Evaluación ergonómica</span>
+    <h1>Ergonomic Analyzer</h1>
+    <p>Portal de acceso a programas independientes de evaluación ergonómica.</p>
+  </div>
+  <div class="access-content">
+    <h2>Bienvenido</h2>
+    <p class="access-intro">Seleccione el programa de evaluación que desea utilizar.</p>
+    <div class="access-features">
+      <article class="access-feature"><span class="access-feature-icon" aria-hidden="true">↻</span><strong>OCRA Analyzer</strong><span>Análisis de movimientos repetitivos y exposición de la extremidad superior.</span></article>
+      <article class="access-feature"><span class="access-feature-icon" aria-hidden="true">▦</span><strong>Programa de Posturas Forzadas</strong><span>Evaluación de las posturas y de los factores posturales del puesto de trabajo.</span></article>
+      <article class="access-feature"><span class="access-feature-icon" aria-hidden="true">↔</span><strong>Empuje y Tracción</strong><span>Evaluación de tareas de empujar y tirar cargas mediante fuerzas iniciales y sostenidas.</span></article>
+      <article class="access-feature"><span class="access-feature-icon" aria-hidden="true">▣</span><strong>MMC Analyzer</strong><span>Evaluación de manipulación manual de cargas: simple, variable, compuesta y secuencial.</span></article>
+      <article class="access-feature"><span class="access-feature-icon" aria-hidden="true">✓</span><strong>Estudios independientes</strong><span>Cada usuario puede realizar su propio estudio de forma independiente.</span></article>
+    </div>
+    <div class="access-actions"><button id="enterProgram" type="button" class="method-button">Acceder al programa →</button></div>
+    <div class="access-footer"><strong>Antes de comenzar</strong><p>Tenga preparados los datos necesarios para la evaluación. El programa se ejecuta directamente en el navegador y no requiere instalación.</p></div>
+  </div>
+</section>
+
+<section id="methodScreen" class="access-screen card method-screen" hidden>
   <div class="access-hero">
     <span class="access-badge">Selección del método</span>
     <h1>¿Qué programa desea utilizar?</h1>
@@ -29,10 +50,23 @@
 
 
   </div>
+    <div class="access-footer"><button id="backToWelcome" type="button" class="secondary">← Volver a bienvenida</button></div>
 </section>
 
 </main>
 
 <script src="js/app.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  const welcome=document.getElementById("welcomeScreen");
+  const methods=document.getElementById("methodScreen");
+  document.getElementById("enterProgram").addEventListener("click",function(){
+    welcome.hidden=true;methods.hidden=false;window.scrollTo(0,0);
+  });
+  document.getElementById("backToWelcome").addEventListener("click",function(){
+    methods.hidden=true;welcome.hidden=false;window.scrollTo(0,0);
+  });
+});
+</script>
 </body>
 </html>
