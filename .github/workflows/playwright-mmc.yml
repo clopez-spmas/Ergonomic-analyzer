@@ -7,13 +7,13 @@ permissions:
 
 jobs:
   playwright-mmc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Descargar pruebas del portal
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Instalar Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
       - name: Instalar Playwright
@@ -27,7 +27,7 @@ jobs:
         run: npx playwright test -c playwright.mmc.config.cjs
       - name: Guardar informe y capturas, incluso si hay errores
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: informe-playwright-mmc
           path: |
