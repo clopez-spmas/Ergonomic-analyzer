@@ -24,7 +24,8 @@
 .mode-card .variant-actions .toolbar-btn+ .toolbar-btn{background:#fff;color:#245982}
 .mode-card .variant-actions .toolbar-btn+ .toolbar-btn:hover{background:#f3f7fb}
 .mode-card:focus-visible,.mode-card a:focus-visible,.mode-back:focus-visible{outline:3px solid #e39c27;outline-offset:3px}
-.mode-back{display:inline-block;margin-top:22px;color:#245982;font-weight:700}
+.mode-return{text-align:center}.mode-back{display:inline-flex;align-items:center;justify-content:center;min-height:52px;max-width:360px;width:100%;margin-top:22px;padding:12px 18px;border:2px solid #245982;border-radius:10px;background:#fff;color:#245982;font:inherit;font-weight:700;text-decoration:none;box-shadow:none;transition:background .15s ease,color .15s ease}
+.mode-back:hover{background:#f3f7fb;color:#1b4769;border-color:#1b4769}
 @media(max-width:760px){.mode-grid{grid-template-columns:1fr}.mode-shell{padding:16px 4px 30px}.mode-shell .ocra-header{padding:30px 18px}}
 @media(prefers-reduced-motion:reduce){.mode-card{transition:none}}
 </style>
@@ -67,7 +68,7 @@
 </section>
 
 
-<a class="mode-back" href="../#programas">← Volver a selección de programas</a>
+<div class="mode-return"><a class="mode-back" href="../#programas">← Volver a selección de programas</a></div>
 </main>
 </body>
 </html>
