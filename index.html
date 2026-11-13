@@ -47,10 +47,8 @@
       <button type="button" class="method-button" data-method="empuje-traccion">Abrir Empuje y Tracción&nbsp; →</button>
       <button type="button" class="method-button" data-method="mmc">Abrir MMC&nbsp; →</button>
     </div>
-
-
-  </div>
     <div class="access-footer"><button id="backToWelcome" type="button" class="secondary">← Volver a bienvenida</button></div>
+  </div>
 </section>
 
 </main>
@@ -60,6 +58,7 @@
 document.addEventListener("DOMContentLoaded",function(){
   const welcome=document.getElementById("welcomeScreen");
   const methods=document.getElementById("methodScreen");
+  if(window.location.hash==="#programas"){welcome.hidden=true;methods.hidden=false;}
   document.getElementById("enterProgram").addEventListener("click",function(){
     welcome.hidden=true;methods.hidden=false;window.scrollTo(0,0);
   });
