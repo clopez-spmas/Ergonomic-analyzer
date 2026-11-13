@@ -10,7 +10,6 @@ const errors = [];
 async function openModule(page, module) {
   await page.goto(base + module.path);
   if (module.name === 'Simple') {
-    await page.locator('#enter').click();
     await expect(page.locator('#methods')).toBeVisible();
     await page.locator('[data-method="simple"]').click();
     await expect(page.locator('#simple')).toBeVisible();
@@ -38,6 +37,8 @@ test('Portal: enlace MMC accesible', async ({ page }) => {
 
 test('Documentación PDF publicada y accesible', async ({ request, page }) => {
   await page.goto(base + 'mmc/');
+  await expect(page.locator('#methods')).toBeVisible();
+  await expect(page.locator('#backToPrograms')).toHaveAttribute('href', '../');
   const link = page.locator('#instructionsLink');
   await expect(link).toBeVisible();
   const href = await link.getAttribute('href');
@@ -85,7 +86,6 @@ for (const module of modules) {
     expect(json.module).toBe(module.name.toLowerCase());
     await page.reload();
     if (module.name === 'Simple') {
-      await page.locator('#enter').click();
       await page.locator('[data-method="simple"]').click();
       await expect(page.locator('#page1')).toBeVisible();
     }
