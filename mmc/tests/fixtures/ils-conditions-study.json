@@ -1,0 +1,260 @@
+{
+  "application": "MMC Analyzer",
+  "module": "secuencial",
+  "version": 2,
+  "meta": {
+    "empresa": "PRUEBA AUTOMATIZADA"
+  },
+  "data": {
+    "tasks": [
+      {
+        "id": "s",
+        "name": "Simple",
+        "type": "simple",
+        "sourceFile": "Simple-prueba.json",
+        "sourceTaskId": "s-original",
+        "sourceVariant": "original",
+        "sourceData": {
+          "peso": "10",
+          "horizontal": "25",
+          "vertical": "15",
+          "verticalDestino": "80",
+          "asimetria": "0",
+          "frecuencia": ".2",
+          "agarre": "malo",
+          "unaMano": "no",
+          "dosPersonas": "no",
+          "controlDestino": "no",
+          "horizontalDestino": "",
+          "asimetriaDestino": ""
+        }
+      },
+      {
+        "id": "c",
+        "name": "Compuesta",
+        "type": "compuesta",
+        "sourceFile": "Compuesta-prueba.json",
+        "sourceTaskId": "c-original",
+        "sourceVariant": "original",
+        "sourceData": {
+          "workers": "2",
+          "subtasks": [
+            {
+              "name": "Caja",
+              "weight": "20",
+              "objects": "20",
+              "lifts": "1",
+              "frequency": ".3",
+              "origin": "15",
+              "destination": "80",
+              "horizontal": "35",
+              "asymmetry": "0",
+              "grip": "M",
+              "hands": "2",
+              "people": "1",
+              "heavy": "N"
+            }
+          ]
+        }
+      },
+      {
+        "id": "v",
+        "name": "Variable",
+        "type": "variable",
+        "sourceFile": "Variable-prueba.json",
+        "sourceTaskId": "v-original",
+        "sourceVariant": "original",
+        "sourceData": {
+          "workers": "4",
+          "loads": [
+            {
+              "weight": "10",
+              "objects": "30",
+              "lifts": "1",
+              "people": "1"
+            }
+          ],
+          "blocks": [
+            {
+              "type": "otra",
+              "minutes": "10"
+            },
+            {
+              "type": "mmc",
+              "minutes": "10"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "10"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "10"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "5"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "5"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "5"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "10"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "10"
+            },
+            {
+              "type": "otra",
+              "minutes": "15"
+            },
+            {
+              "type": "mmc",
+              "minutes": "15"
+            },
+            {
+              "type": "otra",
+              "minutes": "20"
+            },
+            {
+              "type": "empuje",
+              "minutes": "10"
+            },
+            {
+              "type": "otra",
+              "minutes": "25"
+            }
+          ],
+          "start": "08:00",
+          "geometry": [
+            {
+              "origin": "120",
+              "destination": "120",
+              "asymmetry": "si"
+            }
+          ],
+          "horizontal": {
+            "originPoor": [],
+            "originGood": [
+              0
+            ],
+            "destinationPoor": [],
+            "destinationGood": [
+              0
+            ]
+          },
+          "mode": "individual",
+          "oneHand": false
+        }
+      }
+    ],
+    "start": "08:00",
+    "end": "11:00",
+    "overnight": false,
+    "timeBased": true,
+    "blocks": [
+      {
+        "type": "mmc",
+        "taskId": "s",
+        "start": "08:00",
+        "end": "09:00"
+      },
+      {
+        "type": "mmc",
+        "taskId": "c",
+        "start": "09:00",
+        "end": "10:00"
+      },
+      {
+        "type": "mmc",
+        "taskId": "v",
+        "start": "10:00",
+        "end": "11:00"
+      }
+    ]
+  },
+  "simulation": null
+}

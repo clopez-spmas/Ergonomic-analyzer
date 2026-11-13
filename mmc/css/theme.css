@@ -1,0 +1,85 @@
+/* Paleta común para los cuatro módulos. Los colores de riesgo se definen aparte. */
+:root {
+  color-scheme: light;
+  --mmc-primary: #245982;
+  --mmc-primary-hover: #194565;
+  --mmc-text: #243447;
+  --mmc-muted: #52677c;
+  --mmc-page: #eef2f7;
+  --mmc-panel: #f8fbfe;
+  --mmc-line: #cbd9e6;
+  --mmc-input-line: #7a8da0;
+  --mmc-heading-fill: #deeaf6;
+}
+body { background: var(--mmc-page); color: var(--mmc-text); }
+h1,h2,h3,h4,legend { color: var(--mmc-primary); }
+a { color: var(--mmc-primary); }
+a:hover { color: var(--mmc-primary-hover); }
+button,.upload,.mmc-shell .nav-primary {
+  background: var(--mmc-primary); color: #fff; border-color: var(--mmc-primary);
+}
+button:hover,.upload:hover,.mmc-shell .nav-primary:hover {
+  background: var(--mmc-primary-hover); color: #fff; border-color: var(--mmc-primary-hover);
+}
+button.secondary,.mmc-shell .nav-secondary,.mmc-shell .toolbar-btn,.nav-link {
+  background: #fff; color: var(--mmc-primary); border-color: var(--mmc-primary);
+}
+button.secondary:hover,.mmc-shell .nav-secondary:hover,.mmc-shell .toolbar-btn:hover,.nav-link:hover {
+  background: #e8f0f7; color: var(--mmc-primary-hover); border-color: var(--mmc-primary-hover);
+}
+.method-button {
+  display: flex; align-items: center; justify-content: center;
+  font: inherit; font-weight: 700; text-decoration: none; padding: 12px;
+  background: var(--mmc-primary); color: #fff; border: 2px solid var(--mmc-primary);
+}
+.method-button:hover {
+  background: var(--mmc-primary-hover); color: #fff; border-color: var(--mmc-primary-hover);
+}
+.method-button.secondary { background: #fff; color: var(--mmc-primary); }
+.method-button.secondary:hover { background: #e8f0f7; color: var(--mmc-primary-hover); }
+#instructionsLink { margin-top: 14px; }
+.access-hero { background: var(--mmc-primary); color: #fff; }
+.access-hero h1,.access-hero p { color: #fff; }
+.access-badge { background: #194565; border-color: #b8cddd; color: #fff; }
+.access-feature { background: var(--mmc-panel); border-color: var(--mmc-line); }
+.access-feature strong { color: var(--mmc-primary); }
+.access-feature span,.muted,.small-note,.ocra-header p,.mmc-shell .screen-counter,
+.vli-metrics,.partial-state,.help-intro,.task-limit,.import-choice small,
+.population-age,.population-score-label,.mmc-risk-legend small,
+.mmc-results-overview span,.mmc-task-summary-level small,.population-table caption {
+  color: var(--mmc-muted);
+}
+.mmc-shell .ocra-header .brand,.mmc-shell .ocra-header h1,
+.mmc-shell .status,.vli-metrics strong,.sequence-metrics strong,
+.schedule-metric strong,.mmc-results-overview strong { color: var(--mmc-primary); }
+input,select,textarea,.partial-card textarea {
+  background: #fff; color: var(--mmc-text); border-color: var(--mmc-input-line);
+  accent-color: var(--mmc-primary);
+}
+input::placeholder,textarea::placeholder { color: var(--mmc-muted); opacity: 1; }
+input[readonly],input:disabled,select:disabled,textarea:disabled,.automatic-field {
+  background: #edf2f7; color: #334155; border-color: var(--mmc-input-line); opacity: 1;
+}
+.mmc-shell button:disabled,.mmc-shell button:disabled:hover,
+button:disabled,button:disabled:hover {
+  background: #e2e8f0; color: #52677c; border-color: #7a8da0; opacity: 1; cursor: not-allowed;
+}
+:where(button,a,input,select,textarea,summary,.upload):focus-visible {
+  outline: 3px solid #005a9c; outline-offset: 3px; box-shadow: 0 0 0 3px #fff;
+}
+input:focus,select:focus,textarea:focus { border-color: #005a9c; }
+.notice,.vli-panel,.sim-section,.module-note,.partial-card,.simulation-conditions,
+.schedule-row,.schedule-block,.empty-state {
+  background: var(--mmc-panel); border-color: var(--mmc-line);
+}
+.task-result-table .task-table-title { background: var(--mmc-primary); color: #fff; }
+.vli-table thead th,.mmc-shell .population-table thead th,
+.mmc-shell .population-table thead tr:nth-child(2) th {
+  background: var(--mmc-heading-fill) !important; color: var(--mmc-primary) !important;
+}
+.vli-table tbody th,.population-table tbody th { background: #f3f7fb; color: var(--mmc-primary); }
+.schedule-problems,.vli-problems { color: #8a2020; background: #fff5f5; border-left-color: #b33d3d; }
+.partial-state.pending,#importError { color: #8a2020; }
+.schedule-success { background: #f0fff4; color: #17643e; border-left-color: #16834a; }
+dialog { background: #fff; color: var(--mmc-text); }
+dialog::backdrop { background: #17334e77; }

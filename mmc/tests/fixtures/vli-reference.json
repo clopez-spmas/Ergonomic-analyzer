@@ -1,0 +1,176 @@
+{
+  "input": {
+    "workers": "4",
+    "loads": [
+      {
+        "weight": "18.5",
+        "objects": "100",
+        "lifts": "1"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "otra",
+        "minutes": "10"
+      },
+      {
+        "type": "mmc",
+        "minutes": "10"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "10"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "10"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "5"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "5"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "5"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "10"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "10"
+      },
+      {
+        "type": "otra",
+        "minutes": "15"
+      },
+      {
+        "type": "mmc",
+        "minutes": "15"
+      },
+      {
+        "type": "otra",
+        "minutes": "20"
+      },
+      {
+        "type": "empuje",
+        "minutes": "10"
+      },
+      {
+        "type": "otra",
+        "minutes": "25"
+      }
+    ],
+    "start": "08:00",
+    "geometry": [
+      {
+        "origin": "120",
+        "destination": "120",
+        "asymmetry": "si"
+      }
+    ],
+    "horizontal": {
+      "originPoor": [],
+      "originGood": [
+        0
+      ],
+      "destinationPoor": [],
+      "destinationGood": [
+        0
+      ]
+    },
+    "mode": "individual",
+    "oneHand": false
+  },
+  "expected": {
+    "base": 1.4325681831794734,
+    "groupMeans": [
+      18.5
+    ],
+    "net": 115,
+    "shift": 480,
+    "category": "corta",
+    "frequency": 0.21739130434782608
+  }
+}

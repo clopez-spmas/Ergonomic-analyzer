@@ -1,0 +1,92 @@
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;padding:30px;background:#eef2f7;color:#2d3748;font-family:"Segoe UI",Arial,sans-serif}.container{max-width:1100px;margin:auto}h1,h2{color:#005a9c}button,.upload{font:inherit;font-weight:700;padding:10px 12px;border:1px solid #0078d4;border-radius:8px;cursor:pointer;background:#0078d4;color:white}button:hover,.upload:hover{background:#005a9c}button.secondary{background:#fff;color:#005a9c}button.secondary:hover{background:#f7fafc}button:disabled{opacity:.45;cursor:not-allowed}input,select{font:inherit;padding:10px;border:1px solid #cbd5e0;border-radius:8px;width:100%;background:#fff;color:#2d3748}input:focus,select:focus{outline:2px solid #0078d4}.card{background:white;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px #0001}.access-screen{overflow:hidden;border-radius:16px;margin-top:20px;box-shadow:0 8px 28px #2d37481f}.access-hero{background:linear-gradient(135deg,#245982,#3179b8);text-align:center;color:white;padding:44px 34px}.access-hero h1{color:white;margin:12px 0;font-size:clamp(2rem,4vw,2.7rem)}.access-badge{display:inline-block;padding:6px 16px;border-radius:99px;background:#ffffff21;border:1px solid #ffffff60}.access-content{padding:38px 42px;background:#fff;text-align:center}.access-features{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:28px auto;max-width:900px}.access-feature{background:#f8fafc;border:1px solid #dbe4ee;border-radius:12px;min-height:110px;padding:20px}.access-feature strong,.access-feature span{display:block}.access-feature strong{margin-bottom:8px}.access-feature span,.muted{color:#63758a;font-size:.9rem}.method-actions{max-width:360px;margin:20px auto;display:grid;gap:12px}.method-button{background:#245982;min-height:52px;width:100%;border:0;border-radius:10px}.method-button.secondary{border:2px solid #245982}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:1px solid #dbe4ee;padding-bottom:17px;margin-bottom:24px}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}.fields{display:grid;gap:16px;margin:20px 0}.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.fields.three{grid-template-columns:repeat(3,minmax(0,1fr))}label{display:flex;flex-direction:column;gap:7px;font-weight:600}.task-picker{max-width:450px}.task{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:10px;background:#f8fafc;border:1px solid #dbe4ee;border-radius:10px}.task input{flex:1}.task span{min-width:70px}.notice{background:#f8fafc;border:1px solid #dbe4ee;padding:15px;border-radius:10px}.footer{border-top:1px solid #dbe4ee;padding-top:18px}.upload{display:inline-block}.summary-row{padding:12px;border-bottom:1px solid #dbe4ee}@media(max-width:720px){body{padding:15px}.access-content{padding:25px 20px}.access-features,.fields.two,.fields.three{grid-template-columns:1fr}.task{flex-wrap:wrap}}
+.results-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0}
+.results-toolbar input{max-width:390px;flex:1;min-width:180px}
+.result-cards{display:grid;gap:12px}
+.result-card{border:1px solid #dbe4ee;border-radius:10px;overflow:hidden;background:#fff}
+.result-card>summary{cursor:pointer;padding:16px 18px;font-weight:700;color:#245982;background:#f8fafc}
+.result-card[open]>summary{border-bottom:1px solid #dbe4ee}
+.result-card-content{padding:16px;overflow-x:auto}
+.task-result-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:14px}
+.task-result-table th,.task-result-table td{border:1px solid #b9cede;padding:8px 10px;text-align:left}
+.task-result-table thead tr:nth-child(2) th{background:#dceaf6;color:#245982}
+.task-result-table .task-table-title{background:#6f9ac2;color:#fff;font-size:15px}
+.task-result-table .risk-pending{background:#e2e8f0;color:#334155}
+
+/* Navegacion superior persistente, como el resto de Ergonomic Analyzer */
+.topbar{position:sticky;top:0;z-index:30;display:flex;flex-direction:column;align-items:stretch;gap:9px;padding:12px 16px;margin:-24px -24px 24px;background:#fff;border-bottom:1px solid #cbd5e0;box-shadow:0 3px 9px #00000012;border-radius:12px 12px 0 0}
+.nav-main{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nav-main strong{color:#245982}
+.nav-main .actions{margin:0}
+.nav-tools{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;padding-top:8px;border-top:1px solid #e6edf5}
+.nav-tools button,.nav-tools .upload{padding:8px 12px}
+.nav-tools #status{font-size:.85rem;color:#51677c;max-width:330px}
+@media(max-width:720px){.topbar{margin:-24px -24px 20px}.nav-main{gap:8px}.nav-main strong{order:3;width:100%;text-align:center}.nav-direction{margin-left:auto}.nav-tools{justify-content:center}}
+
+/* Replica de la estructura OCRA / Posturas Forzadas en Ergonomic Analyzer */
+.mmc-shell{max-width:1100px;margin:0 auto}
+.mmc-shell .ocra-header,.mmc-shell .mmc-screen,.mmc-shell .study-toolbar{background:#fff;border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.mmc-shell .ocra-header{text-align:center}
+.mmc-shell .ocra-header .brand{color:#005a9c;font-size:14px;font-weight:700;letter-spacing:1.5px;margin-bottom:10px}
+.mmc-shell .ocra-header h1{margin:0;color:#005a9c}
+.mmc-shell .screen-nav{display:flex;align-items:center;gap:10px;margin:0 0 12px}
+.mmc-shell .screen-counter{flex:1;text-align:center;color:#718096;font-weight:700}
+.mmc-shell .nav-primary,.mmc-shell .nav-secondary,.mmc-shell .toolbar-btn{font:inherit;padding:10px 12px;border-radius:8px;font-weight:700;cursor:pointer}
+.mmc-shell .nav-primary{border:1px solid #0078d4;background:#0078d4;color:#fff}
+.mmc-shell .nav-primary:hover{background:#005a9c}
+.mmc-shell .nav-secondary,.mmc-shell .toolbar-btn{border:1px solid #0078d4;background:#fff;color:#005a9c}
+.mmc-shell .nav-secondary:hover,.mmc-shell .toolbar-btn:hover{background:#f7fafc;color:#005a9c}
+.mmc-shell .study-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px}
+.mmc-shell .study-toolbar .upload{display:inline-flex;align-items:center}
+.mmc-shell .status{min-height:24px;margin:6px 0;color:#005a9c;font-size:14px}
+.mmc-shell .mmc-screen{padding:24px}
+@media(max-width:760px){.mmc-shell .screen-nav{flex-wrap:wrap}.mmc-shell .screen-counter{order:-1;flex-basis:100%}.mmc-shell .mmc-screen{padding:18px}}
+
+/* Horario independiente de cada tarea. */
+.schedule-blocks{display:grid;gap:12px;margin:16px 0}
+.schedule-block .block-heading{grid-column:1 / -1;color:#245982}
+.schedule-block{display:grid;grid-template-columns:1fr 1fr 1.5fr 1.6fr;gap:12px;padding:16px;border:1px solid #b9cede;border-radius:10px;background:#f8fbfe}
+.schedule-block .block-note{grid-column:1 / 4}.schedule-block button{align-self:end;justify-self:end}
+.check-field{display:flex;flex-direction:row;align-items:center;gap:10px}.check-field input{width:auto}
+.post-recovery{display:block;max-width:620px;margin:20px 0}.post-recovery input{max-width:220px;display:block}
+.schedule-problems{border-left:4px solid #c53030;background:#fff5f5;padding:12px 18px;color:#8a2020;border-radius:6px}
+.schedule-problems li{margin:5px 0}.schedule-success{border-left:4px solid #16834a;background:#f0fff4;padding:12px 16px;border-radius:6px}
+.schedule-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.schedule-metric{border:1px solid #cbdce9;border-radius:8px;padding:12px}.schedule-metric strong{display:block;font-size:1.3rem;color:#005a9c;margin-top:6px}
+.schedule-strip{display:flex;min-height:34px;overflow:hidden;border-radius:7px;border:1px solid #cbdce9;margin:12px 0}
+.schedule-strip span{min-width:1px}.schedule-strip .mmc{background:#0078d4}.schedule-strip .pausa{background:#2f855a}.schedule-strip .otra{background:#a0aec0}.schedule-strip .ligera{background:#8bd5bd}
+.schedule-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem}.schedule-legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;background:var(--swatch)}
+.schedule-periods{padding-left:24px}.schedule-periods li{margin-bottom:9px}.automatic-field{background:#edf2f7;color:#334155}
+
+/* Resultados por población: disposición de tarjetas y tablas como en MAPO Analyzer. */
+.mmc-results-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}
+.mmc-results-overview>div{border:1px solid #d8dee6;border-radius:10px;padding:15px;background:#f8fafc}
+.mmc-results-overview strong{display:block;font-size:1.65rem;color:#005a9c}.mmc-results-overview span{font-size:.85rem;color:#52677c}
+.mmc-risk-legend{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 12px}
+.mmc-risk-legend>div{display:flex;flex-direction:column;gap:5px;flex:1;min-width:135px}.mmc-risk-legend small{font-size:.8rem;color:#52677c;padding-left:3px}
+.mmc-risk-badge{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:6px;font-size:.85rem;font-weight:800;line-height:1.2;text-align:center;white-space:normal}
+.mmc-task-results{border:1px solid #cbd9e6;border-radius:12px;overflow:hidden;margin-bottom:20px;background:#fff}
+.mmc-task-results>summary{display:flex;justify-content:space-between;align-items:center;gap:16px;list-style:none;padding:18px;background:#f3f7fb;cursor:pointer;color:#245982}
+.mmc-task-results>summary::-webkit-details-marker{display:none}.mmc-task-results>summary>strong{font-size:1.1rem;overflow-wrap:anywhere}
+.mmc-task-results>summary>strong:before{content:"▸";margin-right:10px}.mmc-task-results[open]>summary>strong:before{content:"▾"}
+.mmc-task-summary-level{display:flex;align-items:center;gap:10px;flex-shrink:0}.mmc-task-summary-level small{font-size:.75rem;color:#52677c;max-width:150px}
+.mmc-task-results .result-card-content{padding:22px}.population-results-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:28px}
+.population-result{border:1px solid #d8dee6;border-top:6px solid;border-radius:10px;padding:18px 14px;display:flex;flex-direction:column;align-items:flex-start;background:#fff;min-width:0}
+.population-result h3{margin:0;color:#245982;font-size:1rem}.population-age{font-size:.85rem;margin:5px 0 16px;color:#52677c}
+.population-score{font-size:2rem;font-weight:800;color:#143d60;font-variant-numeric:tabular-nums;line-height:1.1}.population-score-label{font-size:.75rem;color:#52677c;margin:5px 0 15px}
+.population-result .mmc-risk-badge{width:100%;margin-bottom:12px}.population-result>small{font-size:.73rem;line-height:1.35}
+.population-table-scroll{max-width:100%;overflow-x:auto;border:1px solid #cbd9e6;border-radius:10px;margin:12px 0}
+.population-table{width:100%;min-width:580px;margin:0!important;font-size:13px;border-collapse:collapse}.population-table caption{padding:11px;text-align:left;color:#52677c;background:#f8fafc;font-size:.85rem}
+.population-table th,.population-table td{text-align:center!important;padding:12px 8px!important;vertical-align:middle;font-weight:700;border:1px solid #b9cede}
+.population-table thead th{background:#759cbf!important;color:#111!important}.population-table thead tr:nth-child(2) th{background:#deeaf6!important;color:#245982!important}
+.population-table tbody th{background:#deeaf6;color:#245982;white-space:nowrap}.population-table .population-index{font-size:1.05rem;font-variant-numeric:tabular-nums;background:#fff}
+.mmc-result-actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 25px}.mmc-risk-action{display:grid;grid-template-columns:120px 1fr;align-items:start;gap:15px;border-top:1px solid #e2e8f0;padding:14px 0}.mmc-risk-action p{margin:0;line-height:1.5;font-size:.9rem}
+.mmc-result-message{padding:15px;border:1px solid #cbd9e6;background:#f8fafc;border-radius:8px;margin-bottom:20px}.mmc-result-message ul{padding-left:22px}.mmc-result-message li{margin:6px 0}.mmc-result-message p{font-size:.9rem;line-height:1.45}
+.mmc-calculation-details{margin-top:18px;border-top:1px solid #d8dee6;padding-top:15px}.mmc-calculation-details summary{color:#005a9c;font-weight:700;cursor:pointer}.mmc-calculation-details p{font-size:.85rem;line-height:1.6;overflow-wrap:anywhere}
+@media(max-width:1000px){.population-results-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.mmc-results-overview{grid-template-columns:repeat(2,minmax(0,1fr))}.mmc-task-results>summary{flex-direction:column;align-items:flex-start}.mmc-task-summary-level{flex-shrink:1}.mmc-task-results .result-card-content{padding:14px}.population-results-grid{gap:10px}.population-result{padding:13px 10px}.population-score{font-size:1.7rem}.mmc-result-actions button{width:100%}.mmc-risk-action{grid-template-columns:1fr;gap:10px}}
+@media(max-width:760px){.schedule-block{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.schedule-block .block-note{grid-column:1 / -1}.schedule-block button{grid-column:1 / -1}.schedule-metrics{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields.schedule-shift{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.schedule-shift .check-field{grid-column:1 / -1}.schedule-block input,.schedule-block select{min-width:0;width:100%}.task{flex-wrap:wrap}.task input{flex-basis:60%}}
+
+
+/* Página independiente de simulación. */
+.sim-page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.sim-page-heading h1{margin-top:0}.sim-page-heading button{flex-shrink:0}.sim-section{margin:24px 0;padding:20px;border:1px solid #cbdce9;border-radius:10px;background:#f8fbfe}.sim-section h2{margin-top:0}.sim-comparison{min-width:820px}.sim-comparison th:first-child{text-align:left}.sim-schedule-block{display:grid;grid-template-columns:1fr 1fr 1.4fr 1.4fr;gap:12px;border:1px solid #cbdce9;border-radius:8px;background:#fff;padding:14px}.sim-schedule-block strong{grid-column:1/-1;color:#005a9c}.sim-schedule-block button{justify-self:start}.sim-duration{margin-top:16px}#simChanges li{margin:10px 0;overflow-wrap:anywhere}#simResults{margin-top:24px}
+@media(max-width:760px){.sim-page-heading{flex-direction:column}.sim-schedule-block{grid-template-columns:1fr 1fr}.sim-section{padding:14px}}@media(max-width:460px){.sim-schedule-block{grid-template-columns:1fr}}
