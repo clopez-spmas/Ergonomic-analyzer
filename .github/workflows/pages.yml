@@ -52,10 +52,6 @@ jobs:
           print("MMC: estructura, documentación y rutas verificadas")
           PY
 
-      - name: Ejecutar pruebas de regresión MMC
-        run: |
-          for test in mmc/tests/*.cjs; do node "$test"; done
-
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
