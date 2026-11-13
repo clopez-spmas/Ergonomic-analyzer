@@ -24,6 +24,38 @@ jobs:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
 
+      - name: Integrar MMC Analyzer como subprograma independiente
+        uses: actions/checkout@v4
+        with:
+          repository: clopez-spmas/work-in-progress
+          ref: main
+          path: mmc
+          persist-credentials: false
+
+      - name: Comprobar integración MMC
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root = Path("mmc")
+          required = ["index.html", "js/app.js", "js/schedule.js", "js/instructions.js", "css/styles.css", "css/theme.css", "variable/index.html", "compuesta/index.html", "secuencial/index.html", "docs/instrucciones-mmc.pdf", "docs/instrucciones-mmc.docx"]
+          for path in required:
+              assert (root / path).is_file(), f"Falta {path}"
+          assert 'mmc:"mmc/"' in Path("js/app.js").read_text(encoding="utf-8")
+          for path in ["index.html", "variable/index.html", "compuesta/index.html", "secuencial/index.html"]:
+              text = (root / path).read_text(encoding="utf-8")
+              for url in re.findall(r'(?:src|href)=[\'"]([^\'"]+)[\'"]', text):
+                  if url.startswith(("http:", "https:", "#", "mailto:", "data:")):
+                      continue
+                  target = (root / path).parent / url.split("?")[0].split("#")[0]
+                  assert target.exists(), f"Enlace roto en {path}: {url}"
+          print("MMC: estructura, documentación y rutas verificadas")
+          PY
+
+      - name: Ejecutar pruebas de regresión MMC
+        run: |
+          for test in mmc/tests/*.cjs; do node "$test"; done
+
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
