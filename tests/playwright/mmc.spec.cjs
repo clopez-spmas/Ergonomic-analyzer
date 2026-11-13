@@ -7,6 +7,16 @@ const modules = [
   { name: 'Secuencial', path: 'mmc/secuencial/' },
 ];
 const errors = [];
+async function openModule(page, module) {
+  await page.goto(base + module.path);
+  if (module.name === 'Simple') {
+    await page.locator('#enter').click();
+    await expect(page.locator('#methods')).toBeVisible();
+    await page.locator('[data-method="simple"]').click();
+    await expect(page.locator('#simple')).toBeVisible();
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   // Fuerza la descarga JSON normal, reproducible en Chromium de CI.
   await page.addInitScript(() => { Object.defineProperty(window, 'showSaveFilePicker', { value: undefined, configurable: true }); });
@@ -17,6 +27,8 @@ test.afterEach(async () => { expect(errors.splice(0), 'Errores JavaScript no con
 
 test('Portal: enlace MMC accesible', async ({ page }) => {
   await page.goto(base);
+  await page.locator('#enterProgram').click();
+  await expect(page.locator('#methodScreen')).toBeVisible();
   const entry = page.locator('[data-method="mmc"]');
   await expect(entry).toBeVisible();
   await entry.click();
@@ -39,8 +51,7 @@ test('Documentación PDF publicada y accesible', async ({ request, page }) => {
 
 for (const module of modules) {
   test(module.name + ': carga, navegación, resultados y simulación', async ({ page }) => {
-    await page.goto(base + module.path);
-    if (module.name === 'Simple') await page.locator('#enter').click();
+    await openModule(page, module);
     await expect(page.locator('#page1')).toBeVisible();
     await expect(page.locator('#pageNum')).toHaveText('1');
     for (let i = 2; i <= 4; i++) {
@@ -60,8 +71,7 @@ for (const module of modules) {
   });
 
   test(module.name + ': guardar JSON y recuperar estudio', async ({ page }) => {
-    await page.goto(base + module.path);
-    if (module.name === 'Simple') await page.locator('#enter').click();
+    await openModule(page, module);
     const meta = page.locator('[data-meta]').first();
     if (await meta.count()) await meta.fill('PRUEBA PLAYWRIGHT');
     const downloadPromise = page.waitForEvent('download');
@@ -69,12 +79,16 @@ for (const module of modules) {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.json$/i);
     const fs = require('fs');
-    const file = download.path();
+    const file = await download.path();
     const json = JSON.parse(fs.readFileSync(file, 'utf8'));
     expect(json.application).toBe('MMC Analyzer');
     expect(json.module).toBe(module.name.toLowerCase());
     await page.reload();
-    if (module.name === 'Simple') await page.locator('#enter').click();
+    if (module.name === 'Simple') {
+      await page.locator('#enter').click();
+      await page.locator('[data-method="simple"]').click();
+      await expect(page.locator('#page1')).toBeVisible();
+    }
     await page.locator('#load').setInputFiles(file);
     await expect(page.locator('#status')).toContainText(/cargad/i);
     if (await meta.count()) await expect(page.locator('[data-meta]').first()).toHaveValue('PRUEBA PLAYWRIGHT');
