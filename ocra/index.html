@@ -4,17 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OCRA Analyzer</title>
-<link rel="stylesheet" href="../css/styles.css?v=20261113-palette3">
+<link rel="stylesheet" href="../css/styles.css?v=20261113-ocra-palette4">
 <link rel="stylesheet" href="styles.css?v=20261113-palette3">
 <style>
 .mode-shell{max-width:1120px;margin:0 auto;padding:28px 18px 48px}
+.mode-shell .ocra-header{background:linear-gradient(135deg,#245982 0%,#3179b8 100%);color:#fff;text-align:center;padding:38px 28px;border-radius:14px;box-shadow:0 8px 28px rgba(45,55,72,.12)}
+.mode-shell .ocra-header .brand{color:rgba(255,255,255,.92);font-size:14px;font-weight:700;letter-spacing:1.5px}
+.mode-shell .ocra-header h1{color:#fff;font-size:clamp(1.7rem,3vw,2.2rem)}
+.mode-shell .ocra-header p{color:rgba(255,255,255,.94)}
 .mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:24px}
-.mode-card{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid #d8e0e8;border-radius:12px;background:#fff;text-decoration:none;color:inherit;box-shadow:0 4px 14px rgba(0,0,0,.04)}
-.mode-card:hover{border-color:#759CBF;box-shadow:0 8px 22px rgba(0,0,0,.07)}
-.mode-card h2{margin:0;color:#005a9c;font-size:20px}
+.mode-card{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid #dbe4ee;border-radius:12px;background:#fff;text-decoration:none;color:inherit;box-shadow:0 4px 14px rgba(0,0,0,.04);transition:border-color .15s ease,box-shadow .15s ease}
+.mode-card:hover{border-color:#245982;box-shadow:0 8px 22px rgba(36,89,130,.12)}
+.mode-card h2{margin:0;color:#245982;font-size:20px}
 .mode-card p{margin:0;color:#526477;line-height:1.5}
-.mode-card .mode-action{margin-top:auto;font-weight:700;color:#005a9c}
-@media(max-width:760px){.mode-grid{grid-template-columns:1fr}}
+.mode-card .mode-action{margin-top:auto;font-weight:700;color:#245982}
+.mode-card .variant-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.mode-card .variant-actions .toolbar-btn{display:inline-flex;align-items:center;text-decoration:none;border:2px solid #245982;border-radius:8px;background:#245982;color:#fff}
+.mode-card .variant-actions .toolbar-btn:hover{background:#1b4769;border-color:#1b4769;color:#fff}
+.mode-card .variant-actions .toolbar-btn+ .toolbar-btn{background:#fff;color:#245982}
+.mode-card .variant-actions .toolbar-btn+ .toolbar-btn:hover{background:#f3f7fb}
+.mode-card:focus-visible,.mode-card a:focus-visible,.mode-back:focus-visible{outline:3px solid #e39c27;outline-offset:3px}
+.mode-back{display:inline-block;margin-top:22px;color:#245982;font-weight:700}
+@media(max-width:760px){.mode-grid{grid-template-columns:1fr}.mode-shell{padding:16px 4px 30px}.mode-shell .ocra-header{padding:30px 18px}}
+@media(prefers-reduced-motion:reduce){.mode-card{transition:none}}
 </style>
 </head>
 <body>
@@ -55,7 +67,7 @@
 </section>
 
 
-<p style="margin-top:20px"><a href="../">← Volver al portal de programas</a></p>
+<a class="mode-back" href="../#programas">← Volver a selección de programas</a>
 </main>
 </body>
 </html>
