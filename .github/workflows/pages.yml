@@ -3,10 +3,12 @@ name: Publicar Ergonomic Analyzer en GitHub Pages
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "mmc/**"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -29,8 +31,21 @@ jobs:
         with:
           repository: clopez-spmas/work-in-progress
           ref: main
-          path: mmc
+          path: mmc-source
           persist-credentials: false
+
+      - name: Guardar MMC en el repositorio Ergonomic Analyzer
+        run: |
+          mkdir -p mmc
+          rsync -a --delete --exclude=.git/ mmc-source/ mmc/
+          rm -rf mmc-source
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A mmc
+          if ! git diff --cached --quiet; then
+            git commit -m "Sincronizar MMC Analyzer en el repositorio principal"
+            git push origin HEAD:main
+          fi
 
       - name: Comprobar integración MMC
         run: |
