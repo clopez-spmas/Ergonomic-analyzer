@@ -22,10 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar el repositorio
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Integrar MMC Analyzer como subprograma independiente
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: clopez-spmas/work-in-progress
           ref: main
