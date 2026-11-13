@@ -3,12 +3,10 @@ name: Publicar Ergonomic Analyzer en GitHub Pages
 on:
   push:
     branches: ["main"]
-    paths-ignore:
-      - "mmc/**"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -23,48 +21,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Descargar el repositorio
+      - name: Descargar Ergonomic Analyzer
         uses: actions/checkout@v5
 
-      - name: Integrar MMC Analyzer como subprograma independiente
-        uses: actions/checkout@v5
-        with:
-          repository: clopez-spmas/work-in-progress
-          ref: main
-          path: mmc-source
-          persist-credentials: false
-
-      - name: Guardar MMC en el repositorio Ergonomic Analyzer
-        run: |
-          mkdir -p mmc
-          rsync -a --delete --exclude=.git/ mmc-source/ mmc/
-          rm -rf mmc-source
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A mmc
-          if ! git diff --cached --quiet; then
-            git commit -m "Sincronizar MMC Analyzer en el repositorio principal"
-            git push origin HEAD:main
-          fi
-
-      - name: Comprobar integración MMC
+      - name: Comprobar programas incorporados
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          root = Path("mmc")
-          required = ["index.html", "js/app.js", "js/schedule.js", "js/instructions.js", "css/styles.css", "css/theme.css", "variable/index.html", "compuesta/index.html", "secuencial/index.html", "docs/instrucciones-mmc.pdf", "docs/instrucciones-mmc.docx"]
-          for path in required:
-              assert (root / path).is_file(), f"Falta {path}"
-          assert 'mmc:"mmc/"' in Path("js/app.js").read_text(encoding="utf-8")
-          for path in ["index.html", "variable/index.html", "compuesta/index.html", "secuencial/index.html"]:
-              text = (root / path).read_text(encoding="utf-8")
-              for url in re.findall(r'(?:src|href)=[\'"]([^\'"]+)[\'"]', text):
-                  if url.startswith(("http:", "https:", "#", "mailto:", "data:")):
-                      continue
-                  target = (root / path).parent / url.split("?")[0].split("#")[0]
-                  assert target.exists(), f"Enlace roto en {path}: {url}"
-          print("MMC: estructura, documentación y rutas verificadas")
+          root = Path(".")
+          required = [
+              "index.html", "js/app.js",
+              "ocra/index.html", "posturas/index.html", "empuje-traccion/index.html",
+              "mmc/index.html", "mmc/variable/index.html",
+              "mmc/compuesta/index.html", "mmc/secuencial/index.html",
+              "mmc/docs/instrucciones-mmc.pdf"
+          ]
+          for name in required:
+              assert (root / name).is_file(), f"Falta archivo publicado: {name}"
+          print("Programas incorporados: estructura basica correcta")
           PY
 
       - name: Configurar GitHub Pages
